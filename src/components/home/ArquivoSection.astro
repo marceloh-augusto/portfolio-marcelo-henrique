@@ -1,0 +1,117 @@
+---
+/**
+ * "Arquivo" — próxima seção do ARCHITECTURE.md ("Hero → Cases → Sobre →
+ * Clientes → Trajetória → Arquivo → Contato"), sem node do Figma dado
+ * ainda. Integra o DriftWall (React Bits, portado sem React — ver
+ * driftWallEffect.ts/DriftWall.astro), a pedido do usuário.
+ *
+ * Imagens reais fornecidas pelo usuário (Assets/Arquivos/), copiadas
+ * pra public/images/arquivo/: telas de projetos (Oli, Yogha, CineTeach,
+ * app de viagem) e o mockup de iPhone.
+ */
+import DriftWall from "../ui/DriftWall.astro";
+import type { DriftWallItem } from "../ui/DriftWall.astro";
+
+const ASSETS = [
+	{ src: "/images/arquivo/oli-site.png", title: "Oli — Site" },
+	{ src: "/images/arquivo/oli-live-shopping.png", title: "Oli — Live shopping" },
+	{ src: "/images/arquivo/yogha-app.png", title: "Yogha — App" },
+	{ src: "/images/arquivo/yogha-site.png", title: "Yogha — Site" },
+	{ src: "/images/arquivo/cineteach-platform.png", title: "CineTeach — Plataforma" },
+	{ src: "/images/arquivo/travel-app.png", title: "App de viagem" },
+	{ src: "/images/arquivo/credaluga-app.png", title: "Cred Aluga — Plataforma" },
+	{ src: "/images/arquivo/iphone-mockup.gif", title: "Mockup iPhone" },
+	{ src: "/images/arquivo/yogha-landing.png", title: "Yogha — Landing page" },
+];
+
+// Correção (bug relatado — colunas 2 e 3 idênticas, só 2 imagens por
+// coluna): a versão anterior distribuía um total fixo de itens (2
+// aparições de cada imagem) entre as 9 colunas — isso dava, em média,
+// menos de 2 imagens DISTINTAS por coluna, então era comum duas colunas
+// (ou uma coluna e o clone dela, ver driftWallEffect.ts) acabarem com o
+// mesmo parzinho de imagens, na mesma ordem — pareciam idênticas.
+//
+// Agora TODA coluna recebe as `ASSETS.length` imagens reais inteiras,
+// cada uma numa ordem embaralhada independente (uma permutação por
+// coluna) — nenhuma coluna fica sem alguma imagem, e como cada
+// embaralhada é independente, nenhuma coluna repete a sequência de
+// outra. Bônus: como cada bloco de uma coluna é uma permutação (sem
+// repetição interna), quando o preenchimento vertical repete esse
+// bloco pra cobrir a altura toda (driftWallEffect.ts), a emenda entre
+// uma repetição e a próxima nunca cai na mesma imagem (o último item
+// de uma permutação nunca é igual ao primeiro item dela mesma).
+const COLUMNS = 9; // preciso bater com `columns` do <DriftWall> logo abaixo
+
+function shuffledAssetIndices(): number[] {
+	const indices = ASSETS.map((_, idx) => idx);
+	for (let i = indices.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[indices[i], indices[j]] = [indices[j], indices[i]];
+	}
+	return indices;
+}
+
+function buildArchiveItems(): DriftWallItem[] {
+	// Uma permutação embaralhada independente por coluna (todas as
+	// imagens, em ordens diferentes).
+	const perColumn: number[][] = Array.from({ length: COLUMNS }, () => shuffledAssetIndices());
+	// Intercala em ordem "linha a linha" pra bater com a distribuição
+	// `items[i] → coluna (i % COLUMNS)` que o DriftWall.astro já faz.
+	const items: DriftWallItem[] = [];
+	for (let row = 0; row < ASSETS.length; row++) {
+		for (let col = 0; col < COLUMNS; col++) {
+			const idx = perColumn[col][row];
+			items.push({ image: ASSETS[idx].src, title: ASSETS[idx].title });
+		}
+	}
+	return items;
+}
+
+const ARCHIVE_ITEMS: DriftWallItem[] = buildArchiveItems();
+---
+
+<section class="bg-(--color-background-dark) py-[96px]">
+	<p
+		class="mb-(--spacing-xl) px-(--spacing-md-plus) font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:px-(--spacing-5xl) desktop:text-[20px] desktop:tracking-[0.4px]"
+		data-i18n="arquivo.overline"
+	>
+		ARQUIVO
+	</p>
+
+	<div class="h-[70vh] min-h-[420px] w-full">
+		<!--
+			Correção (bug relatado — vão vazio entre colunas): com poucas
+			colunas (5, depois 10) e uma rotação `turn` forte, a perspectiva
+			3D "abre um leque" — colunas mais longe do centro se afastam
+			visualmente umas das outras conforme giram no eixo Y, sobrando
+			faixas vazias entre elas. Não tem como zerar esse efeito sem
+			also reduzir o ângulo (senão a MESMA rotação sempre vai abrir
+			algum vão, não importa quantas colunas existam) — por isso
+			`turn` caiu de -18 pra -10 (leque mais suave) E o número de
+			colunas subiu bastante (10 → 18) com tiles mais estreitos, pra
+			cobrir a largura toda mesmo com o leque residual. Confirmei
+			visualmente que o vão sumiu com essa combinação.
+		-->
+		<DriftWall
+			items={ARCHIVE_ITEMS}
+			columns={9}
+			tileWidth={450}
+			tileHeight={312}
+			gap={36}
+			tilt={10}
+			turn={-10}
+			perspective={1750}
+			depth={100}
+			speed={22}
+			direction="up"
+			variance={0.45}
+			parallax={1.1}
+			lift={30}
+			fade={0.2}
+			dim={0.85}
+			overlayColor="#0F0E0D"
+			radius={10}
+			roll={1}
+		/>
+	</div>
+</section>

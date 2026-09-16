@@ -1,0 +1,191 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import CaseHero from '../../components/case-study/CaseHero.astro';
+import CaseMetadata from '../../components/case-study/CaseMetadata.astro';
+import CaseSection from '../../components/case-study/CaseSection.astro';
+import TradeoffTable from '../../components/case-study/TradeoffTable.astro';
+import ResultsList from '../../components/case-study/ResultsList.astro';
+import ContatoSection from '../../components/home/ContatoSection.astro';
+import Lightbox from '../../components/ui/Lightbox.astro';
+
+export async function getStaticPaths() {
+	const caseStudies = await getCollection('case-studies');
+	return caseStudies.map((entry) => ({
+		params: { slug: entry.id },
+		props: { entry },
+	}));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { data } = entry;
+
+// case-study-2/3 ainda são placeholders (só o TODO do ARCHITECTURE.md, sem
+// heroHeadline/heroImage) — enquanto isso, caem no fallback simples de
+// antes (só o `<Content />`) em vez de quebrar com dados faltando.
+const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
+---
+
+{
+	isFullyBuilt ? (
+		<Layout title={`${data.displayName} — Marcelo Henrique`}>
+			{/*
+				Ordem da página (ARCHITECTURE.md): Hero → Metadados → Problema →
+				Restrições → Pesquisa → Decisão → MVP → Outcome → "O que eu faria
+				diferente" → Contato. Problema/Restrições/Pesquisa vêm do corpo MDX
+				(`<Content />`, prosa) — Decisão/MVP/Outcome/"O que eu faria
+				diferente" são compostas aqui direto do frontmatter (`entry.data`),
+				já que são dados estruturados (tabela, listas fixas), não
+				narrativa livre. `pt-[132px]`/`tablet:pt-[146px]` dão clearance
+				pra nav fixa global (Layout.astro) — o Figma embute o nav dentro
+				da própria página, este site usa nav flutuante compartilhada por
+				todas as páginas.
+			*/}
+			<main class="flex flex-col gap-(--spacing-6xl) pt-[132px] pb-(--spacing-6xl) tablet:pt-[146px]">
+				<CaseHero headline={data.heroHeadline!} headlineEn={data.heroHeadlineEn} image={data.heroImage!} imageAlt={`Capa do case ${data.displayName}`} />
+
+				<CaseMetadata
+					client={data.client}
+					year={data.year}
+					yearEn={data.yearEn}
+					role={data.role}
+					duration={data.duration}
+					durationEn={data.durationEn}
+					team={data.team}
+					platform={data.platform}
+					platformEn={data.platformEn}
+					contribution={data.contribution}
+					contributionEn={data.contributionEn}
+				/>
+
+				<Content />
+
+				{data.decisions && data.decisions.length > 0 && (
+					<CaseSection titleKey="decisao">
+						<TradeoffTable rows={data.decisions} rowsEn={data.decisionsEn} />
+					</CaseSection>
+				)}
+
+				{(data.mvpImage || (data.mvpBullets && data.mvpBullets.length > 0)) && (
+					<CaseSection titleKey="mvp">
+						{data.mvpImage && (
+							<button
+								type="button"
+								class="block aspect-[1280/338] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
+								data-reveal
+								data-lightbox-trigger
+								data-lightbox-src={data.mvpImage}
+								data-lightbox-alt={`Fluxo do MVP — ${data.displayName}`}
+								data-lightbox-group="case-media"
+							>
+								<img src={data.mvpImage} alt={`Fluxo do MVP — ${data.displayName}`} class="h-full w-full object-cover" loading="lazy" />
+							</button>
+						)}
+
+						{data.mvpBullets && (
+							<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg)" data-reveal-group>
+								{data.mvpBullets.map((bullet, i) => <li data-i18n-en={data.mvpBulletsEn?.[i]}>{bullet}</li>)}
+							</ul>
+						)}
+
+						{data.mvpVideos && data.mvpVideos.length > 0 && (
+							<div class="flex flex-col gap-(--spacing-md) tablet:flex-row" data-reveal-group>
+								{data.mvpVideos.map((videoItem) => (
+									// Vídeo com controles nativos próprios (não pode ficar dentro de
+									// um <button> — quebraria o clique na barra de progresso/play,
+									// já que o navegador não permite conteúdo interativo aninhado).
+									// O botão de expandir (lightbox/zoom) fica separado, sobreposto.
+									<div class="relative flex-1 overflow-hidden rounded-lg tablet:rounded-xl">
+										<video
+											src={videoItem.src}
+											poster={videoItem.poster}
+											class="h-full w-full"
+											controls
+											autoplay
+											muted
+											loop
+											playsinline
+											data-mvp-video
+										/>
+										<button
+											type="button"
+											aria-label="Expandir vídeo"
+											class="absolute top-(--spacing-sm) right-(--spacing-sm) flex size-8 items-center justify-center rounded-full bg-(--color-neutral-50) text-(--color-neutral-900) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)]"
+											data-lightbox-trigger
+											data-lightbox-src={videoItem.src}
+											data-lightbox-type="video"
+											data-lightbox-group="case-media"
+										>
+											&#x26F6;
+										</button>
+									</div>
+								))}
+							</div>
+						)}
+					</CaseSection>
+				)}
+
+				{data.outcome && (
+					<CaseSection titleKey="outcome">
+						<div class="flex flex-col gap-(--spacing-xl) tablet:gap-(--spacing-4xl)">
+							{data.outcomeImage && (
+								<button
+									type="button"
+									class="relative block aspect-[1280/506] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
+									data-lightbox-trigger
+									data-lightbox-src={data.outcomeImage}
+									data-lightbox-alt={`Dashboard de métricas — ${data.displayName}`}
+									data-lightbox-group="case-media"
+									data-reveal
+								>
+									<img
+										src={data.outcomeImage}
+										alt={`Dashboard de métricas — ${data.displayName}`}
+										class="h-full w-full object-cover"
+										loading="lazy"
+									/>
+								</button>
+							)}
+
+							<div class="flex flex-col gap-(--spacing-xl) tablet:flex-row tablet:gap-(--spacing-4xl)" data-reveal-group>
+								<ResultsList titleKey="melhorou" items={data.outcome.improved} itemsEn={data.outcomeEn?.improved} />
+								<ResultsList titleKey="piorou" items={data.outcome.worsened} itemsEn={data.outcomeEn?.worsened} />
+							</div>
+						</div>
+					</CaseSection>
+				)}
+
+				{data.whatIWouldDoDifferently && data.whatIWouldDoDifferently.length > 0 && (
+					<CaseSection titleKey="diferente">
+						<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg)" data-reveal-group>
+							{data.whatIWouldDoDifferently.map((item, i) => <li data-i18n-en={data.whatIWouldDoDifferentlyEn?.[i]}>{item}</li>)}
+						</ul>
+					</CaseSection>
+				)}
+			</main>
+
+			<ContatoSection />
+			<Lightbox />
+
+			<script>
+				// Velocidade padrão 1.5x nos vídeos do MVP (pedido do usuário) —
+				// precisa ser setada via JS (não existe atributo HTML pra isso) e
+				// reaplicada em `loadedmetadata`, já que alguns navegadores
+				// resetam `playbackRate` pra 1 quando a fonte do vídeo carrega.
+				document.querySelectorAll<HTMLVideoElement>("[data-mvp-video]").forEach((video) => {
+					video.playbackRate = 1.5;
+					video.addEventListener("loadedmetadata", () => {
+						video.playbackRate = 1.5;
+					});
+				});
+			</script>
+		</Layout>
+	) : (
+		<Layout title={`${data.displayName} — Marcelo Henrique`}>
+			<main>
+				<Content />
+			</main>
+		</Layout>
+	)
+}

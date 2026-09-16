@@ -1,0 +1,565 @@
+---
+/**
+ * "Cases Selecionados" — bloco de cada case redesenhado conforme os 3
+ * frames dedicados do Figma (um por case, mesmo layout nos 3): 523:1106
+ * (Yogha), 523:1123 (Estratégia), 523:1155 (Cred Aluga). Conteúdo real
+ * continua vindo da content collection `case-studies`
+ * (src/content/case-studies/*.mdx), nunca hardcoded aqui (regra do
+ * ARCHITECTURE.md) — o texto/números de exemplo nesses frames (ex:
+ * "91.94%", tags sem "PropTech", descrição em inglês) parecem um rascunho
+ * desatualizado do Figma, não a fonte real; mantido o dado real do MDX.
+ *
+ * Layout (medidas exatas dos 3 frames, idênticas nos 3 — sem zig-zag,
+ * diferente da versão anterior): bloco = `flex items-center justify-center
+ * gap-32 px-120 py-80`, coluna de texto `w-513 shrink-0` com `h2` 64px
+ * bold, linha "categoria • ano" (Body Regular 20px, neutral-400),
+ * descrição (Body Bold 20px), tags (TagPill). Imagem `aspect-[735/488]
+ * rounded-xl`, flexível pra caber no espaço restante em qualquer largura
+ * de viewport (os frames foram desenhados numa tela mais larga que
+ * 1280px — 513+32+735=1280 sozinho já estoura os 1280px de área útil do
+ * desktop padrão — por isso a imagem usa `flex-1` com proporção fixa em
+ * vez de largura travada em 735px).
+ *
+ * Desvios deliberados do valor literal do Figma:
+ * - Padding do bloco: usamos `{spacing.5xl}` (80px), não os 120px do
+ *   frame — a Home tem regra explícita de nunca passar de 80px de
+ *   margem lateral em nenhuma largura (ver DESIGN.md), e esses frames
+ *   claramente foram desenhados numa tela mais larga que o padrão
+ *   1280/1440 do site (ver conta acima).
+ * - Gap dentro da coluna de texto: os 3 frames divergem entre si (Yogha/
+ *   Cred Aluga usam 12px entre TODOS os elementos incluindo o título;
+ *   Estratégia usa 24px só entre o título e o resto, 12px dentro do
+ *   resto) — tratado como inconsistência de autoria no Figma, não como
+ *   3 designs realmente diferentes. Usado 12px (maioria, 2 dos 3 frames).
+ * - Linha abaixo do título: os 3 frames mostram "categoria • ano" (ex:
+ *   "Product Design • 2023"), implementado assim literalmente numa
+ *   rodada anterior (pedido explícito: "puxe as medidas e estilos
+ *   exatos"). Revertido por pedido novo do usuário — a categoria
+ *   duplicava visualmente a mesma palavra já presente na tag logo
+ *   abaixo (`tags`, campo separado de `category`) — agora a linha
+ *   mostra só o ano; a pill de categoria continua vindo de `tags`, sem
+ *   mudança nela.
+ * - Padding do tag-pill: os frames medem `px-12/py-4`, mas o
+ *   `TagPill.astro` já compartilhado no site usa `px-16` no desktop
+ *   (fonte: Figma 224:853) — mantido o componente existente (reuso >
+ *   duplicar um componente quase idêntico por 4px de diferença).
+ * - "CASES SELECIONADOS": os frames escrevem esse rótulo com
+ *   Typography/Body Bold (20px/700, sem letter-spacing) em vez do token
+ *   `overline` (20px/400, tracking 2px) usado em TODAS as outras seções
+ *   do site pro mesmo tipo de rótulo — mantido o token `overline` por
+ *   consistência com o resto do site, em vez de criar um estilo
+ *   divergente só aqui.
+ * - Cor da linha "categoria • ano": Yogha e Estratégia usam neutral-500
+ *   (#757473), Cred Aluga usa neutral-400 (#959492) — tratado como a
+ *   mesma inconsistência de autoria do gap acima (2 de 3 concordam);
+ *   usado neutral-500 pros 3 cases, em qualquer tema.
+ * - Texto claro (headline/descrição/overline) nos cards de fundo escuro:
+ *   o Figma usa neutral-100 (#efeeec), não o alias `--color-foreground-
+ *   on-dark` do site (que resolve pra neutral-50/#faf9f7, usado em nav,
+ *   footer etc.) — usado `text-(--color-neutral-100)` direto nesses 3
+ *   elementos específicos, sem tocar no alias compartilhado.
+ *
+ * Atualização (usuário mudou cores no Figma — releu os 3 frames):
+ * cada bloco agora pode ter fundo claro OU escuro, por case
+ * (`cardTheme` na content collection, default "dark"): Yogha e Cred
+ * Aluga continuam com fundo escuro (neutral-950, headline/descrição em
+ * neutral-100); Estratégia mudou pra fundo CLARO (neutral-100,
+ * headline/descrição em neutral-900 pra manter contraste). A tag
+ * (`TagPill`) também inverte por tema — ver prop `theme` nova no
+ * componente. Isso só vale no desktop (>=1280px); no mobile/tablet
+ * (lista empilhada) não há frame de referência pro tema claro, então
+ * o fundo continua escuro/uniforme como já era.
+ *
+ * Snap ("efeito ímã", pedido do usuário): ao parar de rolar no meio de
+ * uma transição, o `snap` nativo do ScrollTrigger (dentro do mesmo
+ * `scrollTrigger` do tween de `x`, não uma lib nova) puxa suavemente o
+ * `progress` pro múltiplo mais próximo de `1/(cases.length-1)` — a
+ * mesma fração que já usamos pra calcular `activeIndex` no `onUpdate`
+ * abaixo, ou seja, cada "degrau" do snap cai exatamente onde um card
+ * fica 100% enquadrado. `snapTo` como número (em vez de array) já cobre
+ * sozinho a regra "mais perto do atual volta, mais perto do próximo
+ * avança" (o GSAP arredonda pro múltiplo mais próximo do progress
+ * cru). `delay: 0.1` evita o snap "brigar" com um scroll ainda em
+ * andamento.
+ *
+ * Direção do indicador segmentado (pedido do usuário): a barrinha que
+ * esvazia precisa retrair pro lado condizente com a direção do scroll
+ * — avançando, esvazia da esquerda pra direita (e a que enche cresce
+ * da esquerda pra direita); voltando, o espelho disso (esvazia da
+ * direita pra esquerda, enche da direita pra esquerda). Como `width`
+ * só encolhe a partir da borda esquerda fixa, cada segmento anima
+ * `scaleX` com `transform-origin` trocado dinamicamente ("left"/
+ * "right") conforme `self.direction` do próprio ScrollTrigger (1 =
+ * avançando, -1 = voltando) — decidido só no instante em que o alvo
+ * (0 ou 1) de um segmento muda de verdade, não a cada tick.
+ *
+ * Mecânica de scroll (pedido do usuário — 2ª rodada, corrigindo a 1ª
+ * versão): cada `<a data-cases-slide>` é o BLOCO INTEIRO (imagem+texto
+ * juntos) que se move como uma unidade só — nenhum filho interno tem
+ * width/overflow própria that possa "vazar"/cortar durante o scroll (o
+ * truque antigo `desktop:contents`, usado no layout zig-zag anterior pra
+ * deixar filhos "escaparem" pro nível do flex pai, foi removido — não
+ * faz mais sentido sem zig-zag e podia colidir com o novo container
+ * `flex-row` do track). O "CASES SELECIONADOS" e o contador "0N / 0N"
+ * (ver mais abaixo) ficam FORA da track (são irmãos dela dentro do
+ * stage), plugin nunca recebem o `transform: translateX` que move os
+ * blocos — por isso não se movem junto.
+ *
+ * Correção (3ª rodada — 2 bugs reportados com screenshot):
+ * 1) "Cards colados, sem gap": cada frame do Figma mede 1440px de
+ *    largura com 80px de padding nos DOIS lados (conteúdo de 1280px =
+ *    513+32+735 dentro de 1440) — não existe um "gap" entre os frames
+ *    (eles ficam lado a lado sem espaço no canvas, x=0/1440/2880), o
+ *    respiro vem inteiramente desse padding interno. A 1ª versão desta
+ *    correção só tinha padding na `<section>` externa (que envolve TODA
+ *    a área de scroll), não em cada slide — resultado, o conteúdo de um
+ *    slide encostava direto no do próximo. Agora cada `<a
+ *    data-cases-slide>` leva seu próprio `desktop:px-(--spacing-5xl)`
+ *    (80px), igual ao Figma.
+ * 2) "Barra vertical cortando o texto no meio": o `.cases-stage`
+ *    (container com `overflow:hidden` que fica `position:fixed` durante
+ *    o pin) herdava o padding da `<section>` pai — media só 1265px de
+ *    largura, começando em `left:80px`, MENOS que a viewport inteira
+ *    (1440px). O corte por overflow acontecia 80px antes da borda real
+ *    da tela. Igual ao `.hero-stage` (Hero.astro `onRefresh`), agora o
+ *    script força `width:100vw; left:0` no stage assim que ele pina —
+ *    o corte por overflow passa a acontecer só nas bordas reais da
+ *    viewport, nunca no meio do conteúdo.
+ */
+import { getCollection } from "astro:content";
+import TagPill from "../ui/TagPill.astro";
+
+const cases = (await getCollection("case-studies")).sort((a, b) =>
+	a.id.localeCompare(b.id, undefined, { numeric: true }),
+);
+---
+
+<section
+	id="cases"
+	class="relative z-20 -mt-[100vh] rounded-t-xl bg-(--color-background-dark) px-(--spacing-md-plus) pt-(--spacing-2xl) pb-(--spacing-5xl) desktop:px-(--spacing-5xl) desktop:py-(--spacing-2xl)"
+>
+	<!--
+		Único elemento — o script move ele pra dentro do `.cases-stage`
+		(overlay fixo, posição do Figma: left-80/top-48) quando o modo
+		desktop pinado liga, e devolve pro lugar original (heading normal
+		acima da lista) quando desliga — evita ter 2 cópias do mesmo texto
+		traduzível (`data-i18n`) na página.
+	-->
+	<p
+		class="font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:tracking-[0.4px] desktop:text-(--color-neutral-100)"
+		data-i18n="cases.overline"
+		data-cases-overline
+	>
+		CASES SELECIONADOS
+	</p>
+
+	<!--
+		Scroll horizontal pinado (pedido do usuário, referência
+		joaopassini.com.br/#cases) — SÓ no desktop (>=1280px, mesmo
+		threshold de outras trocas de mecânica grandes no site, ex:
+		Hero.astro `desktopMq`); mobile E tablet continuam com a lista
+		vertical empilhada de sempre (`.cases-track` nasce `flex-col`, sem
+		nenhuma classe `desktop:` aqui que mudaria isso sozinha — quem liga
+		o modo horizontal é só o script abaixo, via JS, nunca CSS puro,
+		porque a decisão depende de medir a largura real do conteúdo em
+		runtime).
+	-->
+	<!--
+		`desktop:-mx-[80px]` (valor literal — `-mx-(--spacing-5xl)` não gera
+		CSS negativo no Tailwind v4, testado e confirmado) faz o WRAPPER
+		"vazar" pra fora do padding lateral da `<section>` (80px), assim o
+		`.cases-stage` (filho, sem largura própria) já NASCE com a largura
+		cheia da viewport antes do GSAP pinar — importante que a margem
+		negativa fique aqui, no wrapper, e não no próprio stage: o GSAP
+		explicitamente zera `margin` do elemento que ele pina (confirmado
+		via inspeção: `stage.style.cssText` mostra `margin: 0px` mesmo com
+		a classe aplicada), então qualquer margem negativa no stage é
+		sobrescrita e não sobrevive. Tentamos antes corrigir isso via
+		`onRefresh` do GSAP (igual ao Hero.astro), mas também não funciona
+		aqui: o próprio pin reaplica sua medição original logo em seguida —
+		diferente do Hero, que só corrige ~15px de gutter de scrollbar, não
+		80px de padding vindo de um ancestral. Com a largura corrigida na
+		origem (wrapper, não tocado pelo pin), o `overflow:hidden` do stage
+		passa a cortar exatamente na borda real da viewport, nunca 80px
+		antes dela (bug relatado: "barra vertical" cortando texto no meio
+		do conteúdo).
+	-->
+	<div class="cases-scroll-wrapper relative mt-(--spacing-md) desktop:mt-(--spacing-xl) desktop:-mx-[80px]" data-cases-scroll-wrapper>
+		<div class="cases-stage relative" data-cases-stage>
+			<div class="cases-track flex flex-col" data-cases-track>
+				{
+					cases.map((c) => {
+						const isLight = c.data.cardTheme === "light";
+						return (
+							<a
+								href={`/cases/${c.id}`}
+								data-cases-slide
+								class:list={[
+									"flex flex-col gap-(--spacing-xl) border-t border-(--color-border-dark) py-(--spacing-xl) desktop:flex-row desktop:items-center desktop:justify-center desktop:gap-(--spacing-xl) desktop:px-(--spacing-5xl) desktop:py-(--spacing-5xl)",
+									isLight ? "desktop:bg-(--color-neutral-100)" : "",
+								]}
+							>
+								<div class="flex flex-col gap-(--spacing-md) desktop:w-[513px] desktop:shrink-0 desktop:gap-(--spacing-sm-plus)">
+									<h2
+										class:list={[
+											"font-sans text-[32px] font-bold leading-[1.2] text-(--color-foreground-on-dark) desktop:text-[64px]",
+											isLight ? "desktop:text-(--color-foreground-on-light)" : "desktop:text-(--color-neutral-100)",
+										]}
+									>
+										{c.data.displayName}
+									</h2>
+									<p class="font-sans text-[12px] text-(--color-muted) desktop:text-[20px] desktop:text-(--color-neutral-500)">
+										{c.data.year}
+									</p>
+									<p
+										class:list={[
+											"font-sans text-[16px] font-bold leading-[1.5] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:leading-[1.4]",
+											isLight ? "desktop:text-(--color-foreground-on-light)" : "desktop:text-(--color-neutral-100)",
+										]}
+									>
+										{c.data.description}
+									</p>
+									<div class="flex flex-wrap gap-(--spacing-sm-plus)">
+										{c.data.tags.map((tag) => (
+											<TagPill theme={isLight ? "light" : "dark"}>{tag}</TagPill>
+										))}
+									</div>
+								</div>
+
+							<div class="aspect-[1392/840] w-full overflow-hidden rounded-lg desktop:aspect-[735/488] desktop:h-auto desktop:w-auto desktop:flex-1 desktop:rounded-xl">
+								<img
+									src={c.data.coverImage}
+									alt={`Capa do case ${c.data.displayName}`}
+									class:list={[
+										"h-full w-full object-cover",
+										c.data.coverFit === "contain" ? "desktop:object-contain" : "desktop:object-cover",
+									]}
+									loading="lazy"
+								/>
+							</div>
+						</a>
+						);
+					})
+				}
+			</div>
+
+			<!--
+				Indicador de progresso ("0N" + segmentos + "0N") — não existe
+				no Figma (adição nossa, pedido de uma rodada anterior), só
+				aparece visualmente enquanto o modo horizontal está ativo
+				(`hidden` por padrão, o script remove/adiciona no
+				setup/teardown). Já nasce como irmão de `.cases-track`
+				dentro de `.cases-stage` — nunca fez parte da track, então
+				nunca se moveu com ela; mantido assim.
+
+				Segmentado (pedido do usuário — trocou a barra única por
+				uma barrinha por case): 1 `data-cases-progress-segment` por
+				case. Binário (correção — o preenchimento gradual por
+				fração de scroll "ficou ruim" visualmente): só a barrinha
+				do case ATUALMENTE em foco fica 100% cheia, todas as
+				outras ficam vazias (0%) — nunca fica mais de uma
+				parcialmente preenchida ao mesmo tempo. A transição entre
+				vazio↔cheio ainda anima suavemente (`power2.inOut`, ver
+				JS abaixo), só o ALVO que virou on/off em vez de
+				proporcional ao scroll.
+			-->
+			<div
+				class="cases-progress pointer-events-none absolute inset-x-0 bottom-(--spacing-lg) z-10 items-center justify-center gap-(--spacing-sm) font-sans text-[14px] text-(--color-foreground-on-dark)"
+				data-cases-progress
+				aria-hidden="true"
+				hidden
+			>
+				<span data-cases-progress-current>01</span>
+				<div class="flex w-[120px] items-center gap-(--spacing-xs)" data-cases-progress-segments>
+					{
+						cases.map(() => (
+							<div class="h-[2px] flex-1 overflow-hidden rounded-full bg-(--color-border-dark)">
+								<div class="h-full w-full origin-left bg-(--color-accent)" data-cases-progress-segment style="transform: scaleX(0)" />
+							</div>
+						))
+					}
+				</div>
+				<span>{String(cases.length).padStart(2, "0")}</span>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	import { gsap, ScrollTrigger } from "../../lib/gsapSetup";
+	import { prefersReducedMotion, scaleDuration } from "../../lib/reducedMotion";
+
+	const section = document.querySelector<HTMLElement>("#cases");
+	const wrapper = document.querySelector<HTMLElement>("[data-cases-scroll-wrapper]");
+	const stage = document.querySelector<HTMLElement>("[data-cases-stage]");
+	const track = document.querySelector<HTMLElement>("[data-cases-track]");
+	const slides = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-cases-slide]"));
+	const overline = document.querySelector<HTMLElement>("[data-cases-overline]");
+	const progress = document.querySelector<HTMLElement>("[data-cases-progress]");
+	const progressCurrent = document.querySelector<HTMLElement>("[data-cases-progress-current]");
+	const progressSegments = Array.from(document.querySelectorAll<HTMLElement>("[data-cases-progress-segment]"));
+
+	// Mesmo threshold que outras trocas de mecânica grandes no site (ex:
+	// Hero.astro) — abaixo disso (mobile E tablet) a lista fica sempre
+	// vertical/empilhada, sem pin nem scroll horizontal forçado (pedido
+	// explícito do usuário: scroll-jacking é ruim em touch).
+	const desktopMq = window.matchMedia("(min-width: 1280px)");
+
+	let tween: gsap.core.Tween | null = null;
+	// Um setter + estado numérico por segmento (ver `setup()`, onde são
+	// recriados) — o estado é o alvo real do tween do GSAP (0..1, mapeado
+	// pra `scaleX`); o setter só interrompe/redireciona esse tween quando
+	// o alvo (0 ou 1) realmente muda. `segmentTargets` guarda o último
+	// alvo aplicado por segmento, só pra detectar essa mudança (pedido do
+	// usuário: a barra que esvazia precisa retrair numa direção
+	// diferente dependendo se o scroll está avançando ou voltando — só
+	// dá pra decidir isso NO MOMENTO em que o alvo muda, não em todo tick).
+	let segmentSetters: Array<(value: number, origin: "left" | "right") => void> = [];
+	let segmentStates: Array<{ value: number }> = [];
+	let segmentTargets: number[] = [];
+
+	// Onde o overline mora fora do modo pinado — pra devolver ele no
+	// lugar certo no teardown (sempre o primeiro filho da section, antes
+	// do wrapper).
+	function restoreOverline() {
+		if (overline && section && wrapper && overline.parentElement !== section) {
+			section.insertBefore(overline, wrapper);
+		}
+	}
+
+	function teardown() {
+		tween?.scrollTrigger?.kill();
+		tween?.kill();
+		tween = null;
+		gsap.killTweensOf(segmentStates);
+		segmentSetters = [];
+		segmentStates = [];
+		segmentTargets = [];
+		progressSegments.forEach((segment) => {
+			segment.style.removeProperty("transform");
+			segment.style.removeProperty("transform-origin");
+		});
+		restoreOverline();
+		if (overline) {
+			overline.style.removeProperty("position");
+			overline.style.removeProperty("top");
+			overline.style.removeProperty("left");
+			overline.style.removeProperty("z-index");
+		}
+		if (!wrapper || !stage || !track) return;
+		wrapper.style.removeProperty("height");
+		stage.style.removeProperty("height");
+		stage.style.removeProperty("overflow");
+		track.style.removeProperty("display");
+		track.style.removeProperty("flex-direction");
+		track.style.removeProperty("height");
+		track.style.removeProperty("align-items");
+		gsap.set(track, { clearProps: "x" });
+		slides.forEach((slide) => {
+			slide.style.removeProperty("width");
+			slide.style.removeProperty("flex-shrink");
+		});
+		if (progress) {
+			progress.hidden = true;
+			progress.style.removeProperty("display");
+		}
+	}
+
+	// Recalcula a distância que a track precisa percorrer — chamado tanto
+	// no setup quanto (via `onRefreshInit`) em todo refresh subsequente do
+	// ScrollTrigger, pra `wrapper.style.height` nunca ficar desatualizado
+	// (ex: depois de a fonte carregar e o texto reajustar largura).
+	function scrollDistance(): number {
+		if (!track || !stage) return 0;
+		return Math.max(track.scrollWidth - stage.clientWidth, 0);
+	}
+
+	function syncWrapperHeight() {
+		if (!wrapper) return;
+		wrapper.style.height = `${window.innerHeight + scrollDistance()}px`;
+	}
+
+	function setup() {
+		if (!wrapper || !stage || !track || slides.length === 0) return;
+
+		stage.style.height = "100vh";
+		stage.style.overflow = "hidden";
+		track.style.display = "flex";
+		track.style.flexDirection = "row";
+		track.style.height = "100%";
+		track.style.alignItems = "center";
+		slides.forEach((slide) => {
+			slide.style.width = "100%";
+			slide.style.flexShrink = "0";
+		});
+
+		// Overlay fixo (não faz parte da track, nunca recebe o
+		// translateX): "CASES SELECIONADOS" migra pra dentro do stage,
+		// posição do Figma (523:1106) — left-80/top-48.
+		if (overline && stage) {
+			stage.appendChild(overline);
+			overline.style.position = "absolute";
+			// `left: var(--spacing-5xl)` (80px) — agora que o stage é
+			// full-bleed (`width:100vw; left:0`, ver abaixo), 0px o
+			// grudaria na borda real da tela; precisa do recuo explícito
+			// pra bater com o x=80 do Figma 523:1106.
+			overline.style.left = "var(--spacing-5xl)";
+			overline.style.top = "var(--spacing-3xl)";
+			overline.style.zIndex = "10";
+		}
+
+		if (progress) {
+			progress.hidden = false;
+			progress.style.display = "flex";
+			if (progressCurrent) progressCurrent.textContent = "01";
+		}
+		progressSegments.forEach((segment) => {
+			segment.style.transformOrigin = "left";
+			segment.style.transform = "scaleX(0)";
+		});
+		segmentTargets = progressSegments.map(() => 0);
+		// Preenchimento "orgânico" (pedido do usuário — nada de
+		// `ease: linear`): cada segmento anima `scaleX` (0→1) via uma
+		// prop numérica própria (`{ value }`), não `width`, porque
+		// direção de esvaziamento (pedido novo) exige controlar de qual
+		// lado o segmento encolhe/cresce — `width` sempre encolhe a
+		// partir da borda esquerda fixa, `scaleX` com `transform-origin`
+		// dinâmico deixa escolher: origin "left" cresce/encolhe da
+		// esquerda pra direita, origin "right" da direita pra esquerda.
+		// Cada chamada de `gsap.to(...)` com `overwrite: true` interrompe
+		// a anterior e continua a partir do valor atual — o alvo muda a
+		// cada tick de scroll, mas a INTERPOLAÇÃO até lá sempre usa
+		// `power2.inOut`, dando a sensação de "perseguir" o valor real
+		// com aceleração/desaceleração em vez de pular linear/
+		// instantâneo pra cada posição de scroll.
+		const segmentDuration = prefersReducedMotion() ? scaleDuration(0.25) : 0.4;
+		segmentStates = progressSegments.map(() => ({ value: 0 }));
+		segmentSetters = progressSegments.map((segment, i) => {
+			const state = segmentStates[i]!;
+			return (target: number, origin: "left" | "right") => {
+				segment.style.transformOrigin = origin;
+				gsap.to(state, {
+					value: target,
+					duration: segmentDuration,
+					ease: "power2.inOut",
+					overwrite: true,
+					onUpdate() {
+						segment.style.transform = `scaleX(${state.value})`;
+					},
+				});
+			};
+		});
+
+		syncWrapperHeight();
+
+		tween = gsap.to(track, {
+			x: () => -scrollDistance(),
+			ease: "none",
+			scrollTrigger: {
+				trigger: wrapper,
+				pin: stage,
+				start: "top top",
+				end: "bottom bottom",
+				// Regra geral do site (reducedMotion.ts): reduced-motion
+				// nunca DESATIVA uma animação, só desacelera — aqui vira um
+				// scrub bem mais alto (transição mais suave/lenta) em vez
+				// de remover o pin.
+				scrub: prefersReducedMotion() ? 1.5 : 0.3,
+				invalidateOnRefresh: true,
+				// Corrige a altura do wrapper ANTES do ScrollTrigger medir
+				// start/end de novo — sem isso, um resize dentro do desktop
+				// (sem cruzar o breakpoint mobile↔desktop) deixava a altura
+				// do wrapper desatualizada, e o bloco então saía de sincronia
+				// com o scroll real (era a causa raiz do bug relatado: texto
+				// cortado/elementos "vazando" durante o scroll).
+				onRefreshInit: syncWrapperHeight,
+				// Efeito ímã (pedido do usuário): ao parar de rolar, o
+				// GSAP puxa o `progress` pro múltiplo mais próximo de
+				// `1/(n-1)` — exatamente as frações onde cada card fica
+				// perfeitamente enquadrado (mesma matemática do
+				// `activeIndex` no onUpdate abaixo). `snapTo` como número
+				// (não array) já cobre a lógica de "mais perto do atual
+				// volta, mais perto do próximo avança" pedida — o GSAP
+				// arredonda pro múltiplo mais próximo do valor cru.
+				snap: {
+					snapTo: slides.length > 1 ? 1 / (slides.length - 1) : 1,
+					// Regra geral do site (reducedMotion.ts): reduced-motion
+					// nunca desativa uma animação, só desacelera — o snap
+					// continua ativo, só mais lento.
+					duration: { min: 0.2, max: scaleDuration(0.5) },
+					delay: 0.1,
+					ease: "power1.inOut",
+				},
+				onUpdate(self) {
+					const total = slides.length;
+					// Correção (pedido do usuário — o preenchimento
+					// gradual por fatia "ficou ruim" visualmente): agora é
+					// binário — só a barrinha do case ATUALMENTE em foco
+					// fica cheia (100%), todas as outras ficam vazias
+					// (0%). `activeIndex` usa o mesmo "mais próximo" do
+					// snap (`i/(total-1)`, não mais fatias de `1/total`),
+					// pra trocar exatamente na metade do caminho entre 2
+					// cards — o mesmo ponto em que o snap decide pra qual
+					// lado puxar.
+					const activeIndex = total > 1 ? Math.round(self.progress * (total - 1)) : 0;
+					if (progressCurrent) progressCurrent.textContent = String(activeIndex + 1).padStart(2, "0");
+					// Direção do esvaziamento/preenchimento (pedido do
+					// usuário): avançando (`self.direction === 1`), a
+					// barrinha que esvazia precisa retrair da ESQUERDA pra
+					// DIREITA (origin "right" — a ponta esquerda recua até
+					// encontrar a direita, revelando o vazio da esquerda
+					// pra direita) e a que enche cresce da esquerda pra
+					// direita (origin "left", natural). Voltando
+					// (`self.direction === -1`), o mesmo só que espelhado:
+					// quem esvazia retrai da direita pra esquerda (origin
+					// "left", padrão) e quem enche cresce da direita pra
+					// esquerda (origin "right"). Só decide a origem NO
+					// MOMENTO em que o alvo (0 ou 1) de um segmento muda de
+					// verdade — `segmentTargets` guarda o último alvo
+					// aplicado, pra não reiniciar a transição a cada tick
+					// enquanto o alvo continua o mesmo.
+					const forward = self.direction === 1;
+					segmentSetters.forEach((setSegment, i) => {
+						const target = i === activeIndex ? 1 : 0;
+						if (segmentTargets[i] === target) return;
+						segmentTargets[i] = target;
+						const isFilling = target === 1;
+						const origin = isFilling === forward ? "left" : "right";
+						setSegment(target, origin);
+					});
+				},
+			},
+		});
+	}
+
+	function syncMode() {
+		if (desktopMq.matches) {
+			// Recria do zero em vez de só recalcular — mais simples e
+			// robusto que tentar atualizar um ScrollTrigger/tween já vivo
+			// (mesmo padrão de "kill + recria" usado em Hero.astro). Só
+			// roda ao CRUZAR o breakpoint (listener abaixo), nunca em todo
+			// resize genérico — resize dentro do desktop é tratado só por
+			// `ScrollTrigger.refresh()` (via listener mais abaixo), que já
+			// aciona `onRefreshInit` sozinho.
+			teardown();
+			setup();
+		} else {
+			teardown();
+		}
+	}
+
+	syncMode();
+	desktopMq.addEventListener("change", syncMode);
+	// Correção (bug real reportado pelo usuário — conteúdo cortando/
+	// dessincronizando do bloco durante o scroll): a versão anterior
+	// chamava `syncMode()` (teardown+setup completo) em TODO resize,
+	// inclusive resizes disparados pelo próprio pin (scrollbar
+	// aparecendo/sumindo quando o `pin` trava o body) — cada ciclo de
+	// destruir+recriar o ScrollTrigger no meio de um scroll ativo podia
+	// deixar a track num estado parcialmente resetado (largura recém-
+	// aplicada mas altura do wrapper ainda da medição antiga), exatamente
+	// a dessincronia relatada. Agora um resize normal só pede um refresh
+	// ao GSAP (que já sabe recalcular start/end via `invalidateOnRefresh`
+	// + `onRefreshInit` acima) — nada é destruído/recriado.
+	window.addEventListener("resize", () => ScrollTrigger.refresh());
+</script>

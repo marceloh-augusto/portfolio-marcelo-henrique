@@ -1,0 +1,261 @@
+---
+/**
+ * Visualizador fullscreen genérico (imagem OU vídeo), com zoom e
+ * navegação entre itens — pedido do usuário pras imagens/vídeos da
+ * página de case (Hero, Pesquisa, MVP, Outcome). Fica em `ui/` (não em
+ * `case-study/`) porque não tem nada específico de case-study: é um
+ * componente de apresentação genérico, reaproveitável por qualquer
+ * página que precise de zoom em mídia.
+ *
+ * Uso: qualquer elemento na página vira um gatilho ao ganhar
+ * `data-lightbox-trigger`, `data-lightbox-src` (e opcionalmente
+ * `data-lightbox-type="video"`, default "image") e `data-lightbox-group`
+ * (itens do mesmo group viram um slideshow navegável com setas — sem
+ * `group`, cada item abre sozinho). Só uma instância deste componente é
+ * necessária por página (singleton — os triggers ficam espalhados,
+ * o overlay é um só).
+ */
+---
+
+<div
+	class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/90"
+	data-lightbox-root
+	aria-hidden="true"
+>
+	<button
+		type="button"
+		aria-label="Fechar"
+		class="absolute top-(--spacing-lg) right-(--spacing-lg) z-10 flex size-11 items-center justify-center rounded-full bg-(--color-neutral-50) text-(--color-neutral-900) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)]"
+		data-lightbox-close
+	>
+		&#x2715;
+	</button>
+
+	<button
+		type="button"
+		aria-label="Anterior"
+		class="absolute left-(--spacing-md) top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-(--color-neutral-50) text-(--color-neutral-900) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)] tablet:left-(--spacing-lg)"
+		data-lightbox-prev
+	>
+		&#x2039;
+	</button>
+
+	<button
+		type="button"
+		aria-label="Próximo"
+		class="absolute right-(--spacing-md) top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-(--color-neutral-50) text-(--color-neutral-900) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)] tablet:right-(--spacing-lg)"
+		data-lightbox-next
+	>
+		&#x203a;
+	</button>
+
+	<div class="flex h-full w-full touch-none items-center justify-center overflow-hidden p-(--spacing-xl)" data-lightbox-viewport>
+		<img data-lightbox-image class="hidden max-h-[85vh] max-w-[90vw] origin-center select-none" alt="" draggable="false" />
+		<video data-lightbox-video class="hidden max-h-[85vh] max-w-[90vw] origin-center" controls></video>
+	</div>
+
+	<div
+		class="absolute bottom-(--spacing-lg) left-1/2 z-10 flex -translate-x-1/2 items-center gap-(--spacing-sm) rounded-full bg-(--color-neutral-50) px-(--spacing-md) py-(--spacing-sm) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)]"
+		data-lightbox-zoom-controls
+	>
+		<button type="button" aria-label="Diminuir zoom" class="flex size-8 items-center justify-center text-(--color-neutral-900)" data-lightbox-zoom-out>
+			&minus;
+		</button>
+		<span class="min-w-[3.5ch] text-center font-sans text-[14px] text-(--color-neutral-900)" data-lightbox-zoom-value>100%</span>
+		<button type="button" aria-label="Aumentar zoom" class="flex size-8 items-center justify-center text-(--color-neutral-900)" data-lightbox-zoom-in>
+			&plus;
+		</button>
+	</div>
+</div>
+
+<script>
+	interface LightboxItem {
+		src: string;
+		type: "image" | "video";
+		alt: string;
+	}
+
+	const root = document.querySelector<HTMLElement>("[data-lightbox-root]");
+	const image = root?.querySelector<HTMLImageElement>("[data-lightbox-image]");
+	const video = root?.querySelector<HTMLVideoElement>("[data-lightbox-video]");
+	const closeButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-close]");
+	const prevButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-prev]");
+	const nextButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-next]");
+	const zoomInButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-zoom-in]");
+	const zoomOutButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-zoom-out]");
+	const zoomValue = root?.querySelector<HTMLElement>("[data-lightbox-zoom-value]");
+	const zoomControls = root?.querySelector<HTMLElement>("[data-lightbox-zoom-controls]");
+
+	if (root && image && video && closeButton && prevButton && nextButton && zoomInButton && zoomOutButton && zoomValue && zoomControls) {
+		// Cada `group` de triggers vira uma lista navegável independente;
+		// triggers sem `data-lightbox-group` caem num group próprio (sem
+		// setas de navegação, já que não haveria pra onde ir).
+		video.addEventListener("loadedmetadata", () => {
+			video.playbackRate = 1.5;
+		});
+
+		const groups = new Map<string, LightboxItem[]>();
+		const triggerEntries: { el: HTMLElement; group: string; index: number }[] = [];
+
+		document.querySelectorAll<HTMLElement>("[data-lightbox-trigger]").forEach((trigger, i) => {
+			const src = trigger.dataset.lightboxSrc;
+			if (!src) return;
+			const type = trigger.dataset.lightboxType === "video" ? "video" : "image";
+			const alt = trigger.dataset.lightboxAlt ?? "";
+			const group = trigger.dataset.lightboxGroup ?? `__single-${i}`;
+
+			if (!groups.has(group)) groups.set(group, []);
+			const items = groups.get(group)!;
+			triggerEntries.push({ el: trigger, group, index: items.length });
+			items.push({ src, type, alt });
+		});
+
+		const viewport = root.querySelector<HTMLElement>("[data-lightbox-viewport]")!;
+
+		let activeGroup: LightboxItem[] = [];
+		let activeIndex = 0;
+		let scale = 1;
+		let panX = 0;
+		let panY = 0;
+
+		function activeTarget(): HTMLElement {
+			return image!.classList.contains("hidden") ? video! : image!;
+		}
+
+		function applyZoom() {
+			const target = activeTarget();
+			target.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+			target.style.cursor = scale > 1 ? "grab" : "";
+			zoomValue!.textContent = `${Math.round(scale * 100)}%`;
+		}
+
+		// Drag-to-pan (pedido do usuário — dar zoom sem poder mover a
+		// imagem deixava a área ampliada inacessível). Só ativo quando
+		// `scale > 1`; abaixo disso o pointerdown não faz nada (deixa o
+		// clique passar normal pros controles nativos do vídeo).
+		let isDragging = false;
+		let dragStartX = 0;
+		let dragStartY = 0;
+		let panStartX = 0;
+		let panStartY = 0;
+
+		viewport.addEventListener("pointerdown", (event) => {
+			if (scale <= 1) return;
+			const target = activeTarget();
+			if (event.target !== target) return;
+			isDragging = true;
+			dragStartX = event.clientX;
+			dragStartY = event.clientY;
+			panStartX = panX;
+			panStartY = panY;
+			target.style.cursor = "grabbing";
+			viewport.setPointerCapture(event.pointerId);
+		});
+
+		viewport.addEventListener("pointermove", (event) => {
+			if (!isDragging) return;
+			panX = panStartX + (event.clientX - dragStartX);
+			panY = panStartY + (event.clientY - dragStartY);
+			applyZoom();
+		});
+
+		function endDrag(event: PointerEvent) {
+			if (!isDragging) return;
+			isDragging = false;
+			activeTarget().style.cursor = scale > 1 ? "grab" : "";
+			if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+		}
+
+		viewport.addEventListener("pointerup", endDrag);
+		viewport.addEventListener("pointercancel", endDrag);
+
+		function render() {
+			const item = activeGroup[activeIndex];
+			if (!item) return;
+
+			scale = 1;
+			panX = 0;
+			panY = 0;
+
+			if (item.type === "video") {
+				image!.classList.add("hidden");
+				image!.removeAttribute("src");
+				video!.classList.remove("hidden");
+				video!.src = item.src;
+				video!.currentTime = 0;
+				// Mesma velocidade padrão (1.5x) dos vídeos inline do MVP —
+				// setada de novo aqui porque trocar `src` reseta `playbackRate`.
+				video!.playbackRate = 1.5;
+				zoomControls!.classList.add("hidden");
+			} else {
+				video!.classList.add("hidden");
+				video!.pause();
+				video!.removeAttribute("src");
+				image!.classList.remove("hidden");
+				image!.src = item.src;
+				image!.alt = item.alt;
+				zoomControls!.classList.remove("hidden");
+			}
+
+			applyZoom();
+
+			const hasMultiple = activeGroup.length > 1;
+			prevButton!.classList.toggle("hidden", !hasMultiple);
+			nextButton!.classList.toggle("hidden", !hasMultiple);
+		}
+
+		function open(group: string, index: number) {
+			activeGroup = groups.get(group) ?? [];
+			activeIndex = index;
+			render();
+			root!.classList.remove("hidden");
+			root!.classList.add("flex");
+			root!.setAttribute("aria-hidden", "false");
+			document.body.style.overflow = "hidden";
+		}
+
+		function close() {
+			root!.classList.add("hidden");
+			root!.classList.remove("flex");
+			root!.setAttribute("aria-hidden", "true");
+			video!.pause();
+			document.body.style.overflow = "";
+		}
+
+		function step(delta: number) {
+			if (activeGroup.length === 0) return;
+			activeIndex = (activeIndex + delta + activeGroup.length) % activeGroup.length;
+			render();
+		}
+
+		function zoomBy(delta: number) {
+			scale = Math.min(4, Math.max(1, scale + delta));
+			if (scale === 1) {
+				panX = 0;
+				panY = 0;
+			}
+			applyZoom();
+		}
+
+		triggerEntries.forEach(({ el, group, index }) => {
+			el.addEventListener("click", () => open(group, index));
+		});
+
+		closeButton.addEventListener("click", close);
+		prevButton.addEventListener("click", () => step(-1));
+		nextButton.addEventListener("click", () => step(1));
+		zoomInButton.addEventListener("click", () => zoomBy(0.5));
+		zoomOutButton.addEventListener("click", () => zoomBy(-0.5));
+
+		root.addEventListener("click", (event) => {
+			if (event.target === root) close();
+		});
+
+		document.addEventListener("keydown", (event) => {
+			if (root.classList.contains("hidden")) return;
+			if (event.key === "Escape") close();
+			if (event.key === "ArrowLeft") step(-1);
+			if (event.key === "ArrowRight") step(1);
+		});
+	}
+</script>

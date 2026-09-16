@@ -1,0 +1,31 @@
+---
+/**
+ * Uma coluna de "O que melhorou"/"O que piorou" — Figma node 253:97.
+ * Usado 2x lado a lado dentro da seção Outcome. `titleKey` é rótulo de
+ * TEMPLATE fixo (i18n.ts `case.outcome.*`); `itemsEn` (opcional, mesma
+ * ordem de `items`) traduz o conteúdo específico do case.
+ */
+import { translations } from "../../lib/i18n";
+
+interface Props {
+	titleKey: "melhorou" | "piorou";
+	items: string[];
+	itemsEn?: string[];
+}
+
+const { titleKey, items, itemsEn } = Astro.props;
+const i18nKey = `case.outcome.${titleKey}`;
+const title = translations[i18nKey]?.pt ?? titleKey;
+---
+
+<div class="flex flex-1 flex-col gap-(--spacing-md)">
+	<p class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]" data-i18n={i18nKey}>
+		{title}
+	</p>
+	<ul
+		class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg) font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]"
+		data-reveal-group
+	>
+		{items.map((item, i) => <li data-i18n-en={itemsEn?.[i]}>{item}</li>)}
+	</ul>
+</div>

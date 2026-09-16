@@ -1,0 +1,39 @@
+---
+/**
+ * Abre a página de um case — Figma node 308:216 (Yogha). `h3` (headline
+ * completo do case, texto do node 308:217 — DIFERENTE da `description`
+ * curta usada no card da Home, ver content.config.ts) + imagem de capa
+ * full-width abaixo, clicável (abre no Lightbox).
+ *
+ * `aspect-[1280/834]` bate com a imagem exportada do Figma (1280×834) —
+ * ver CasesSection.astro pro mesmo padrão de imagem-com-proporção-fixa.
+ */
+interface Props {
+	headline: string;
+	headlineEn?: string;
+	image: string;
+	imageAlt: string;
+}
+
+const { headline, headlineEn, image, imageAlt } = Astro.props;
+---
+
+<section class="flex flex-col gap-(--spacing-lg) px-(--spacing-md-plus) tablet:gap-(--spacing-xl) tablet:px-(--spacing-5xl) wide:px-[120px]" data-reveal-group>
+	<h3
+		class="font-sans text-[28px] leading-[1.3] font-bold text-(--color-foreground-on-light) tablet:text-[40px]"
+		data-i18n-en={headlineEn}
+	>
+		{headline}
+	</h3>
+
+	<button
+		type="button"
+		class="block aspect-[1280/834] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
+		data-lightbox-trigger
+		data-lightbox-src={image}
+		data-lightbox-alt={imageAlt}
+		data-lightbox-group="case-media"
+	>
+		<img src={image} alt={imageAlt} class="h-full w-full object-cover" loading="eager" />
+	</button>
+</section>

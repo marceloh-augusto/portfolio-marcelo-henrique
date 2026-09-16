@@ -1,0 +1,101 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap");
+
+@theme {
+	/* Colors — @DESIGN.md */
+	--color-neutral-50: #faf9f7;
+	--color-neutral-100: #efeeec;
+	--color-neutral-200: #d9d8d6;
+	--color-neutral-400: #959492;
+	--color-neutral-500: #757473;
+	--color-neutral-700: #444342;
+	--color-neutral-800: #2d2c2b;
+	--color-neutral-900: #1f1e1d;
+	--color-neutral-950: #0f0e0d;
+	--color-brand-500: #b67c3a;
+
+	/* Semantic aliases — @DESIGN.md declara estes nomes como aliases dos
+	   tokens neutral e brand acima; mantidos como custom properties
+	   próprias (não apenas classes utilitárias) porque o script do Hero
+	   lê o valor resolvido em runtime via getComputedStyle() para animar
+	   a transição de fundo do scroll. */
+	--color-background-light: var(--color-neutral-50);
+	--color-background-dark: var(--color-neutral-950);
+	--color-foreground-on-light: var(--color-neutral-900);
+	--color-foreground-on-dark: var(--color-neutral-50);
+	--color-nav-link-on-light: var(--color-neutral-700);
+	--color-nav-link-on-dark: var(--color-neutral-100);
+	--color-muted: var(--color-neutral-400);
+	--color-border-light: var(--color-neutral-100);
+	--color-border-dark: var(--color-neutral-800);
+	--color-accent: var(--color-brand-500);
+
+	/* Fonts — @DESIGN.md */
+	--font-sans: "Figtree", sans-serif;
+	/* "Greed Standard-TRIAL" é fonte de licença comercial/trial, usada
+	   exclusivamente no "." e "M." do logotipo — licença ainda não
+	   confirmada para produção, por isso usa fallback do --font-sans
+	   até a licença ser validada (ver @DESIGN.md). */
+	--font-logo: "Greed Standard-TRIAL", "Figtree", sans-serif;
+
+	/* Spacing scale — @DESIGN.md */
+	--spacing-xs: 4px;
+	--spacing-sm: 8px;
+	--spacing-sm-plus: 12px;
+	--spacing-md: 16px;
+	--spacing-md-plus: 20px;
+	--spacing-lg: 24px;
+	--spacing-xl: 32px;
+	--spacing-2xl: 40px;
+	--spacing-3xl: 48px;
+	--spacing-4xl: 64px;
+	--spacing-5xl: 80px;
+	--spacing-6xl: 96px;
+
+	/* Radius — @DESIGN.md */
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-xl: 32px;
+	--radius-card: 20px;
+
+	/* Breakpoints — pedido do usuário: a quebra de tablet vai de 768px
+	   até 1279px; a partir de 1280px entra a versão "web" (desktop).
+	   `tablet:` (min-width:768px) cobre 768px pra cima (tablet E
+	   desktop, como todo breakpoint mobile-first do Tailwind) — quando
+	   só o `tablet:` está definido pra uma propriedade, o valor vale
+	   pros dois; `desktop:` (min-width:1280px), declarado depois,
+	   sobrescreve especificamente a partir de 1280px. O frame de
+	   referência do Figma pro desktop continua sendo 1440px — o layout
+	   `desktop:` (posicionamento absoluto com offsets em %, ver
+	   Hero.astro) foi calibrado pra essa largura; baixar o gatilho pra
+	   1280px sem revisar esse layout específico pode expor um
+	   overflow horizontal entre 1280-1439px (ver verificação feita ao
+	   aplicar essa mudança). */
+	--breakpoint-tablet: 768px;
+	--breakpoint-desktop: 1280px;
+	/* Pedido do usuário: margem lateral de página cresce de 80px
+	   (--spacing-5xl, 1280-1439px) para 120px a partir de ~1440px — o
+	   próprio frame de referência do Figma. Breakpoint dedicado (não
+	   reaproveita `--breakpoint-desktop`) porque os dois valores convivem:
+	   80px continua valendo entre 1280-1439px, 120px só entra depois.
+	   ContatoSection ("Vamos conversar?") é a ÚNICA exceção — fica de
+	   fora de propósito (pedido do usuário), mantém sempre 80px. */
+	--breakpoint-wide: 1440px;
+}
+
+body {
+	background-color: var(--color-neutral-50);
+	color: var(--color-neutral-900);
+}
+
+/*
+ * Nav global é `position:fixed` (ver Layout.astro) — sem isso, um link
+ * âncora (#cases, #sobre, #contato) deixaria o topo da seção-alvo
+ * escondido atrás da nav flutuante. 100px cobre a altura da nav-pill
+ * (58px no desktop) + a distância do topo (`top-(--spacing-lg)`, 24px)
+ * com uma folga.
+ */
+html {
+	scroll-padding-top: 100px;
+}

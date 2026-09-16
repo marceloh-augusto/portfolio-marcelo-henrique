@@ -1,0 +1,92 @@
+---
+/**
+ * "Contato" — Figma node 214:461, última seção da Home (Hero → Cases →
+ * Sobre → Clientes → Trajetória → Arquivo → Contato, ver
+ * ARCHITECTURE.md). Fundo escuro (#0F0E0D/background-dark), mesma
+ * família visual das seções anteriores.
+ *
+ * `id="contato"` bate com o link "Contato" já existente na nav
+ * (NavPill.astro, href="#contato") — só faltava esta seção existir.
+ *
+ * Headline "Vamos conversar?" usa `<h3>` (mesmo nível semântico que
+ * TrajetoriaSection — h1 é só o nome na Hero, h2 é exclusivo do nome do
+ * case, per DESIGN.md), mas com o tamanho "Display" (96px/48px) que o
+ * Figma especifica pra este texto especificamente, maior que a escala
+ * padrão de h3 (40px/28px) usada em Trajetória.
+ *
+ * Links de contato confirmados pelo usuário: LinkedIn e WhatsApp (ambos
+ * abrem em nova aba, `target="_blank"` + `rel="noreferrer noopener"`
+ * por serem destinos externos). O Figma tinha um 4º link ("Instagram")
+ * — removido a pedido explícito do usuário, que não vai disponibilizar
+ * esse contato.
+ *
+ * Correção (mobile usava valores de desktop): comparado contra o Figma
+ * 224:799 (mobile) — o gap entre título/bloco-de-links estava com o
+ * valor de desktop (40px) vazando pro mobile (mobile é 32px, bate com
+ * o `gap-[32px_16px]` do frame 224:801); o gap interno do bloco
+ * CONTATO+links estava com 16px no mobile quando o Figma usa 24px nos
+ * DOIS breakpoints (não só desktop); cada link estava com `text-[16px]
+ * leading-none` incondicional — o valor de Typography/Mobile/UI/Link
+ * Button é `14px`/`lineHeight:1.5` (desktop mantém 16px/leading-none,
+ * que já bate com o token de desktop); o rodapé de copyright estava
+ * com `text-[14px]` incondicional — Typography/Mobile/UI/Caption é
+ * `12px`/`lineHeight:1.3` (desktop preserva 14px). O padding vertical
+ * do bloco principal também era só o de desktop (64px incondicional) —
+ * mobile usa `pt-[48px]` sem padding inferior (o espaço de baixo já
+ * vem do `py-[32px]` próprio do rodapé de copyright, que já batia).
+ *
+ * Correção (espaço entre o link "WhatsApp" e o rodapé): medido no
+ * Figma (224:799) — o bloco de contato (224:800) termina em y=352 e o
+ * rodapé (224:809, "Frame 73") começa em y=368, um gap fixo de 16px
+ * ANTES da borda/padding próprios do rodapé (que ficam de pé, esse gap
+ * é adicional). Só no mobile — no desktop os dois blocos ficam
+ * diretamente colados (sem gap extra), como já estava.
+ */
+const EMAIL = "marcelohenriqueaugusto@gmail.com";
+
+const LINKS = [
+	{ label: "LinkedIn", href: "https://www.linkedin.com/in/marcelohaugusto/", external: true },
+	{ label: EMAIL, href: `mailto:${EMAIL}`, external: false },
+	{ label: "WhatsApp", href: "https://wa.me/5547999909672", external: true },
+];
+---
+
+<section id="contato" class="flex flex-col bg-(--color-background-dark)">
+	<div
+		class="flex flex-1 flex-col gap-(--spacing-xl) px-(--spacing-md-plus) pt-(--spacing-3xl) desktop:flex-row desktop:items-center desktop:gap-(--spacing-4xl) desktop:px-(--spacing-5xl) desktop:py-(--spacing-5xl)"
+	>
+		<h3
+			class="flex-1 font-sans text-[48px] leading-[1.2] font-bold text-(--color-foreground-on-dark) desktop:text-[96px]"
+			data-i18n="contato.heading"
+		>
+			Vamos conversar<span class="text-(--color-accent)">?</span>
+		</h3>
+
+		<div class="flex flex-1 flex-col justify-center gap-(--spacing-lg)">
+			<p
+				class="font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:tracking-[0.4px]"
+				data-i18n="contato.overline"
+			>
+				CONTATO
+			</p>
+			{
+				LINKS.map((link) => (
+					<a
+						href={link.href}
+						target={link.external ? "_blank" : undefined}
+						rel={link.external ? "noreferrer noopener" : undefined}
+						class="font-sans text-[14px] leading-[1.5] text-(--color-foreground-on-dark) underline decoration-from-font transition-colors hover:text-(--color-accent) desktop:text-[16px] desktop:leading-none"
+					>
+						{link.label}
+					</a>
+				))
+			}
+		</div>
+	</div>
+
+	<div class="mt-(--spacing-md) border-t border-(--color-border-dark) px-(--spacing-md-plus) py-(--spacing-xl) desktop:mt-0 desktop:px-(--spacing-5xl)">
+		<p class="font-sans text-[12px] font-bold leading-[1.3] text-(--color-foreground-on-dark) desktop:text-[14px] desktop:leading-normal" data-i18n="footer.copyright">
+			© 2026 Marcelo Henrique · Santa Catarina — Brasil
+		</p>
+	</div>
+</section>

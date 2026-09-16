@@ -1,0 +1,281 @@
+---
+import Logo from "./Logo.astro";
+import Topography from "./Topography.astro";
+
+/**
+ * Pill da navbar — só logo + links (Cases/Sobre/Contato/Currículo).
+ * Localização ("Santa Catarina -BR") e o seletor de idioma NÃO ficam
+ * aqui — são elementos independentes no Figma (214:83 é só isto),
+ * ver Hero.astro pra como os 3 se organizam lado a lado.
+ *
+ * Correção (dimensões batendo com o Figma 214:83/441:527 — antes cada
+ * link era só texto solto, sem caixa): cada link agora é uma caixa
+ * `h-[40px] px-[20px] py-[8px] rounded-[8px]`, sem gap entre elas (o
+ * espaçamento visual vem do próprio padding de cada uma — mesma lógica
+ * do LanguageToggle) e com hover replicando o estado ativo do Figma
+ * (441:527): fundo `--color-neutral-900`, texto
+ * `--color-background-light`. O container externo só tem `gap` entre a
+ * logo e o grupo de links (16px).
+ *
+ * `pr-[12px]` (pedido do usuário) no container externo: antes não
+ * havia padding direito explícito ali (a borda direita "sobrava" só do
+ * padding horizontal do último link, `Currículo`) — ficava justo
+ * demais entre o texto e a borda da barra branca.
+ *
+ * Correção (bug real — o 8px tinha ido pro elemento errado): o link
+ * usava a classe utilitária `rounded-lg`, que soa como "8px" (padrão do
+ * Tailwind), mas ESTE projeto redefine `--radius-lg: 16px` no tema
+ * (global.css) — `rounded-lg` aqui resolve pros 16px do projeto, não
+ * pro 8px do Figma. Por isso o link (botão interno) renderizava
+ * arredondado demais, e o container externo (que já usava
+ * `rounded-[16px]` fixo, correto per Figma) não tinha nada de errado.
+ * Trocado pro valor arbitrário `rounded-[8px]` no link, que não depende
+ * do token `--radius-lg` do projeto.
+ *
+ * Scroll suave (pedido do usuário — o anchor-jump nativo "ficava muito
+ * seco"): clique num link `#âncora` agora anima com ease-in-out via
+ * GSAP ScrollToPlugin (ver smoothScrollNav.ts), em vez do pulo instantâneo
+ * do navegador.
+ *
+ * Menu hamburguer mobile (Figma 224:1052 fechado / 224:1089 aberto,
+ * pedido do usuário — a pill de desktop não cabe em telas estreitas):
+ * abaixo de 1440px a pill acima vira `hidden` e em seu lugar aparece só
+ * o botão hamburguer (44×44, mesma linguagem visual do LanguageToggle
+ * mobile: `rounded-[12px]`, borda, fundo claro, mesma sombra). Clicar
+ * abre um overlay full-screen (`fixed inset-0`, acima de tudo —
+ * `z-[60]`, a nav global já usa `z-50`) com fundo escuro, os 3 links
+ * principais (Figma omite "Contato" aqui — o próprio overlay já É o
+ * bloco de contato) e o bloco "Vamos conversar?" com os mesmos links
+ * de `ContatoSection.astro` (LinkedIn/email/WhatsApp), reaproveitando
+ * as mesmas chaves `data-i18n` (o mesmo texto pode viver em vários
+ * elementos da página, `applyLanguage` já suporta isso).
+ *
+ * Fundo do overlay: o Figma usa uma imagem estática com 17 fragmentos
+ * de SVG posicionados manualmente. Optei por reaproveitar o componente
+ * `Topography` (WebGL, já usado no Hero, variante escura #1F1E1D) em
+ * vez de reproduzir os 17 fragmentos pixel a pixel — mesma identidade
+ * visual de "fundo vivo" do resto do site, com muito menos risco pra
+ * um elemento puramente decorativo. Fidelidade: desvio sinalizado ao
+ * usuário.
+ *
+ * Sem logo no estado fechado mobile: confirmado via Figma (224:1051) —
+ * a barra colapsada mobile só tem hamburguer + seletor de idioma, sem
+ * logo. Segue o Figma à risca, mesmo sendo uma omissão notável.
+ *
+ * Correção (consistência entre seções): os links de contato do overlay
+ * usavam `text-[16px] leading-none` (valor de DESKTOP de
+ * ContatoSection.astro) incondicionalmente — como o overlay só existe
+ * no mobile, ajustado pro mesmo token mobile usado lá
+ * (Typography/Mobile/UI/Link Button, `14px`/`lineHeight:1.5`), pra não
+ * ter 2 tamanhos diferentes pro mesmo tipo de link de contato no site.
+ */
+interface Props {
+	class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+
+const links = [
+	{ label: "Cases", href: "#cases" }, // igual nas duas línguas, sem chave de tradução
+	{ label: "Sobre", href: "#sobre", i18n: "nav.sobre" },
+	{ label: "Contato", href: "#contato", i18n: "nav.contato" },
+	{ label: "Currículo", href: "#", external: true, i18n: "nav.curriculo" },
+];
+
+// Figma 224:1089 (menu mobile aberto) só lista Cases/Sobre/Currículo —
+// "Contato" fica de fora porque o próprio overlay já termina no bloco
+// de contato, não precisa de mais um link pra rolar até lá.
+const mobileLinks = links.filter((link) => link.label !== "Contato");
+
+const EMAIL = "marcelohenriqueaugusto@gmail.com";
+const CONTACT_LINKS = [
+	{ label: "LinkedIn", href: "https://www.linkedin.com/in/marcelohaugusto/", external: true },
+	{ label: EMAIL, href: `mailto:${EMAIL}`, external: false },
+	{ label: "WhatsApp", href: "https://wa.me/5547999909672", external: true },
+];
+---
+
+<div
+	class:list={[
+		"hero-nav hidden flex-wrap items-center gap-3 rounded-[16px] border border-(--color-border-light) bg-(--color-background-light) px-3 py-2 shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)] desktop:flex desktop:h-[58px] desktop:gap-(--spacing-md) desktop:py-0 desktop:pl-(--spacing-sm-plus) desktop:pr-[12px]",
+		className,
+	]}
+	data-nav-pill
+>
+	<Logo />
+	<nav class="flex flex-wrap items-center gap-3 desktop:gap-0">
+		{
+			links.map((link) => (
+				<a
+					href={link.href}
+					data-i18n={link.i18n}
+					class="hero-nav-link flex h-10 items-center justify-center rounded-[8px] px-(--spacing-md-plus) py-(--spacing-sm) font-sans text-[14px] font-semibold text-(--color-nav-link-on-light) transition-colors hover:bg-(--color-neutral-900) hover:text-(--color-background-light) desktop:h-[40px] desktop:text-[16px]"
+				>
+					{link.label}
+				</a>
+			))
+		}
+	</nav>
+</div>
+
+<button
+	type="button"
+	aria-label="Abrir menu"
+	aria-expanded="false"
+	aria-controls="mobile-menu"
+	class={`flex size-11 items-center justify-center rounded-[12px] border border-(--color-border-light) bg-(--color-background-light) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)] desktop:hidden ${className}`}
+	data-mobile-menu-open
+>
+	<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+		<path
+			d="M21.375 12C21.375 12.2984 21.2565 12.5845 21.0455 12.7955C20.8345 13.0065 20.5484 13.125 20.25 13.125H3.75C3.45163 13.125 3.16548 13.0065 2.9545 12.7955C2.74353 12.5845 2.625 12.2984 2.625 12C2.625 11.7016 2.74353 11.4155 2.9545 11.2045C3.16548 10.9935 3.45163 10.875 3.75 10.875H20.25C20.5484 10.875 20.8345 10.9935 21.0455 11.2045C21.2565 11.4155 21.375 11.7016 21.375 12ZM3.75 7.125H20.25C20.5484 7.125 20.8345 7.00647 21.0455 6.7955C21.2565 6.58452 21.375 6.29837 21.375 6C21.375 5.70163 21.2565 5.41548 21.0455 5.2045C20.8345 4.99353 20.5484 4.875 20.25 4.875H3.75C3.45163 4.875 3.16548 4.99353 2.9545 5.2045C2.74353 5.41548 2.625 5.70163 2.625 6C2.625 6.29837 2.74353 6.58452 2.9545 6.7955C3.16548 7.00647 3.45163 7.125 3.75 7.125ZM20.25 16.875H3.75C3.45163 16.875 3.16548 16.9935 2.9545 17.2045C2.74353 17.4155 2.625 17.7016 2.625 18C2.625 18.2984 2.74353 18.5845 2.9545 18.7955C3.16548 19.0065 3.45163 19.125 3.75 19.125H20.25C20.5484 19.125 20.8345 19.0065 21.0455 18.7955C21.2565 18.5845 21.375 18.2984 21.375 18C21.375 17.7016 21.2565 17.4155 21.0455 17.2045C20.8345 16.9935 20.5484 16.875 20.25 16.875Z"
+			fill="#1F1E1D"
+		></path>
+	</svg>
+</button>
+
+<div
+	id="mobile-menu"
+	class="pointer-events-none fixed inset-0 z-[60] flex flex-col bg-(--color-background-dark) opacity-0 transition-opacity duration-300 ease-in-out desktop:hidden"
+	data-mobile-menu
+	aria-hidden="true"
+>
+	<div class="absolute inset-0" aria-hidden="true">
+		<Topography lowColor="#1F1E1D" midColor="#1F1E1D" highColor="#1F1E1D" class="h-full w-full" />
+	</div>
+
+	<div class="relative z-10 flex items-center justify-start px-(--spacing-md-plus) pt-(--spacing-lg)">
+		<button
+			type="button"
+			aria-label="Fechar menu"
+			class="flex size-11 items-center justify-center rounded-[12px] border border-(--color-border-dark) bg-(--color-background-light) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)]"
+			data-mobile-menu-close
+		>
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<path
+					d="M19.5459 17.9541C19.7573 18.1654 19.876 18.4521 19.876 18.7509C19.876 19.0498 19.7573 19.3365 19.5459 19.5478C19.3346 19.7592 19.0479 19.8779 18.7491 19.8779C18.4502 19.8779 18.1635 19.7592 17.9522 19.5478L12 13.5938L6.04594 19.5459C5.83459 19.7573 5.54795 19.876 5.24906 19.876C4.95018 19.876 4.66353 19.7573 4.45219 19.5459C4.24084 19.3346 4.12211 19.0479 4.12211 18.7491C4.12211 18.4502 4.24084 18.1635 4.45219 17.9522L10.4063 12L4.45406 6.04594C4.24272 5.83459 4.12399 5.54795 4.12399 5.24906C4.12399 4.95018 4.24272 4.66353 4.45406 4.45219C4.66541 4.24084 4.95205 4.12211 5.25094 4.12211C5.54982 4.12211 5.83647 4.24084 6.04781 4.45219L12 10.4063L17.9541 4.45125C18.1654 4.23991 18.4521 4.12117 18.7509 4.12117C19.0498 4.12117 19.3365 4.23991 19.5478 4.45125C19.7592 4.66259 19.8779 4.94924 19.8779 5.24813C19.8779 5.54701 19.7592 5.83366 19.5478 6.045L13.5938 12L19.5459 17.9541Z"
+					fill="#1F1E1D"
+				></path>
+			</svg>
+		</button>
+	</div>
+
+	<!--
+		Correção (medido no Figma 224:1089 — "Navbar"/224:1160 termina em
+		y=92 relativo ao frame do menu; "Frame 78"/224:1274, a lista de
+		links, começa em y=108; "Frame 63"/224:1267, o bloco de contato,
+		começa em y=344 e a lista termina em y=304 — os dois gaps batem
+		exatamente em 40px cada): o layout NÃO é centralizado no espaço
+		restante — é ancorado no TOPO, com um gap fixo de 40px entre o
+		botão fechar e a lista, e outro gap fixo de 40px entre a lista e o
+		bloco de contato; o espaço que sobra embaixo (o conteúdo termina
+		bem antes do fim do frame no Figma) fica em branco, não é
+		"puxado" pra baixo por centralização. Por isso `justify-center`
+		foi removido daqui (o padrão `flex-start` já basta) — só o
+		`mt-(--spacing-2xl)` (o gap fixo do botão fechar até a lista) e o
+		`gap-(--spacing-2xl)` (o gap fixo entre lista e bloco de contato,
+		já presente abaixo) seguem de pé, ambos batendo exatamente com os
+		40px medidos no Figma.
+	-->
+	<div class="relative z-10 mt-(--spacing-2xl) flex flex-1 flex-col items-center gap-(--spacing-2xl)">
+		<nav class="flex flex-col items-center gap-(--spacing-xl)" data-mobile-menu-nav>
+			{
+				mobileLinks.map((link) => (
+					<a
+						href={link.href}
+						data-i18n={link.i18n}
+						class="font-sans text-[40px] leading-[1.1] font-bold text-(--color-neutral-400) transition-colors hover:text-(--color-foreground-on-dark)"
+					>
+						{link.label}
+					</a>
+				))
+			}
+		</nav>
+
+		<div class="flex flex-col items-center gap-(--spacing-lg) px-(--spacing-md-plus) text-center">
+			<h3
+				class="font-sans text-[32px] leading-[1.2] font-bold text-(--color-foreground-on-dark)"
+				data-i18n="contato.heading"
+			>
+				Vamos conversar<span class="text-(--color-accent)">?</span>
+			</h3>
+			<div class="flex flex-col items-center gap-(--spacing-lg)">
+				{
+					CONTACT_LINKS.map((link) => (
+						<a
+							href={link.href}
+							target={link.external ? "_blank" : undefined}
+							rel={link.external ? "noreferrer noopener" : undefined}
+							class="font-sans text-[14px] leading-[1.5] text-(--color-foreground-on-dark) underline decoration-from-font transition-colors hover:text-(--color-accent)"
+						>
+							{link.label}
+						</a>
+					))
+				}
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	import { initSmoothScrollNav } from "../../lib/smoothScrollNav";
+
+	document.querySelectorAll<HTMLElement>("[data-nav-pill]").forEach((pill) => initSmoothScrollNav(pill));
+
+	const openButton = document.querySelector<HTMLButtonElement>("[data-mobile-menu-open]");
+	const closeButton = document.querySelector<HTMLButtonElement>("[data-mobile-menu-close]");
+	const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+	const menuNav = document.querySelector<HTMLElement>("[data-mobile-menu-nav]");
+
+	// Bug real (reportado pelo usuário — overlay abre sem fundo, o
+	// conteúdo da Hero aparece "vazando" por trás): este `<div
+	// data-mobile-menu>` é `fixed inset-0`, mas vive DENTRO do wrapper
+	// `[data-site-nav]` (Layout.astro) — e `initAutoHideNav` (
+	// autoHideNav.ts) escreve um `transform` inline nesse wrapper toda
+	// vez que o usuário rola a página (mesmo "translateY(0)", parado, já
+	// conta). Por spec CSS, QUALQUER `transform` ativo num ancestral cria
+	// um novo containing block pra descendentes `position:fixed` — a
+	// partir do primeiro scroll, o `inset-0` deste overlay passa a
+	// resolver contra a CAIXA DA NAV (uns 60px no topo da tela), não mais
+	// contra o viewport inteiro. Resultado: só uma faixa fina no topo
+	// fica coberta, e o resto da Hero (headline, foto) aparece atrás do
+	// overlay "aberto". Fix: move o nó pra ser filho direto do
+	// `<body>` em runtime — escapa de vez da subárvore transformada,
+	// sem depender de scroll nunca ter acontecido ou não.
+	if (menu) document.body.appendChild(menu);
+
+	if (menuNav) initSmoothScrollNav(menuNav);
+
+	function openMenu() {
+		if (!menu || !openButton) return;
+		// `data-site-nav` (Layout.astro) fica com `pointer-events-none` —
+		// só remover a classe "pointer-events-none" daqui não basta: sem um
+		// valor PRÓPRIO de pointer-events, o overlay herda "none" do
+		// ancestral e o menu inteiro fica clicável apenas visualmente.
+		// Precisa setar "pointer-events-auto" explicitamente.
+		menu.classList.remove("pointer-events-none", "opacity-0");
+		menu.classList.add("pointer-events-auto");
+		menu.setAttribute("aria-hidden", "false");
+		openButton.setAttribute("aria-expanded", "true");
+		document.body.style.overflow = "hidden";
+	}
+
+	function closeMenu() {
+		if (!menu || !openButton) return;
+		menu.classList.remove("pointer-events-auto");
+		menu.classList.add("pointer-events-none", "opacity-0");
+		menu.setAttribute("aria-hidden", "true");
+		openButton.setAttribute("aria-expanded", "false");
+		document.body.style.overflow = "";
+	}
+
+	openButton?.addEventListener("click", openMenu);
+	closeButton?.addEventListener("click", closeMenu);
+
+	// Fecha automaticamente ao clicar em qualquer link interno do menu
+	// (âncora ou externo) — evita o overlay ficar aberto por cima da
+	// seção pra onde o usuário acabou de navegar.
+	menu?.querySelectorAll<HTMLAnchorElement>("a").forEach((link) => {
+		link.addEventListener("click", closeMenu);
+	});
+</script>

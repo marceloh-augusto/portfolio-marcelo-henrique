@@ -1,0 +1,86 @@
+---
+/**
+ * Tabela "Decisão" — Figma node 252:33 (desktop/tablet, 4 colunas) vs
+ * 346:249 (mobile, cards empilhados por linha). A estrutura realmente
+ * diverge entre os dois (tabela vs cards), não é só reflow de CSS —
+ * então, ao contrário de CasesSection.astro (`desktop:contents`), aqui
+ * são 2 blocos de markup completos, cada um só visível no seu
+ * breakpoint (`hidden tablet:block` / `block tablet:hidden`).
+ *
+ * "EM VEZ DE" corrige o typo "INVEZ DE" do Figma (erro de digitação
+ * confirmado, não intencional).
+ *
+ * Headers são rótulo de TEMPLATE fixo (i18n.ts `case.decision.*`); o
+ * conteúdo de cada linha é específico do case — `rowsEn` (opcional,
+ * mesmo formato/ordem de `rows`) alimenta a tradução via `data-i18n-en`.
+ */
+import { translations } from "../../lib/i18n";
+
+interface DecisionRow {
+	chosen: string;
+	insteadOf: string;
+	because: string;
+	riskOf: string;
+}
+
+interface Props {
+	rows: DecisionRow[];
+	rowsEn?: DecisionRow[];
+}
+
+const { rows, rowsEn } = Astro.props;
+
+const COLUMNS: { key: keyof DecisionRow; i18nKey: string }[] = [
+	{ key: "chosen", i18nKey: "case.decision.escolhemos" },
+	{ key: "insteadOf", i18nKey: "case.decision.emvezde" },
+	{ key: "because", i18nKey: "case.decision.porque" },
+	{ key: "riskOf", i18nKey: "case.decision.risco" },
+];
+---
+
+<div class="hidden flex-col gap-(--spacing-sm) tablet:flex" data-reveal-group>
+	<div class="flex gap-(--spacing-xl)">
+		{
+			COLUMNS.map((column) => (
+				<p class="flex-1 font-sans text-[14px] font-bold text-(--color-muted)" data-i18n={column.i18nKey}>
+					{translations[column.i18nKey]?.pt}
+				</p>
+			))
+		}
+	</div>
+	<div class="h-px w-full bg-(--color-border-light)" />
+
+	{
+		rows.map((row, i) => (
+			<>
+				<div class="flex gap-(--spacing-xl) py-(--spacing-md)">
+					{COLUMNS.map((column) => (
+						<p class="flex-1 font-sans text-[20px] leading-[1.5] text-(--color-foreground-on-light)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
+							{row[column.key]}
+						</p>
+					))}
+				</div>
+				<div class="h-px w-full bg-(--color-border-light)" />
+			</>
+		))
+	}
+</div>
+
+<div class="flex flex-col gap-(--spacing-xl) tablet:hidden" data-reveal-group>
+	{
+		rows.map((row, i) => (
+			<div class="flex flex-col gap-(--spacing-md) border-b border-(--color-border-light) pb-(--spacing-lg)">
+				{COLUMNS.map((column) => (
+					<div class="flex flex-col gap-(--spacing-xs)">
+						<p class="font-sans text-[12px] font-bold text-(--color-muted)" data-i18n={column.i18nKey}>
+							{translations[column.i18nKey]?.pt}
+						</p>
+						<p class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
+							{row[column.key]}
+						</p>
+					</div>
+				))}
+			</div>
+		))
+	}
+</div>

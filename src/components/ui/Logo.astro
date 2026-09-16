@@ -1,0 +1,23 @@
+---
+interface Props {
+	class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<!--
+	Pedido do usuário: o "M." vira link, sempre pro topo da Home (primeira
+	dobra), tanto na própria Home quanto nas páginas de case — sem
+	precisar de estado de hover/active próprio, só o link funcional.
+-->
+<a
+	href="/"
+	aria-label="Voltar para o início"
+	class:list={[
+		"font-[family-name:var(--font-logo)] font-medium leading-none text-[40px] text-neutral-900",
+		className,
+	]}
+>
+	<span>M</span><span class="text-brand-500">.</span>
+</a>

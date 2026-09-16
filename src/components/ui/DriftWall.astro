@@ -1,0 +1,290 @@
+---
+/**
+ * Porte do componente "DriftWall" (React Bits, variante JS+CSS) pro
+ * stack do projeto (Astro + TS, sem React) — sem dependências novas,
+ * o original também não usa nenhuma. Lógica em driftWallEffect.ts;
+ * este componente monta a estrutura (plano 3D > colunas > faixas
+ * verticais com os tiles) e as CSS custom properties de tema.
+ *
+ * O Astro renderiza só UMA cópia dos itens por coluna (não dá pra saber
+ * a altura real do container em build-time); driftWallEffect.ts clona
+ * quantas cópias forem necessárias em runtime pra preencher a coluna
+ * inteira sem vão vazio — mesmo princípio do logoMarqueeLoop.ts.
+ */
+export interface DriftWallItem {
+	image: string;
+	title?: string;
+	href?: string;
+}
+
+interface Props {
+	items: DriftWallItem[];
+	columns?: number;
+	tileWidth?: number;
+	tileHeight?: number;
+	gap?: number;
+	radius?: number;
+	tilt?: number;
+	turn?: number;
+	roll?: number;
+	perspective?: number;
+	depth?: number;
+	speed?: number;
+	direction?: "up" | "down";
+	variance?: number;
+	parallax?: number;
+	pauseOnHover?: boolean;
+	lift?: number;
+	fade?: number;
+	dim?: number;
+	grayscale?: boolean;
+	overlayColor?: string;
+	class?: string;
+}
+
+const {
+	items,
+	columns = 5,
+	tileWidth = 200,
+	tileHeight = 132,
+	gap = 18,
+	radius = 14,
+	tilt = 16,
+	turn = -14,
+	roll = 0,
+	perspective = 1200,
+	depth = 120,
+	speed = 42,
+	direction = "up",
+	variance = 0.45,
+	parallax = 0.6,
+	pauseOnHover = false,
+	lift = 64,
+	fade = 0.6,
+	dim = 0.55,
+	grayscale = false,
+	overlayColor = "#060010",
+	class: className = "",
+} = Astro.props;
+
+const columnItems: DriftWallItem[][] = Array.from({ length: columns }, () => []);
+items.forEach((item, i) => columnItems[i % columns].push(item));
+columnItems.forEach((col, i) => {
+	if (col.length === 0) columnItems[i] = items.slice(0, 1);
+});
+
+const config = { columns, tileHeight, gap, speed, direction, variance, parallax, pauseOnHover, tilt, turn, roll, depth };
+
+/**
+ * Correção (bug real, reportado pelo usuário — seção inteira invisível
+ * em mobile pequeno, confirmado em 375px): `tileWidth`/`tileHeight`/
+ * `gap` eram sempre valores FIXOS em px, iguais em qualquer tela — o
+ * chamador (ArquivoSection.astro) usa 450/312/36, pensados pro desktop.
+ * Numa tela de 375px, uma única coluna (486px com gap) já é mais larga
+ * que a viewport inteira; `ensureColumnCoverage`
+ * (driftWallEffect.ts) mede a largura REAL do container e clona
+ * colunas/preenche verticalmente até cobrir um alvo proporcional a
+ * ela, e o plano inteiro se autocentraliza via `translate(-50%,-50%)`
+ * sobre a PRÓPRIA largura — com tiles gigantes numa tela pequena, esse
+ * cálculo (correto em si) produz um plano enorme cujo centro fica a
+ * milhares de pixels de distância do container visível, sumindo com a
+ * seção inteira.
+ *
+ * Fix: os 3 valores agora são `clamp()` fluidos (min, um valor em vw
+ * que cresce com a tela, max = valor original passado pelo chamador)
+ * em vez de px fixos — atingem o tamanho "de design" (max) por volta
+ * de 768px de viewport e ficam menores proporcionalmente abaixo disso,
+ * até um piso de 35% do valor máximo. `ensureColumnCoverage`/
+ * `fillTrackVertically` (driftWallEffect.ts) já medem dimensões reais
+ * via `getBoundingClientRect()`/`scrollWidth`/`scrollHeight` — não
+ * dependem do valor exato do prop, só do que o CSS realmente renderiza
+ * — então se ajustam sozinhos ao novo tamanho fluido sem precisar de
+ * nenhuma mudança no script.
+ */
+function fluidPx(max: number): string {
+	const min = Math.round(max * 0.35);
+	// Coeficiente de vw escolhido pra bater o valor `max` original por
+	// volta de 768px de largura de viewport (1vw a 768px = 7.68px) —
+	// mobile fica proporcionalmente menor, tablet/desktop (768px+)
+	// ficam idênticos ao comportamento original (sempre no teto `max`).
+	const vw = +(max / 7.68).toFixed(2);
+	return `clamp(${min}px, ${vw}vw, ${max}px)`;
+}
+
+const cssVars = {
+	"--dw-tile-w": fluidPx(tileWidth),
+	"--dw-tile-h": fluidPx(tileHeight),
+	"--dw-gap": fluidPx(gap),
+	"--dw-radius": `${radius}px`,
+	"--dw-perspective": `${perspective}px`,
+	"--dw-lift": `${lift}px`,
+	"--dw-dim": String(dim),
+	"--dw-gray": grayscale ? "1" : "0",
+	"--dw-overlay": overlayColor,
+	"--dw-edge": `${Math.max(0, (1 - fade) * 100)}%`,
+};
+---
+
+<div class:list={["drift-wall", className]} style={cssVars} data-drift-wall data-config={JSON.stringify(config)} role="group" aria-label="Parede de imagens em movimento">
+	<div class="drift-wall__plane" data-drift-wall-plane>
+		{
+			columnItems.map((col, c) => (
+				<div class="drift-wall__col" data-drift-wall-col data-col-index={c}>
+					<div class="drift-wall__track" data-drift-wall-track>
+						{col.map((item, i) => {
+							const id = `${c}-0-${i}`;
+							const Tag = item.href ? "a" : "div";
+							return (
+								<Tag
+									class="drift-wall__tile"
+									data-tile-id={id}
+									data-col={c}
+									href={item.href}
+									target={item.href ? "_blank" : undefined}
+									rel={item.href ? "noreferrer noopener" : undefined}
+									tabindex={item.href ? undefined : 0}
+									role={item.href ? undefined : "button"}
+									aria-label={item.href ? undefined : (item.title ?? "tile")}
+								>
+									<span class="drift-wall__inner">
+										<img src={item.image} alt={item.title ?? ""} loading="lazy" decoding="async" draggable="false" />
+										<span class="drift-wall__overlay" aria-hidden="true" />
+									</span>
+								</Tag>
+							);
+						})}
+					</div>
+				</div>
+			))
+		}
+	</div>
+</div>
+
+<style>
+	.drift-wall {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		perspective: var(--dw-perspective, 1200px);
+		perspective-origin: 50% 50%;
+		-webkit-mask-image:
+			radial-gradient(ellipse 78% 82% at 50% 46%, #000 var(--dw-edge), transparent 100%),
+			linear-gradient(to top, #000 var(--dw-edge), transparent 100%);
+		-webkit-mask-composite: source-in;
+		mask-image:
+			radial-gradient(ellipse 78% 82% at 50% 46%, #000 var(--dw-edge), transparent 100%),
+			linear-gradient(to top, #000 var(--dw-edge), transparent 100%);
+		mask-composite: intersect;
+	}
+
+	.drift-wall__plane {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		display: flex;
+		flex-direction: row;
+		transform-style: preserve-3d;
+		cursor: pointer;
+		transform-origin: 50% 50%;
+		will-change: transform;
+	}
+
+	.drift-wall__col {
+		position: relative;
+		width: calc(var(--dw-tile-w) + var(--dw-gap));
+		transform-style: preserve-3d;
+	}
+
+	.drift-wall__track {
+		display: flex;
+		flex-direction: column;
+		will-change: transform;
+		transform-style: preserve-3d;
+	}
+
+	.drift-wall__tile {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: calc(var(--dw-tile-h) + var(--dw-gap));
+		flex: 0 0 auto;
+		outline: none;
+		transform-style: preserve-3d;
+	}
+
+	.drift-wall__inner {
+		position: absolute;
+		inset: calc(var(--dw-gap) / 2);
+		display: block;
+		border-radius: var(--dw-radius);
+		overflow: hidden;
+		background: var(--color-neutral-900, #1f1e1d);
+		opacity: var(--dw-dim);
+		transform: translateZ(0);
+		pointer-events: none;
+		transition:
+			transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+			opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.drift-wall__tile img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		filter: grayscale(var(--dw-gray)) saturate(0.92);
+		transition: filter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+		user-select: none;
+		-webkit-user-drag: none;
+	}
+
+	.drift-wall__overlay {
+		position: absolute;
+		inset: 0;
+		background: var(--dw-overlay);
+		opacity: 0.42;
+		pointer-events: none;
+		transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.drift-wall__tile.is-active .drift-wall__inner,
+	.drift-wall__tile:focus-visible .drift-wall__inner {
+		opacity: 1;
+		transform: translateZ(var(--dw-lift));
+		box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.7);
+	}
+
+	.drift-wall__tile.is-active img,
+	.drift-wall__tile:focus-visible img {
+		filter: grayscale(0) saturate(1.05);
+	}
+
+	.drift-wall__tile.is-active .drift-wall__overlay,
+	.drift-wall__tile:focus-visible .drift-wall__overlay {
+		opacity: 0;
+	}
+
+	.drift-wall__tile:focus-visible .drift-wall__inner {
+		box-shadow:
+			0 24px 60px -18px rgba(0, 0, 0, 0.7),
+			0 0 0 2px rgba(255, 255, 255, 0.9);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.drift-wall__plane,
+		.drift-wall__track {
+			will-change: auto;
+		}
+	}
+</style>
+
+<script>
+	import { initDriftWall } from "../../lib/driftWallEffect";
+
+	document.querySelectorAll<HTMLElement>("[data-drift-wall]").forEach((el) => {
+		const config = el.dataset.config ? JSON.parse(el.dataset.config) : {};
+		initDriftWall(el, config);
+	});
+</script>

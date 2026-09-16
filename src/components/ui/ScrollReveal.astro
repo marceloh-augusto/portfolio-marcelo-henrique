@@ -1,0 +1,72 @@
+---
+/**
+ * Porte do componente "ScrollReveal" (React Bits, variante JS+CSS) pro
+ * stack do projeto (Astro + TS, sem React) — a dependência `gsap` já
+ * existe no projeto, nada novo foi instalado. Lógica em
+ * scrollRevealEffect.ts; este componente só monta os `<span class="word">`
+ * e passa a config via data-attribute (mesmo padrão de Topography.astro/
+ * BlobBackground.astro), permitindo várias instâncias na mesma página.
+ *
+ * O original sempre renderiza um `<h2>` fixo — trocado por uma tag
+ * configurável (`as`) porque este projeto reserva `h2` exclusivamente
+ * pro nome do case na lista (DESIGN.md) — usar h2 em qualquer outro
+ * texto quebraria a hierarquia de heading.
+ */
+interface Props {
+	text: string;
+	as?: string;
+	enableBlur?: boolean;
+	baseOpacity?: number;
+	baseRotation?: number;
+	blurStrength?: number;
+	class?: string;
+	textClassName?: string;
+	rotationEnd?: string;
+	wordAnimationEnd?: string;
+	/** Chave de tradução (ver i18n.ts) — troca de idioma reconstrói as
+	 * `.word` spans com o texto traduzido (não dá pra só trocar
+	 * textContent aqui, ver setScrollRevealText em scrollRevealEffect.ts). */
+	i18nKey?: string;
+}
+
+const {
+	text,
+	as: Tag = "p",
+	enableBlur = true,
+	baseOpacity = 0.1,
+	baseRotation = 3,
+	blurStrength = 4,
+	class: className = "",
+	textClassName = "",
+	rotationEnd = "bottom bottom",
+	wordAnimationEnd = "bottom bottom",
+	i18nKey,
+}: Props = Astro.props;
+
+const words: string[] = text.split(/(\s+)/);
+const config = { enableBlur, baseOpacity, baseRotation, blurStrength, rotationEnd, wordAnimationEnd };
+---
+
+<Tag class:list={["scroll-reveal", className]} data-scroll-reveal data-i18n={i18nKey} data-config={JSON.stringify(config)}>
+	<span class:list={["scroll-reveal-text", textClassName]}>
+		{words.map((w: string) => (w.match(/^\s+$/) ? w : <span class="word">{w}</span>))}
+	</span>
+</Tag>
+
+<style>
+	.scroll-reveal {
+		margin: 0;
+	}
+	.word {
+		display: inline-block;
+	}
+</style>
+
+<script>
+	import { initScrollReveal } from "../../lib/scrollRevealEffect";
+
+	document.querySelectorAll<HTMLElement>("[data-scroll-reveal]").forEach((el) => {
+		const config = el.dataset.config ? JSON.parse(el.dataset.config) : {};
+		initScrollReveal(el, config);
+	});
+</script>

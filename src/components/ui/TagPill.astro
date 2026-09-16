@@ -1,0 +1,46 @@
+---
+/**
+ * Badge de categoria — sempre neutro (DESIGN.md: "tag-pill é sempre
+ * neutro, não crie uma cor por categoria"), pill cheio.
+ *
+ * Dimensões mobile batendo com o Figma 224:853 (Cases mobile) —
+ * `px-[12px]` (--spacing-sm-plus) e `text-[13px]` (Typography/Mobile/
+ * UI/Tag) — antes usava incondicionalmente o valor de desktop
+ * (`px-(--spacing-md)`=16px, `text-[16px]`) também no mobile. Essas
+ * dimensões/cores mobile NÃO mudam com `theme` (só existe fundo
+ * claro/escuro na faixa horizontal desktop da Home, Figma 523:1106/
+ * 1123/1155 — mobile continua com a cor neutra original abaixo).
+ *
+ * `theme` (novo — pedido do usuário, cores atualizadas no Figma):
+ * cada bloco da faixa horizontal pode ter fundo claro OU escuro
+ * (`cardTheme` na content collection), e a tag precisa inverter junto
+ * pra manter contraste — "dark" (fundo neutral-950): tag
+ * bg-neutral-800/texto-neutral-200; "light" (fundo neutral-100): tag
+ * bg-neutral-200/texto-neutral-800. Sem `theme`, mantém o padrão
+ * neutro original (bg-neutral-900/texto-neutral-100) — outros usos
+ * futuros fora dessa faixa não são afetados.
+ */
+interface Props {
+	class?: string;
+	theme?: "dark" | "light";
+}
+
+const { class: className = "", theme } = Astro.props;
+
+const themeClasses =
+	theme === "light"
+		? "desktop:bg-(--color-neutral-200) desktop:text-(--color-neutral-800)"
+		: theme === "dark"
+			? "desktop:bg-(--color-neutral-800) desktop:text-(--color-neutral-200)"
+			: "";
+---
+
+<span
+	class:list={[
+		"inline-flex items-center rounded-full bg-(--color-neutral-900) px-(--spacing-sm-plus) py-(--spacing-xs) font-sans text-[13px] text-(--color-neutral-100) desktop:px-(--spacing-md) desktop:text-[16px]",
+		themeClasses,
+		className,
+	]}
+>
+	<slot />
+</span>

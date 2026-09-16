@@ -1,0 +1,91 @@
+---
+/**
+ * Foto do Hero: 3 camadas aninhadas, cada uma dona de só um tipo de
+ * transform (ver "transform-conflict guard" no plano — dois tweens do
+ * GSAP escrevendo x/y e scale no mesmo elemento se atropelariam):
+ *  - .hero-photo-parallax   → só translate (mouseParallax.ts)
+ *  - .hero-photo-scale      → só scale (timeline de scroll em Hero.astro,
+ *    2 fases: cobre a tela → tamanho normal → tamanho final pequeno)
+ *  - .hero-photo-inner      → 2 <img> empilhadas (crossfade na fase 1 do
+ *    scroll)
+ *
+ * O reveal ASCII por hover/toque (canvas acumulando máscara) foi removido
+ * a pedido do usuário — não ficou bom visualmente.
+ *
+ * As 2 fotos (rodada 2, substituem a extração antiga do Figma):
+ *  - foto-minha-inicial-aligned.png: colorida, fundo transparente —
+ *    visível em repouso. É uma versão pré-processada (ver
+ *    alignHeroPhoto.ts) do arquivo
+ *    original "foto minha inicial.png". A margem VERTICAL do original já
+ *    batia com a de foto-minha.png (não precisa mexer); o que estava
+ *    diferente era só o enquadramento HORIZONTAL — largura relativa da
+ *    pessoa e posição do centro. O script (rodada 7 — a primeira versão,
+ *    rodada 4, cortava pro bounding-box e sem querer removia a margem
+ *    vertical correta, piorando a dessincronia) mede essas 2 frações
+ *    direto em foto-minha.png e recorta só o eixo X da foto inicial pra
+ *    bater, mantendo a altura original intacta.
+ *  - foto-minha.png: já em P&B, fundo cinza opaco — cross-fade entra
+ *    durante a fase 1 do scroll; NÃO usamos mais filter:grayscale(),
+ *    o P&B agora é um asset de verdade
+ */
+const PHOTO_WIDTH = 967;
+const PHOTO_HEIGHT = 768;
+---
+
+<div class="hero-photo-parallax" data-hero-photo-parallax>
+	<div class="hero-photo-scale" data-hero-photo-scale>
+		<div class="hero-photo-inner relative">
+			<img
+				class="hero-photo-inicial absolute inset-0 block h-full w-full object-cover"
+				data-hero-photo-inicial
+				src="/images/home/desktop/foto-minha-inicial-aligned.png"
+				alt="Retrato de Marcelo Henrique"
+				width={966}
+				height={768}
+			/>
+			<img
+				class="hero-photo-final absolute inset-0 block h-full w-full object-cover opacity-0"
+				data-hero-photo-final
+				src="/images/home/desktop/foto-minha.png"
+				alt="Retrato de Marcelo Henrique, em preto e branco"
+				width={PHOTO_WIDTH}
+				height={PHOTO_HEIGHT}
+			/>
+		</div>
+	</div>
+</div>
+
+<style>
+	.hero-photo-parallax,
+	.hero-photo-scale {
+		width: 100%;
+		height: 100%;
+	}
+	.hero-photo-scale {
+		transform-origin: center center;
+	}
+	.hero-photo-inner {
+		width: 100%;
+		height: 100%;
+		/* Correção (Figma 464:1244): a foto do Hero não tem nenhum
+		   arredondamento de canto — confirmado no export do dev-mode, sem
+		   nenhuma classe `rounded-*`. Zerado nos 4 lados (antes usava
+		   `--radius-xl`, 32px). `overflow:hidden` continua necessário pro
+		   crossfade das 2 imagens não vazar durante a escala do scroll. */
+		border-radius: 0;
+		overflow: hidden;
+	}
+</style>
+
+<script>
+	import { initParallax } from "../../lib/mouseParallax";
+	import { gsap } from "../../lib/gsapSetup";
+
+	document.querySelectorAll<HTMLElement>(".hero-photo-parallax").forEach((parallaxEl) => {
+		const mm = gsap.matchMedia();
+		// Bate com `--breakpoint-desktop` em global.css (1280px).
+		mm.add("(min-width: 1280px)", () => {
+			return initParallax(parallaxEl);
+		});
+	});
+</script>

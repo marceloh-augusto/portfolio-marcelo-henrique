@@ -1,0 +1,901 @@
+---
+import HeroPhoto from "./HeroPhoto.astro";
+import Topography from "../ui/Topography.astro";
+import ScrollVelocity from "../ui/ScrollVelocity.astro";
+
+// Texto exato pedido pelo usuário (inclui o corte "Desig quem vê" de
+// propósito — veio assim na instrução, não é erro de digitação nosso).
+const MARQUEE_PHRASE =
+	"Design para quem vê • Design para quem sente • Desig quem vê • Design para quem sente • Design para quem vive";
+---
+
+<section class="hero-scroll-wrapper relative h-[300vh]" data-hero-scroll-wrapper>
+	<div
+		class="hero-stage relative flex h-screen w-full flex-col overflow-hidden bg-(--color-background-light) px-(--spacing-md-plus) pt-(--spacing-lg) desktop:px-(--spacing-5xl) desktop:pt-(--spacing-lg)"
+		data-hero-stage
+	>
+		<!--
+			Overlay de cor escura (correção rodada 9): antes eu animava
+			`backgroundColor` do próprio `.hero-stage` — isso força o
+			navegador a REPINTAR o stage inteiro (um layer fixed cobrindo a
+			tela) a cada tick do scrub. `background-color`/`color` não são
+			propriedades "baratas" de animar (ao contrário de `opacity`/
+			`transform`, que só recompõem). Trocado por um overlay sólido
+			separado cuja OPACIDADE é animada — bem mais barato, e ajuda a
+			eliminar o "piscar" causado por frames perdidos no scroll.
+		-->
+		<div
+			class="pointer-events-none absolute inset-0 bg-(--color-background-dark) opacity-0"
+			data-hero-dark-overlay
+			aria-hidden="true"
+		>
+		</div>
+		<!--
+			Fundo animado da Hero (correção: trocado de BlobBackground — 16
+			SVGs borrados por variant — pro mesmo Topography/ogl usado em
+			#sobre/#cases, a pedido do usuário, pra aparecer já na primeira
+			dobra). Mesmo mecanismo de crossfade de antes: wrapper
+			`.hero-blob[data-variant=...]` é o alvo do autoAlpha tween no
+			script abaixo; o `[data-topography]` interno (dentro do
+			Topography) é o alvo do pause/resume (só o variant visível
+			renderiza, ver topographyEffect.ts).
+		-->
+		<!--
+			`transition` variant NÃO leva `opacity-0` estático aqui (correção):
+			opacity via classe CSS só zera a opacidade, não o `visibility` —
+			o canvas continuava `visibility:visible`/`pointer-events:auto`
+			mesmo invisível, e por vir depois no DOM (mesmo stacking context,
+			sem z-index em nenhum dos dois) ficava POR CIMA do `hero` no
+			hit-test, roubando os eventos de mouse dele (o cursor elevation
+			simplesmente não reagia). O estado inicial escondido agora é
+			setado via `gsap.set(..., { autoAlpha: 0 })` no script abaixo,
+			que zera opacity E visibility juntos — igual ao que o tween de
+			scroll já faz depois.
+		-->
+		<div class="hero-blob absolute inset-0" data-variant="hero">
+			<Topography
+				lowColor="#EFEEEC"
+				midColor="#EFEEEC"
+				highColor="#EFEEEC"
+				speed={0.2}
+				morphAmount={2.3}
+				morphSpeed={0.04}
+				bands={1.5}
+				thickness={0.01}
+				scale={3}
+				pixelSize={1.0}
+				glow={0}
+				colorMode="elevation"
+				contrast={0.2}
+				brightness={1.0}
+				fillBands={false}
+				opacity={1.0}
+				grain={false}
+				grainIntensity={0}
+				mouseInteraction={true}
+				mouseRadius={0.42}
+				mouseStrength={0.4}
+			/>
+		</div>
+		<div class="hero-blob absolute inset-0" data-variant="transition">
+			<Topography
+				lowColor="#1F1E1D"
+				midColor="#1F1E1D"
+				highColor="#1F1E1D"
+				speed={0.2}
+				morphAmount={2.3}
+				morphSpeed={0.04}
+				bands={1.5}
+				thickness={0.01}
+				scale={3}
+				pixelSize={1.0}
+				glow={0}
+				colorMode="elevation"
+				contrast={0.2}
+				brightness={1.0}
+				fillBands={false}
+				opacity={1.0}
+				grain={false}
+				grainIntensity={0}
+				mouseInteraction={true}
+				mouseRadius={0.42}
+				mouseStrength={0.4}
+			/>
+		</div>
+		<div class="opacity-0" data-hero-marquee>
+			<!--
+				Trocado o MarqueeText/marqueeLoop.ts (loop GSAP simples) pelo
+				ScrollVelocity (React Bits, portado sem React/`motion` — ver
+				scrollVelocityEffect.ts) a pedido do usuário: mesma ideia de 2
+				faixas em direções opostas, mas agora a velocidade reage ao
+				scroll real da página (acelera/inverte brevemente conforme
+				você rola rápido). Wrapper com as mesmas classes que o
+				MarqueeText tinha no próprio root (`.hero-marquee`, usado
+				também pelo script de sync com o centro da foto).
+			-->
+			<div class="hero-marquee pointer-events-none absolute inset-0 flex flex-col justify-center gap-4 overflow-hidden">
+				<ScrollVelocity
+					texts={[MARQUEE_PHRASE]}
+					velocity={40}
+					numCopies={4}
+					className="font-sans text-[48px] font-bold text-(--color-foreground-on-dark) desktop:text-[96px]"
+				/>
+				<ScrollVelocity
+					texts={[MARQUEE_PHRASE]}
+					velocity={-55}
+					numCopies={4}
+					className="font-sans text-[48px] font-bold text-(--color-muted) desktop:text-[96px]"
+				/>
+			</div>
+		</div>
+
+		<!--
+			Top bar (nav+localização+idioma) MOVIDA pra Layout.astro
+			(correção: a nav ficava confinada à Hero — `position:absolute`
+			relativo ao `.hero-stage` — e desaparecia assim que o scroll saía
+			da Hero, sumindo em cima do Cases. Agora é `position:fixed` no
+			nível do Layout, visível em qualquer seção). O espaço que ela
+			ocupava aqui não precisa mais de nada — o bloco de baixo já
+			ocupa a altura inteira do stage independente disso.
+		-->
+
+		<!--
+			Nome+cargo à esquerda da foto, tagline à direita (correção: a
+			rodada 2 tinha centralizado tudo em coluna, revertido a pedido do
+			usuário). Alinhamento vertical replica a proporção exata do frame
+			de referência do Figma (191:4/214:3, 1440px): a foto vai de y=106
+			a y=874 (altura 768); o bloco de nome ocupa y=342 a y=546, ou seja
+			(342-106)/768=30,73% a (546-106)/768=57,3% da altura da foto; a
+			tagline ocupa y=362 a y=482, ou (362-106)/768=33,33% a
+			(482-106)/768=48,96%. Por isso usamos `top-[X%]` em filhos
+			absolutos de um wrapper do tamanho exato da foto — `top` em % de
+			um elemento absoluto resolve contra a ALTURA do container (ao
+			contrário de `margin-top` em %, que resolve contra a largura).
+
+			Horizontal: 416(nome)+967(foto)+341(tagline)=1724px não cabe nem
+			no próprio frame de 1440px de referência (1280px de área útil já
+			descontando as margens de página) — no Figma original isso só
+			"funciona" porque o retângulo da foto tem bastante espaço
+			transparente nas bordas e o nome/tagline SOBREPÕEM o retângulo da
+			foto (nome sobrepõe 294px dos seus 416px = 30,4%; tagline
+			sobrepõe 150px dos seus 341px = 15,5%). Replicamos essa mesma
+			sobreposição proporcional aqui (`right-[69.6%]`/`left-[84.49%]`
+			em vez de `right-full`/`left-full`), já que sem ela nome/tagline
+			vazam pra fora da tela em qualquer largura de janela plausível.
+
+			No mobile isso viraria absoluto fora da tela (não há foto larga o
+			bastante pra "encostar" texto do lado) — por isso só vira
+			`absolute` a partir do breakpoint desktop; no mobile empilha em
+			fluxo normal (ordem do DOM: nome, foto, tagline).
+
+			Z-index (correção rodada 4): a foto (`.hero-photo-slot`, z-30)
+			fica ACIMA do nome/tagline (z-20) — antes estava invertido. Onde
+			a foto (agora opaca, foto-minha.png) sobrepõe o texto, o texto
+			fica escondido atrás dela; só aparece na parte que sobra pra
+			fora da foto.
+		-->
+		<!--
+			Bug 1 (correção): a foto deve sempre iniciar alinhada ao canto
+			inferior do seu container, centralizada horizontalmente — antes
+			usava `items-center` (centralizava verticalmente também), o que
+			deixava a foto "flutuando" no meio do espaço disponível em vez de
+			encostada embaixo. `items-end` alinha o bloco inteiro (headline +
+			foto + tagline, já que viajam juntos como uma unidade) ao fundo
+			da área flex-1 disponível, e `justify-center` mantém a
+			centralização horizontal — ambos resolvem contra o espaço
+			disponível, então funciona em qualquer resolução, não um valor
+			fixo em px.
+		-->
+		<!--
+			Correção (bug de interação com o background): este wrapper
+			`flex-1` ocupa quase a altura inteira do stage abaixo da nav
+			(pra centralizar/alinhar a foto, ver comentário "Bug 1" acima) —
+			mesmo nas margens vazias ao redor do nome/foto/tagline, essa
+			`<div>` sem `pointer-events-none` capturava o hover/clique antes
+			de chegar no Topography atrás dela (era a causa raiz de "não dá
+			pra interagir com o fundo": praticamente a tela inteira abaixo da
+			nav tinha essa caixa transparente por cima). `pointer-events-auto`
+			de volta só no `.hero-photo-slot` (photo precisa do próprio
+			parallax, ver HeroPhoto.astro/mouseParallax.ts).
+		-->
+		<!--
+			Responsividade mobile/tablet (pedido do usuário, com print de
+			referência): headline+subtítulo+tagline agrupados no TOPO, foto
+			colada no FUNDO da viewport — bem diferente do que `items-end`
+			incondicional fazia antes (alinhava o BLOCO INTEIRO, headline
+			incluso, ao fundo, então o headline nunca ficava "no topo" de
+			verdade). Vira `desktop:items-end` (só desktop) — em mobile o
+			padrão do flexbox (`align-items:stretch`) faz `.hero-photo-band`
+			esticar pra ocupar a altura toda do `flex-1`, dando espaço pro
+			truque de `margin-top:auto` na foto funcionar (ver abaixo).
+		-->
+		<div class="pointer-events-none relative z-10 flex flex-1 justify-center desktop:items-end">
+			<!--
+				`flex flex-col` (mobile) permite reordenar visualmente via
+				`order-*` SEM mexer na ordem do DOM — importante porque a
+				posição absoluta do desktop (`top-%`/`left-%`/`right-%` logo
+				abaixo) resolve contra ESTE container, e o script GSAP seleciona
+				tudo por `data-*` (não por ordem), então nenhum dos dois quebra.
+				Em desktop, headline/tagline viram `position:absolute` (saem do
+				fluxo flex), sobra só a foto como único item — comporta-se como
+				bloco normal, sem efeito colateral.
+			-->
+			<!--
+				Correção (bug real — pedido do usuário mudou a quebra de
+				desktop de 1440px pra 1280px): a matemática de overlap do
+				headline/tagline em `desktop:` (offsets em % relativos à
+				banda) foi calibrada pro frame de referência do Figma
+				(1440px) assumindo banda travada em 967px — o comentário
+				original já dizia que a composição INTEIRA (headline
+				vazando à esquerda + banda + tagline vazando à direita)
+				soma ~1280px de largura, encostando exatamente no limite do
+				"1440px de frame − 160px de margem = 1280px de área útil".
+				Baixar o gatilho de desktop pra 1280px sem tocar nisso fazia
+				a tagline vazar ~27px pra fora da tela (cortada pelo
+				`overflow:hidden` do stage) bem em 1280px, já que agora o
+				VIEWPORT INTEIRO é 1280px, não só a área útil.
+				Fix: `desktop:w-[67.15vw]` (967/1440×100, o mesmo percentual
+				que a banda ocupa no frame de referência) faz a banda —
+				e a foto dentro dela, que é `w-full` da banda — encolher
+				fluidamente a partir de 1280px, atingindo exatamente 967px
+				(o teto do `max-w` abaixo) só em 1440px+. Como os offsets do
+				headline/tagline são percentuais RELATIVOS à banda, eles
+				encolhem junto na mesma proporção, sem precisar recalcular
+				nada — a 1280px a banda fica com ~860px, deixando espaço
+				suficiente pra composição inteira caber sem cortar.
+			-->
+			<div class="hero-photo-band relative mx-auto flex w-full max-w-[967px] flex-col desktop:block desktop:w-[67.15vw]">
+				<div
+					class="relative z-20 order-1 mb-(--spacing-lg) text-center tablet:mb-(--spacing-xl) tablet:max-w-[608px] tablet:mx-auto desktop:mb-0 desktop:max-w-none desktop:text-left desktop:absolute desktop:top-[30.73%] desktop:right-[69.6%] desktop:w-[416px]"
+					data-hero-headline
+				>
+					<h1 class="font-sans text-[40px] leading-[1.1] font-bold text-(--color-foreground-on-light) desktop:text-[72px]">
+						Marcelo Henrique<span class="text-(--color-accent)">.</span>
+					</h1>
+					<p
+						class="mt-(--spacing-sm) font-sans text-[16px] text-(--color-foreground-on-light) tablet:mt-(--spacing-md) desktop:text-[20px]"
+						data-i18n="hero.role"
+					>
+						UX/UI &amp; Product Designer Senior.
+					</p>
+				</div>
+
+				<!--
+					`order-3` + `mt-auto`: empurra só a FOTO pro fundo do
+					container esticado (mobile) — headline (order-1) e tagline
+					(order-2) ficam naturalmente no topo. Em desktop não tem
+					efeito: o container volta a ser `items-end`/auto-altura (só a
+					foto contribui pra altura, headline/tagline são absolutos),
+					então não sobra espaço livre pra margem automática consumir.
+				-->
+				<div
+					class="hero-photo-slot pointer-events-auto relative z-30 order-3 mt-auto aspect-[967/768] w-full"
+					data-hero-photo-slot
+				>
+					<HeroPhoto />
+
+					<!--
+						Scroll-cue sobreposto na foto (não mais um irmão
+						separado abaixo dela), em branco. Sem gradiente atrás
+						(removido a pedido do usuário) — se o contraste ficar
+						ruim contra fotos mais claras, sinalizar de volta antes
+						de reintroduzir qualquer escurecimento.
+
+						Correção (pedido do usuário — texto aparecendo deslocado
+						à esquerda, em qualquer resolução): trocado `inset-x-0`
+						(que estica a caixa pra largura INTEIRA do container
+						pai — `.hero-photo-slot`, que às vezes tem `width:auto`
+						setado via JS, ver `syncPhotoHeightBudget` acima) por
+						`left-1/2 -translate-x-1/2`, que centraliza a caixa
+						pelo PRÓPRIO tamanho dela (shrink-to-fit) em relação ao
+						ponto central do pai — não depende da largura do pai
+						estar correta/finalizada no momento em que o navegador
+						calcula o layout, elimina de vez essa classe de bug.
+					-->
+					<p
+						class="absolute left-1/2 bottom-(--spacing-lg) z-20 -translate-x-1/2 text-center font-sans text-[16px] whitespace-nowrap text-(--color-foreground-on-dark) desktop:text-[20px]"
+						data-hero-scrollcue
+						data-i18n="hero.scrollcue"
+					>
+						Role para descobrir como ↓
+					</p>
+				</div>
+
+				<!--
+					Correção (bug real — margem duplicada): o headline
+					(acima) já tem `tablet:mb-(--spacing-xl)` (32px) igual ao
+					Figma 464:1260 (`gap-[32px]` entre o grupo
+					headline+subtítulo e a tagline) — mas a tagline TAMBÉM
+					tinha seu próprio `mt-(--spacing-lg)` (24px), e margens
+					entre irmãos flex NÃO colapsam (ao contrário de blocos
+					normais) — o gap real acabava sendo 32+24=56px, não os
+					32px do Figma. `tablet:mt-0` cancela a margem própria da
+					tagline a partir do tablet, deixando só a margem do
+					headline como fonte do gap (o valor de mobile, sem
+					Figma confirmando um número aqui ainda, foi mantido como
+					estava).
+				-->
+				<p
+					class="relative z-20 order-2 mx-auto mt-(--spacing-lg) max-w-[600px] text-center font-sans text-[16px] text-(--color-foreground-on-light) tablet:mt-0 desktop:text-[20px] desktop:mx-0 desktop:w-[341px] desktop:max-w-none desktop:text-left desktop:absolute desktop:top-[33.33%] desktop:left-[84.49%]"
+					data-hero-tagline
+					data-i18n="hero.tagline"
+				>
+					Transformo <span class="text-(--color-accent)">problemas ambíguos</span> em{" "}
+					<span class="text-(--color-accent)">decisões</span> de produto{" "}
+					<span class="text-(--color-accent)">fundamentadas</span>, criando{" "}
+					<span class="text-(--color-accent)">clareza, critério e direção</span> a partir de uma leitura sistêmica
+					que conecta produto, negócio e experiência.
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	import "../../lib/gsapSetup"; // registra o ScrollTrigger como side-effect
+	import { gsap, ScrollTrigger } from "../../lib/gsapSetup";
+	import { prefersReducedMotion } from "../../lib/reducedMotion";
+	import { pauseTopography, resumeTopography } from "../../lib/topographyEffect";
+
+	const wrapper = document.querySelector<HTMLElement>("[data-hero-scroll-wrapper]");
+	const stage = document.querySelector<HTMLElement>("[data-hero-stage]");
+
+	// Correção (regressão reportada pelo usuário — headline espremida sob
+	// a nav): a versão anterior media `siteNav.getBoundingClientRect().
+	// bottom`. `getBoundingClientRect` reflete TRANSFORMS, e
+	// `initAutoHideNav` (autoHideNav.ts) escreve `transform:
+	// translateY(-150%)` nesse MESMO elemento toda vez que o usuário rola
+	// pra baixo. Se um `resize` acontecesse com a nav escondida — e no
+	// mobile isso é a REGRA, não exceção: o colapso da barra de URL
+	// dispara `resize` exatamente durante o scroll pra baixo, o único
+	// momento em que a nav fica escondida — o `bottom` medido virava
+	// ~alguns px em vez da altura real, e o padding-top computado
+	// congelava pequeno demais. Como nada re-sincroniza isso em `scroll`
+	// puro, o valor errado persistia mesmo depois de voltar ao topo (nav
+	// visível de novo, headline por baixo dela).
+	//
+	// Fix: medir de forma imune a transform — `offsetHeight` (altura de
+	// layout, ignora transform) + o `top` COMPUTADO da nav (valor usado
+	// da propriedade CSS, também ignora transform, e acompanha sozinho
+	// qualquer mudança futura em `top-(--spacing-lg)` na Layout.astro).
+	//
+	// Nota: o comentário antigo aqui justificava a medição dinâmica com
+	// "a nav quebra em 2 linhas em telas estreitas (~232px)" — isso não
+	// vale mais. Abaixo de 1280px a `NavPill` de desktop é `hidden` e
+	// sobram só o hambúrguer (44px) e o `LanguageToggle` (44x72px): no
+	// pior caso medido (768px, com o label "Santa Catarina - BR" visível)
+	// isso ocupa ~274px dos ~728px disponíveis — nunca quebra linha.
+	// Mantida a medição dinâmica mesmo assim (custo zero, protege
+	// qualquer mudança futura na nav), só corrigida a fonte do bug real.
+	const siteNav = document.querySelector<HTMLElement>("[data-site-nav]");
+	const photoSlot = document.querySelector<HTMLElement>("[data-hero-photo-slot]");
+	// Bate com `--breakpoint-desktop` em global.css (pedido do usuário:
+	// tablet vai até 1279px, "web"/desktop começa em 1280px).
+	const desktopMq = window.matchMedia("(min-width: 1280px)");
+	const tabletMq = window.matchMedia("(min-width: 768px)");
+	function syncMobileTopSpacing() {
+		if (!siteNav || !stage) return;
+		if (desktopMq.matches) {
+			stage.style.removeProperty("padding-top");
+			return;
+		}
+		const navTop = parseFloat(getComputedStyle(siteNav).top) || 0;
+		const navBottom = navTop + siteNav.offsetHeight;
+		// Correção (pedido do usuário — nova instrução explícita nesta
+		// sessão, sobrepõe o valor medido antes no Figma 464:1260/tablet,
+		// que era 40px): no intervalo 768-1279px (tablet) o buffer agora é
+		// 32px; abaixo de 768px (mobile de verdade) mantém os 40px
+		// originais, já que não houve pedido pra mudar o mobile.
+		const buffer = tabletMq.matches ? 32 : 40;
+		stage.style.paddingTop = `${Math.max(navBottom + buffer, 0)}px`;
+	}
+
+	// Bug real (reportado pelo usuário — foto cortando perto do rosto,
+	// em qualquer largura, mas só aparece em VIEWPORTS BAIXOS — testei
+	// especificamente 768/1024/1439px de largura x altura normal e não
+	// reproduziu; reproduziu sim em 1024x700 E também em 1440x700, ou
+	// seja, é a ALTURA que causa isso, não a largura/breakpoint): a foto
+	// (`.hero-photo-slot`) tem proporção fixa 967:768 e tamanho guiado só
+	// pela LARGURA disponível (`w-full`/`aspect-[967/768]` no mobile,
+	// tamanho natural 967x768 no desktop) — nunca leva em conta a
+	// ALTURA real da viewport. `.hero-stage` é `h-screen` (100vh) com
+	// `overflow:hidden`; numa tela baixa (~700px, comum em notebooks
+	// com barra de favoritos/extensões, ou telas físicas mais baixas), a
+	// soma de padding-top (nav) + headline + tagline + a foto (768px de
+	// altura sozinha) estoura os 700px disponíveis, e o `overflow:hidden`
+	// simplesmente CORTA o excesso — cortando a foto perto do queixo/
+	// testa dependendo de como a caixa fica alinhada.
+	//
+	// Fix: mede o espaço vertical REAL que sobra pra foto dentro do
+	// stage (do topo da própria foto até o fim do stage, com uma
+	// pequena margem de segurança) — mesmo padrão de medição em runtime
+	// já usado acima — e, só se a altura NATURAL da foto (guiada pela
+	// largura) for maior que esse espaço, aplica uma altura explícita
+	// (a foto encolhe mantendo a proporção 967:768 via `aspect-ratio`,
+	// já que `width` vira `auto` e passa a ser DERIVADA da altura, não o
+	// contrário). Em telas normais (altura suficiente) isso não faz
+	// nada — o comportamento fica idêntico ao de antes.
+	function syncPhotoHeightBudget() {
+		if (!stage || !photoSlot) return;
+		// Reseta pra medir o tamanho NATURAL (guiado só pela largura) antes
+		// de decidir se precisa cortar — sem isso, uma correção aplicada
+		// antes (ex: numa tela mais alta) ficaria presa mesmo depois da
+		// janela crescer de novo.
+		photoSlot.style.removeProperty("height");
+		photoSlot.style.removeProperty("width");
+		photoSlot.style.removeProperty("align-self");
+		photoSlot.style.removeProperty("margin-left");
+		photoSlot.style.removeProperty("margin-right");
+		const stageRect = stage.getBoundingClientRect();
+		const slotRect = photoSlot.getBoundingClientRect();
+		const bottomSafety = 8;
+		const availableHeight = stageRect.bottom - slotRect.top - bottomSafety;
+		if (availableHeight > 0 && slotRect.height > availableHeight) {
+			// Bug real (corte severo em 1024x768 — a foto virava uma tira
+			// horizontal fina): `.hero-photo-band` é `flex-col` SEM
+			// `items-*` explícito, então o padrão do flexbox
+			// (`align-items:stretch`) estica qualquer filho com
+			// `width:auto` pra ocupar a LARGURA TOTAL do eixo cruzado —
+			// `width:auto` sozinho não bastava pra deixar o
+			// `aspect-ratio` derivar a largura a partir da altura, o
+			// flex vencia e mantinha a largura cheia (967px) mesmo com a
+			// altura cravada bem menor, esmagando a proporção. Precisa de
+			// `align-self` (sair do stretch) além de `width:auto` pra o
+			// `aspect-ratio` finalmente conseguir encolher a largura
+			// junto com a altura.
+			//
+			// Correção (pedido do usuário — foto ficava alguns px à
+			// esquerda do centro real na 1ª/2ª dobra): a partir do
+			// `desktop:` breakpoint, `.hero-photo-band` vira
+			// `desktop:block` (não é mais `flex`, ver classes no
+			// template) — `align-self` não tem NENHUM efeito fora de um
+			// container flex/grid, então nesse caso o slot (agora mais
+			// estreito que a banda, com `width:auto` derivado da
+			// `aspect-ratio`) ficava colado na borda ESQUERDA (
+			// comportamento padrão de bloco, sem margens automáticas).
+			// `margin-inline:auto` centraliza no caso `block` (desktop)
+			// sem atrapalhar o `align-self:center` que já resolve o caso
+			// `flex` (mobile/tablet) — os dois convivem, cada um só
+			// "conta" no layout onde faz sentido.
+			photoSlot.style.height = `${availableHeight}px`;
+			photoSlot.style.width = "auto";
+			photoSlot.style.alignSelf = "center";
+			photoSlot.style.marginLeft = "auto";
+			photoSlot.style.marginRight = "auto";
+		}
+	}
+
+	function syncHeroLayout() {
+		syncMobileTopSpacing();
+		syncPhotoHeightBudget();
+	}
+	syncHeroLayout();
+	window.addEventListener("resize", syncHeroLayout);
+	// Remedida depois que as fontes carregam de verdade — a fonte de
+	// fallback pode quebrar a nav num número de linhas diferente da fonte
+	// real (Figtree/Greed Standard-TRIAL), mudando a altura medida acima
+	// (e, em cascata, o espaço que sobra pra foto).
+	document.fonts?.ready.then(syncHeroLayout).catch(() => {});
+	const darkOverlay = document.querySelector<HTMLElement>("[data-hero-dark-overlay]");
+	const photoScale = document.querySelector<HTMLElement>("[data-hero-photo-scale]");
+	const photoInicial = document.querySelector<HTMLElement>("[data-hero-photo-inicial]");
+	const photoFinal = document.querySelector<HTMLElement>("[data-hero-photo-final]");
+	const headline = document.querySelector<HTMLElement>("[data-hero-headline]");
+	const tagline = document.querySelector<HTMLElement>("[data-hero-tagline]");
+	const scrollCue = document.querySelector<HTMLElement>("[data-hero-scrollcue]");
+	const heroBlob = document.querySelector<HTMLElement>('.hero-blob[data-variant="hero"]');
+	const transitionBlob = document.querySelector<HTMLElement>('.hero-blob[data-variant="transition"]');
+	// O elemento que o Topography realmente controla (pause/resume) é o
+	// `[data-topography]` interno, não o wrapper `.hero-blob` (que só
+	// existe pra levar o autoAlpha do crossfade).
+	const heroBlobCanvas = heroBlob?.querySelector<HTMLElement>("[data-topography]") ?? null;
+	const transitionBlobCanvas = transitionBlob?.querySelector<HTMLElement>("[data-topography]") ?? null;
+	const marquee = document.querySelector<HTMLElement>("[data-hero-marquee]");
+	const photoParallax = document.querySelector<HTMLElement>("[data-hero-photo-parallax]");
+
+	if (
+		wrapper &&
+		stage &&
+		darkOverlay &&
+		photoScale &&
+		photoInicial &&
+		photoFinal &&
+		headline &&
+		tagline &&
+		scrollCue &&
+		heroBlob &&
+		transitionBlob &&
+		heroBlobCanvas &&
+		transitionBlobCanvas &&
+		marquee &&
+		photoSlot &&
+		photoParallax
+	) {
+		// Correção (rodada 9 — bug de flicker): se este `<script>` re-executar
+		// sem um reload completo (HMR do Vite em dev, ou o componente sendo
+		// remontado), qualquer ScrollTrigger/timeline antigo preso neste
+		// mesmo `wrapper` continuaria rodando e brigando com o novo — as 2
+		// animações escrevendo valores diferentes na mesma opacidade a cada
+		// tick de scroll é exatamente o tipo de "pisca" descrito. Mata
+		// qualquer instância antiga antes de criar a nova.
+		for (const st of ScrollTrigger.getAll()) {
+			if (st.trigger === wrapper) st.kill();
+		}
+
+		// Correção (marquee desalinhado com a foto): o marquee se centraliza
+		// em relação à `.hero-stage` inteira (`inset-0` + `justify-center`),
+		// mas a foto (`.hero-photo-slot`) fica ENCOSTADA NO FUNDO da área
+		// abaixo da nav (Bug 1, ver comentário acima) — como o slot não
+		// preenche essa área inteira (só a altura que a proporção 967:768
+		// permite), o CENTRO VISUAL do slot fica mais para baixo que o
+		// centro da stage inteira, e a foto (escalada center-center dentro
+		// do slot) acaba desalinhada do centro do marquee.
+		//
+		// Bug real (reportado pelo usuário — desalinha DURANTE o scroll, não
+		// só no estado final): a primeira versão desta correção usava o
+		// retângulo ESTÁTICO do `.hero-photo-slot` (medido uma vez, nunca
+		// muda) como alvo do marquee — a foto TRANSLADA durante a
+		// transição (sobe do canto inferior até o centro da stage, ver
+		// tween em `.hero-photo-slot` abaixo — hoje em QUALQUER largura,
+		// não só mobile), então o centro visual da foto deixa de bater com
+		// o centro do slot ESTÁTICO assim que o translate começa, e o
+		// marquee (calculado contra o slot parado) ficava "esperando" a
+		// foto num lugar que ela só ocupa no FINAL da transição — daí o
+		// desalinho visível enquanto o usuário rola.
+		//
+		// Fix: em vez de mirar num retângulo pré-calculado, mede o retângulo
+		// AO VIVO da foto (`photoScale`, que reflete scale E translate de
+		// TODOS os ancestrais no momento) a cada tick de scroll (chamado de
+		// dentro do `onUpdate` do ScrollTrigger, abaixo) — o marquee passa a
+		// "perseguir" a posição real da foto quadro a quadro, sempre
+		// alinhado, em qualquer largura.
+		//
+		// O transform vai no `.hero-marquee` INTERNO (o wrapper que
+		// centraliza as 2 faixas do ScrollVelocity), não no wrapper
+		// `[data-hero-marquee]` — esse wrapper
+		// não tem tamanho próprio (só existe pra levar o autoAlpha do
+		// crossfade) e vira containing block do filho `absolute inset-0`
+		// assim que ganha `transform`, colapsando o marquee inteiro pra
+		// 0x0 (foi exatamente esse bug na primeira tentativa).
+		const marqueeInner = marquee!.querySelector<HTMLElement>(".hero-marquee");
+		function syncMarqueeToPhotoCenter() {
+			if (!marqueeInner) return;
+			const stageRect = stage!.getBoundingClientRect();
+			const photoRect = photoScale!.getBoundingClientRect();
+			const stageCenter = stageRect.top + stageRect.height / 2;
+			const photoCenter = photoRect.top + photoRect.height / 2;
+			marqueeInner.style.transform = `translateY(${photoCenter - stageCenter}px)`;
+		}
+		syncMarqueeToPhotoCenter();
+		window.addEventListener("resize", syncMarqueeToPhotoCenter);
+
+		// Correção (pedido do usuário — o bloco foto+marquee da 2ª dobra
+		// ficava deslocado pro canto inferior em tablet/desktop): este
+		// deslocamento vertical (repouso, canto inferior → centro exato
+		// da stage) só era calculado/animado no MOBILE (`!desktopMq.
+		// matches`) — generalizado agora pra qualquer largura, já que o
+		// cálculo em si NUNCA dependeu de breakpoint (é 100% medido ao
+		// vivo via `getBoundingClientRect`, `stageCenter - slotCenter`) —
+		// só o GATE de "só aplica no mobile" que sobrava. O que decide
+		// QUANDO isso acontece continua sendo o scroll (a duration/
+		// posição do tween no timeline, `MAIN_TRANSITION`, ver abaixo),
+		// não a largura da tela — ou seja, a foto continua ancorada
+		// embaixo durante a 1ª dobra (progress 0) e só sobe ao entrar na
+		// 2ª dobra, em qualquer resolução.
+		//
+		// Alvo do tween: `.hero-photo-slot` (o wrapper de LAYOUT, sem
+		// nenhum transform próprio hoje) — não `.hero-photo-parallax`,
+		// que already é dono do translate do parallax de mouse no
+		// desktop (HeroPhoto.astro/mouseParallax.ts, via `gsap.quickTo`
+		// no MESMO eixo `y`). Animar os dois no mesmo elemento faria os
+		// 2 tweens brigarem pelo `y` a cada frame no desktop — mantém o
+		// princípio já estabelecido no projeto de "1 transform por
+		// elemento" usando o slot (uma camada acima) só pra este
+		// recentro de scroll.
+		//
+		// Correção (regressão reportada pelo usuário — foto da 2ª dobra
+		// desalinhada verticalmente depois de redimensionar a janela larga
+		// pra estreita, sem reload): a limitação abaixo ("não recalcula em
+		// resize, só no load") deixou de ser aceitável na prática — ao
+		// corrigir o bug 1 (padding-top) pra sobreviver a um resize ao
+		// vivo, a ALTURA do stage muda depois desse resize, e esse valor
+		// (calculado uma única vez, no load, com a altura ANTIGA) ficava
+		// desatualizado. Virou uma função (mesmo padrão já usado por
+		// `scale: getFinalPhotoScale` logo abaixo) pra `invalidateOnRefresh`
+		// conseguir recalculá-la em todo refresh — precisa descontar o `y`
+		// JÁ aplicado no slot (via `gsap.getProperty`) na medição, senão
+		// cada recálculo comporia o offset com o anterior, formando um
+		// loop de realimentação.
+		function getPhotoCenterOffsetY(): number {
+			const stageRect = stage!.getBoundingClientRect();
+			const slotRect = photoSlot!.getBoundingClientRect();
+			const currentY = (gsap.getProperty(photoSlot, "y") as number) || 0;
+			const stageCenter = stageRect.top + stageRect.height / 2;
+			const slotCenter = slotRect.top + slotRect.height / 2 - currentY;
+			return stageCenter - slotCenter;
+		}
+
+		// Correção (cursor elevation não reagia): o autoAlpha abaixo cobre a
+		// opacidade, mas `visibility` sozinho não é confiável aqui — o
+		// refresh inicial do ScrollTrigger (pin) roda a timeline numa
+		// posição de progress ligeiramente > 0 (ponto flutuante, não
+		// exatamente 0), então o tween de autoAlpha do "transition" fica
+		// tecnicamente "entre" 0 e 1 nesse instante e o GSAP escreve
+		// `visibility: inherit` em vez de `hidden` — ainda clicável/hoverável
+		// mesmo com opacity:0. Por isso o pointer-events de cada variant é
+		// controlado explicitamente (abaixo, no onUpdate) em vez de confiar
+		// só no autoAlpha/visibility pra tirar o variant escondido do
+		// hit-test do mouse.
+		gsap.set(transitionBlob, { autoAlpha: 0 });
+		heroBlob.style.pointerEvents = "auto";
+		transitionBlob.style.pointerEvents = "none";
+
+		// Correção (rodada 5): a foto NÃO começa mais cobrindo a tela toda —
+		// o usuário pediu de volta o tamanho normal do Figma (967x768) desde
+		// o início (revertendo a decisão da rodada 3).
+		//
+		// Correção (rodada 8): a transição inteira estava "lenta"/"travando".
+		// Causa raiz: nenhum `.to()` abaixo tinha `duration` explícita, então
+		// o GSAP usava o default (0.5 "unidade" por tween) — como o timeline
+		// não tinha um comprimento total intencional, `PHASE_1_END` (0.35)
+		// não correspondia de verdade a "35% do scroll": o cross-fade
+		// (duration 0.5 a partir de 0) ia até 0.5, e a fase 2 (duration 0.5
+		// a partir de 0.35) ia até 0.85 — o timeline todo durava 0.85
+		// "unidades", e o ScrollTrigger espalha ESSE total pelo scroll
+		// inteiro. Resultado: tudo ficava esticado por ~85% do scroll em vez
+		// de terminar rápido.
+		//
+		// Fix: cada tween agora tem `duration` explícita, tratando as
+		// posições como frações reais do scroll (0 a 1). Um `.set()` vazio
+		// na posição 1 fixa o comprimento total do timeline em exatamente 1
+		// — sem isso, o timeline "termina" no fim do último tween de verdade
+		// e o ScrollTrigger esticaria esse total de novo. O texto some quase
+		// instantâneo (rápido, começa em 0 junto com o scroll), a troca de
+		// foto é rápida, e o resto da transição (escala, fundo escuro,
+		// blobs) termina cedo (~22% do scroll) — o resto do scroll só
+		// "segura" o estado final escuro/marquee, sem mais nada animando.
+		const TEXT_FADE = 0.08; // nome/cargo/tagline/scroll-cue somem rápido
+		const PHOTO_CROSSFADE = 0.12; // troca de imagem rápida
+		const MAIN_TRANSITION = 0.22; // escala da foto, fundo escuro, blobs
+
+		// Correção (bug real — reportado pelo usuário): a primeira versão
+		// disto tratava o tamanho final da foto (na transição de scroll)
+		// como um valor FIXO por breakpoint (234px<768px, 536px>=768px) —
+		// um "degrau" na largura exata de 768px. Isso por si só não
+		// distorcia nada (o `scale` mantém a proporção 967:768 sempre),
+		// mas o problema real estava no SLOT DE REPOUSO (a foto ANTES da
+		// transição, "primeira dobra"): para bater o Figma 464:927 (768px
+		// exatos) à risca, esse slot tinha ganhado uma ALTURA FIXA
+		// (`h-[560px]`) só no tablet — só que largura continuava fluida
+		// (`w-full`, crescendo até o teto de 967px do `.hero-photo-band`).
+		// Entre 768px e 1440px a largura ia crescendo (768→967px) enquanto
+		// a altura ficava CRAVADA em 560px — a proporção da CAIXA deixava
+		// de bater com a proporção real da foto (967:768) e o
+		// `object-cover` cortava a imagem de forma cada vez mais agressiva
+		// conforme a tela alargava, até "estourar" visualmente perto do
+		// desktop. Removida a altura fixa (ver o slot logo acima, voltou a
+		// ser só `aspect-[967/768] w-full`, IGUAL pra mobile/tablet/
+		// desktop) — a foto de repouso agora escala de forma 100% fluida,
+		// sem nenhum "degrau" de breakpoint, sempre na proporção certa.
+		//
+		// Correção (pedido do usuário — a versão anterior deixava a foto
+		// da 2ª dobra pequena demais no tablet, igualando à escala do
+		// desktop de propósito): agora o TABLET (768-1279px) tem sua
+		// PRÓPRIA escala, o dobro da do desktop (pedido explícito: "pelo
+		// menos 2x o tamanho") — só o desktop de verdade (1280px+) usa
+		// `DESKTOP_PHOTO_SCALE`. O trecho mobile (até 375px, Figma
+		// 224:509/510) continua interpolando, agora até o valor de
+		// tablet (0.8) em 768px.
+		const DESKTOP_PHOTO_SCALE = 0.4;
+		const TABLET_PHOTO_SCALE = DESKTOP_PHOTO_SCALE * 2; // 0.8 — pedido do usuário
+		const MOBILE_PHOTO_TARGET_WIDTH = 234; // Figma 224:509/510, 375px
+		function getFinalPhotoScale(): number {
+			const naturalWidth = photoScale!.getBoundingClientRect().width;
+			if (!naturalWidth) return DESKTOP_PHOTO_SCALE;
+			const viewportWidth = window.innerWidth;
+			if (viewportWidth >= 1280) return DESKTOP_PHOTO_SCALE;
+			if (viewportWidth >= 768) return TABLET_PHOTO_SCALE;
+			const mobileScale = MOBILE_PHOTO_TARGET_WIDTH / naturalWidth;
+			if (viewportWidth <= 375) return mobileScale;
+			const t = (viewportWidth - 375) / (768 - 375);
+			return mobileScale + t * (TABLET_PHOTO_SCALE - mobileScale);
+		}
+
+		// Correção (rodada 9 — bug de flicker): pausa o loop de blobs do
+		// variant que não está visível no momento em vez de deixar os 2
+		// (32 layers com filter:blur) animando o tempo inteiro — reduz o
+		// custo de repaint que competia com o scrub do marquee/texto.
+		let heroPlaying = true;
+		let transitionPlaying = false;
+
+		const tl = gsap.timeline({
+			scrollTrigger: {
+				trigger: wrapper,
+				pin: stage,
+				start: "top top",
+				end: "bottom bottom",
+				// scrub numérico (não `true`) mesmo fora de reduced-motion:
+				// dá uma suavização leve que absorve soluços de frame (~40
+				// tweens do GSAP + redesenho de canvas rodando ao mesmo
+				// tempo) — sem isso, qualquer jank do main thread virava um
+				// "pulo" visível na opacidade do marquee (rodada 6).
+				scrub: prefersReducedMotion() ? 1.2 : 0.3,
+				anticipatePin: 1,
+				// Correção (bug reportado pelo usuário — resize a coisa toda:
+				// resizar a JANELA de tablet pra desktop, ou vice-versa, sem
+				// dar reload, deixava a foto da 2ª dobra "enorme"/errada):
+				// causa raiz — `finalPhotoScale` (usado no tween de `scale`
+				// logo abaixo) era calculado UMA VEZ SÓ, na carga inicial do
+				// script, e nunca recalculado depois. Enquanto tablet e
+				// desktop usavam o MESMO valor (0.4) isso não tinha efeito
+				// visível; agora que tablet tem sua própria escala (0.8,
+				// pedido anterior do usuário), o valor "congelado" da
+				// largura original vaza pra qualquer largura testada depois
+				// SEM reload — não é um acoplamento entre tablet/desktop no
+				// código (as duas faixas são independentes), é essa
+				// biblioteca de comportamento de "só calcula uma vez" que
+				// ficou visível. Fix: `invalidateOnRefresh` avisa o GSAP pra
+				// re-executar qualquer valor baseado em FUNÇÃO (ver
+				// `scale: () => getFinalPhotoScale()` abaixo) toda vez que o
+				// ScrollTrigger recalcula (o que já acontece sozinho a cada
+				// resize de janela).
+				invalidateOnRefresh: true,
+				// Correção (pedido do usuário — foto e marquee ficavam
+				// desalinhados horizontalmente ao rolar rápido, só ficava
+				// certo rolando devagar): efeito colateral esperado do
+				// `scrub` numérico acima — ele suaviza a animação com um
+				// atraso de ~0.3s em relação à posição real do scroll, e
+				// esse atraso fica bem visível quando o scroll é rápido
+				// (a foto/marquee mostram o estado de ~0.3s atrás, não o
+				// atual). `fastScrollEnd` é a opção do próprio GSAP
+				// ScrollTrigger pra esse cenário: detecta scroll
+				// anormalmente rápido e pula direto pro valor final em vez
+				// de deixar a suavização "atrasar visivelmente" atrás dele
+				// — mantém o `scrub:0.3` de propósito (absorve soluços de
+				// frame em scroll normal) só ficando mais "reativo" nos
+				// picos de velocidade.
+				fastScrollEnd: true,
+				// Correção (regressão reportada pelo usuário — a 2ª dobra
+				// ficava deslocada horizontalmente): a versão anterior
+				// forçava `width:100vw`, com a justificativa de que
+				// `position:fixed` "ocupa o viewport inteiro porque a
+				// scrollbar não o recorta". É o INVERSO do spec: o
+				// containing block de um `fixed` é o initial containing
+				// block, cuja largura EXCLUI o gutter da scrollbar clássica;
+				// já `100vw`, por spec, INCLUI esse gutter. O hack deixava o
+				// stage ~15px mais LARGO que o viewport visível e empurrava
+				// tudo que centraliza dentro dele (`.hero-photo-band` com
+				// `mx-auto`, `.hero-marquee` com `justify-center`) ~7-8px
+				// pra DIREITA do centro real — supercorrigindo em vez de
+				// resolver.
+				//
+				// O problema de origem continua real: ao fixar (`pin:
+				// stage`), o GSAP mede a largura no fluxo normal do
+				// documento, que já vem menor que o viewport quando há
+				// scrollbar. Fix: cravar a largura VISÍVEL real em px —
+				// `document.documentElement.clientWidth` é exatamente a
+				// largura do initial containing block. Correto nos dois
+				// casos, sem ramificar por breakpoint: onde a scrollbar é
+				// overlay (mobile) esse valor já É o que `100vw` daria;
+				// onde ela ocupa layout (desktop/tablet), exclui o gutter
+				// corretamente. Bônus: sem `100vw` o stage não causa mais
+				// overflow horizontal do documento no estado não pinado.
+				onRefresh() {
+					const viewportWidth = document.documentElement.clientWidth;
+					stage!.style.width = `${viewportWidth}px`;
+					stage!.style.maxWidth = `${viewportWidth}px`;
+					stage!.style.left = "0px";
+					// Correção (regressão que voltou depois da 1ª tentativa de
+					// corrigir o bug 1 — headline ainda espremida sob a nav ao
+					// redimensionar uma janela larga pra estreita, sem reload):
+					// o `pin: stage` do GSAP TIRA UM RETRATO do `padding`
+					// computado do elemento no momento em que pina (pra manter
+					// a caixa visualmente idêntica ao virar `position:fixed`) e
+					// REAPLICA esse retrato como `style.padding` (shorthand) a
+					// cada refresh — sobrescrevendo por cima de qualquer
+					// `stage.style.paddingTop` que `syncMobileTopSpacing`
+					// (window resize listener, mais abaixo) tivesse acabado de
+					// escrever. Mesma categoria do bug já visto com `margin`
+					// no CasesSection (GSAP também gerencia esse valor no
+					// elemento que pina). Fix: chamar `syncMobileTopSpacing`
+					// de novo AQUI DENTRO, depois que o GSAP já reaplicou seu
+					// retrato — garante que nosso valor seja o último a
+					// escrever, sempre que o ScrollTrigger reavaliar (inclusive
+					// em resize).
+					syncMobileTopSpacing();
+				},
+				onUpdate(self) {
+					// Correção (cursor elevation não reagia, causa raiz): o
+					// refresh inicial do ScrollTrigger (pin) chama este
+					// onUpdate com `progress` ligeiramente > 0 (ponto
+					// flutuante, ex: 5.49e-7), mesmo sem nenhum scroll real
+					// ter acontecido — comparar contra `> 0` cru fazia o
+					// "transition" já entrar como "deveria estar tocando" no
+					// primeiro frame, roubando os eventos de mouse do "hero"
+					// visível. Um pequeno epsilon evita esse falso positivo.
+					const PROGRESS_EPSILON = 0.001;
+					const shouldPlayHero = self.progress < MAIN_TRANSITION;
+					if (shouldPlayHero !== heroPlaying) {
+						heroPlaying = shouldPlayHero;
+						heroBlob.style.pointerEvents = shouldPlayHero ? "auto" : "none";
+						if (shouldPlayHero) resumeTopography(heroBlobCanvas);
+						else pauseTopography(heroBlobCanvas);
+					}
+
+					const shouldPlayTransition = self.progress > PROGRESS_EPSILON;
+					if (shouldPlayTransition !== transitionPlaying) {
+						transitionPlaying = shouldPlayTransition;
+						transitionBlob.style.pointerEvents = shouldPlayTransition ? "auto" : "none";
+						if (shouldPlayTransition) resumeTopography(transitionBlobCanvas);
+						else pauseTopography(transitionBlobCanvas);
+					}
+
+					// Persegue a foto quadro a quadro (ver comentário longo em
+					// `syncMarqueeToPhotoCenter` acima).
+					//
+					// Correção (bug real — marquee "travava" desalinhado da
+					// foto): antes só chamava isso enquanto `self.progress <=
+					// MAIN_TRANSITION` — `self.progress` é o progresso CRU do
+					// scroll, sem o atraso do `scrub`; a posição renderizada
+					// da foto (`photoScale`/`photoSlot`) é que fica ~0.3s
+					// atrás (é o próprio `scrub` fazendo o trabalho dele). Se
+					// o scroll avança rápido o bastante, `self.progress`
+					// passa de `MAIN_TRANSITION` ANTES da foto (ainda em
+					// atraso) terminar de chegar na posição final — o rastreio
+					// parava exatamente nesse intervalo, "congelando" o
+					// marquee alguns pixels atrás de onde a foto ainda ia
+					// terminar de se mover. Chamar sempre (sem a condição)
+					// custa 2 `getBoundingClientRect()` a mais por tick só
+					// durante o scroll — preço baixo por eliminar de vez a
+					// possibilidade de desalinho.
+					syncMarqueeToPhotoCenter();
+				},
+			},
+		});
+
+		// Texto some quase instantâneo, junto com o primeiro pixel de scroll.
+		tl.to([headline, tagline, scrollCue], { autoAlpha: 0, ease: "none", duration: TEXT_FADE }, 0);
+
+		// Cross-fade rápido inicial (colorida) -> final (P&B). Sem mudança
+		// de escala aqui — a foto já nasce no tamanho normal do Figma.
+		tl.to(photoInicial, { opacity: 0, ease: "none", duration: PHOTO_CROSSFADE }, 0).to(
+			photoFinal,
+			{ opacity: 1, ease: "none", duration: PHOTO_CROSSFADE },
+			0,
+		);
+
+		// Transição principal: escala pro tamanho final, fundo escurece,
+		// blobs trocam — tudo termina cedo (~22% do scroll), o resto do
+		// scroll só segura o estado escuro/marquee.
+		// Cor do nav (correção rodada 6): fica sempre fixa em
+		// --color-nav-link-on-light (#444342, confirmado no Figma
+		// 214:89/87/91/93) — não anima mais para navLinkOnDark.
+		//
+		// Correção (rodada 9 — bug de flicker): `backgroundColor` força
+		// repaint caro a cada tick de scrub (não é compositor-only como
+		// opacity/transform) — num elemento `position:fixed` do tamanho da
+		// tela isso é pesado o bastante pra derrubar frames. Trocado por um
+		// overlay sólido separado (`darkOverlay`) cuja `opacity` anima —
+		// visualmente idêntico (o overlay cobre o stage inteiro com a
+		// mesma cor), mas opacity é compositor-only.
+		tl.to(photoScale, { scale: getFinalPhotoScale, ease: "none", duration: MAIN_TRANSITION }, 0)
+			.to(darkOverlay, { opacity: 1, ease: "none", duration: MAIN_TRANSITION }, 0)
+			.to(marquee, { autoAlpha: 1, ease: "none", duration: MAIN_TRANSITION }, 0)
+			.to(heroBlob, { autoAlpha: 0, ease: "none", duration: MAIN_TRANSITION }, 0)
+			.to(transitionBlob, { autoAlpha: 1, ease: "none", duration: MAIN_TRANSITION }, 0);
+
+		// Sobe a foto do repouso (canto inferior) até o centro da stage,
+		// junto com o resto da transição principal — em QUALQUER largura
+		// agora (era só mobile antes, ver correção acima). Vai no
+		// `.hero-photo-slot` (não no `.hero-photo-parallax`) de propósito
+		// — esse já é dono do translate do parallax de mouse no desktop
+		// (mesmo eixo `y`, HeroPhoto.astro/mouseParallax.ts), então usar
+		// um elemento diferente evita os 2 tweens brigarem pelo mesmo
+		// eixo no desktop.
+		tl.to(photoSlot, { y: getPhotoCenterOffsetY, ease: "none", duration: MAIN_TRANSITION }, 0);
+
+		// Ancora o comprimento total do timeline em exatamente 1 — o resto
+		// do scroll (depois de MAIN_TRANSITION) só "segura" o estado final.
+		tl.set({}, {}, 1);
+	}
+</script>

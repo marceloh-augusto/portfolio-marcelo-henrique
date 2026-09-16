@@ -1,0 +1,80 @@
+---
+/**
+ * "Minha trajetória" — Figma node 214:361. Estático, sem animação (pedido
+ * explícito do usuário) — nada de ScrollReveal aqui, ao contrário da
+ * seção Sobre.
+ *
+ * Lista hardcoded aqui mesmo (não uma content collection): são 5 linhas
+ * fixas de copy da Home, mesmo tratamento que o nome/tagline da Hero —
+ * não se repete em outro lugar do site, não precisa da abstração de uma
+ * collection só pra isso.
+ *
+ * Não inclui o CTA "Vamos conversar" + retângulo placeholder (214:362/
+ * 363) — mesmos 2 elementos recorrentes que o usuário já pediu pra
+ * remover da seção Sobre.
+ *
+ * Correção (mobile usava valores de desktop): comparado contra o Figma
+ * 224:698 (mobile) — o período (ex: "2026 - Presente") estava com
+ * `text-[14px]` incondicional, valor de desktop vazando pro mobile
+ * (Typography/Mobile/UI/Caption correto é `12px`). O espaço entre o
+ * título e a lista também era só o valor de desktop (32px) — o frame
+ * mobile usa `gap-[16px]` no nível raiz. Adicionado também um
+ * `gap-[6px]` entre as linhas da lista (presente no Figma mobile,
+ * 224:701 — não é um token de espaçamento do projeto, valor bruto do
+ * Figma mesmo).
+ *
+ * Correção (pedido do usuário — tamanho errado no desktop/tablet):
+ * comparado contra o Figma 214:369 (desktop/tablet) e 224:704 (mobile)
+ * — o gatilho do tamanho de 14px era só `desktop:` (1280px+), então o
+ * tablet inteiro (768-1279px) ainda mostrava o valor de mobile (12px).
+ * Trocado pra `tablet:text-[14px]` (cobre tablet E desktop, já que é
+ * o MESMO valor nos dois — Typography/Desktop/UI/Caption). Também
+ * faltava a `line-height` exata dos 2 estilos (Caption mobile = 1.3,
+ * Caption desktop/tablet = 1.5) — adicionada explicitamente.
+ *
+ * Correção (pedido do usuário — desvio intencional do Figma): o texto
+ * do período (direita) deve ter o MESMO font-size do texto do cargo
+ * (esquerda) em qualquer breakpoint — trocado de `text-[12px]
+ * tablet:text-[14px]` (Typography/UI/Caption do Figma) pra
+ * `text-[16px] desktop:text-[20px]`, espelhando exatamente o mesmo
+ * gatilho de breakpoint do cargo (`text-[16px] desktop:text-[20px]`
+ * logo acima). `leading`/cor/peso da fonte ficam como estavam —
+ * só o tamanho mudou.
+ */
+interface TrajectoryItem {
+	role: string;
+	period: string;
+}
+
+const TRAJECTORY: TrajectoryItem[] = [
+	{ role: "UX Consultant", period: "2026 - Presente" },
+	{ role: "Estratégia Educacional - Product Designer", period: "2024 - 2026" },
+	{ role: "Yogha - Product Designer", period: "2023 - 2024" },
+	{ role: "Oli - Product Designer", period: "2021 - 2023" },
+	{ role: "Designer Gráfico", period: "2014 - 2021" },
+];
+---
+
+<section class="bg-(--color-background-dark) px-(--spacing-md-plus) py-[96px] desktop:px-(--spacing-5xl)">
+	<h3 class="font-sans text-[28px] leading-[1.3] font-bold text-(--color-foreground-on-dark) desktop:text-[40px]" data-i18n="trajetoria.heading">
+		Minha trajetória
+	</h3>
+
+	<div class="mt-(--spacing-md) flex flex-col gap-[6px] desktop:mt-(--spacing-xl)">
+		{
+			TRAJECTORY.map((item, i) => (
+				<div class="flex items-center justify-between gap-(--spacing-md) border-b border-(--color-neutral-700) px-(--spacing-sm) py-(--spacing-md)">
+					<p class="font-sans text-[16px] text-(--color-foreground-on-dark) desktop:text-[20px]" data-i18n={`trajetoria.role.${i}`}>
+						{item.role}
+					</p>
+					<p
+						class="shrink-0 font-sans text-[16px] leading-[1.3] whitespace-nowrap text-(--color-accent) tablet:leading-[1.5] desktop:text-[20px]"
+						data-i18n={`trajetoria.period.${i}`}
+					>
+						{item.period}
+					</p>
+				</div>
+			))
+		}
+	</div>
+</section>

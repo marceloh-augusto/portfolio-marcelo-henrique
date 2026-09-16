@@ -1,0 +1,56 @@
+---
+/**
+ * "Sobre" — Figma node 214:232. Fundo ESCURO (#0F0E0D/background-dark)
+ * — sinalizando aqui porque o overview do DESIGN.md registra "Sobre"
+ * como seção de fundo claro (junto com a Hero), mas o frame real no
+ * Figma é escuro; segui o Figma (fonte de verdade mais recente/precisa)
+ * e não o texto do overview — vale atualizar o DESIGN.md depois.
+ *
+ * Efeito de texto (ScrollReveal, React Bits — portado sem React, só
+ * usa `gsap` que já é dependência do projeto) aplicado no overline
+ * "SOBRE" e no parágrafo de destaque, a pedido do usuário.
+ *
+ * O CTA "Vamos conversar" e o retângulo placeholder de foto (214:233/
+ * 214:234 no Figma) foram removidos a pedido do usuário — ambos tinham
+ * ficado sinalizados como incertos (botão sem fundo/pill no export do
+ * Figma, retângulo sem imagem associada). O mesmo par se repete no
+ * frame mobile (224:569, nós 224:572/573) — mantido de fora aqui
+ * também, mesma decisão.
+ *
+ * Correção (mobile usava valores de desktop): comparado contra o Figma
+ * 224:569 (mobile) — o parágrafo de destaque (`lead`) estava com
+ * `text-[24px] tracking-[-0.4px]` incondicional; o valor correto de
+ * Typography/Mobile/Text/Lead é `20px`/`tracking:-1px` (e o desktop
+ * também usa `tracking:-1px`, não `-0.4px` — a tracking estava errada
+ * nos DOIS breakpoints, não só no mobile). O padding vertical da seção
+ * (`py-[96px]` incondicional) também era só o valor de desktop — Figma
+ * mobile usa `py-[40px]`.
+ */
+import ScrollReveal from "../ui/ScrollReveal.astro";
+
+const LEAD_TEXT =
+	"Com mais de 5 anos de experiência e formação acadêmica em UX Design e UX Research, atuo de ponta a ponta ao longo de todo o ciclo de construção e evolução de produtos digitais. Combino visão sistêmica, pesquisa, atenção ao craft, dados e objetivos de negócio para tomar decisões de design centradas no usuário e construir experiências que gerem resultados para produto e negócio.";
+---
+
+<section
+	id="sobre"
+	class="relative flex flex-col gap-(--spacing-md) bg-(--color-background-dark) px-(--spacing-md-plus) py-(--spacing-2xl) desktop:px-(--spacing-5xl) desktop:py-[96px]"
+>
+	<ScrollReveal
+		text="SOBRE"
+		as="p"
+		baseOpacity={0.4}
+		blurStrength={8}
+		i18nKey="sobre.overline"
+		class="font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:tracking-[0.4px]"
+	/>
+
+	<ScrollReveal
+		text={LEAD_TEXT}
+		as="p"
+		baseOpacity={0.4}
+		blurStrength={8}
+		i18nKey="sobre.lead"
+		class="font-sans text-[20px] leading-[1.5] font-bold tracking-[-1px] text-(--color-foreground-on-dark) desktop:text-[40px]"
+	/>
+</section>

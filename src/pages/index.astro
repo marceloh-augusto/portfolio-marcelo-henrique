@@ -1,0 +1,43 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/home/Hero.astro";
+import CasesSection from "../components/home/CasesSection.astro";
+import SobreSection from "../components/home/SobreSection.astro";
+import ClientesSection from "../components/home/ClientesSection.astro";
+import TrajetoriaSection from "../components/home/TrajetoriaSection.astro";
+import ArquivoSection from "../components/home/ArquivoSection.astro";
+import ContatoSection from "../components/home/ContatoSection.astro";
+---
+
+<Layout title="Marcelo Henrique — Product Designer">
+	<main>
+		<Hero />
+
+		<!--
+			Cases Selecionados (Figma 214:176) — conteúdo real, ver
+			CasesSection.astro. Ordem revisada pra bater com o ARCHITECTURE.md
+			("Hero → Prova social → Lista de cases → Sobre resumido →
+			Footer"): Cases vem logo depois da Hero, não depois de Sobre.
+		-->
+		<CasesSection />
+
+		<!-- Sobre (Figma 214:232) — conteúdo real, ver SobreSection.astro. -->
+		<SobreSection />
+
+		<!-- Meus clientes e empresas (Figma 214:237) — carrossel infinito de logos, ver ClientesSection.astro. -->
+		<ClientesSection />
+
+		<!-- Minha trajetória (Figma 214:361) — estático, ver TrajetoriaSection.astro. -->
+		<TrajetoriaSection />
+
+		<!--
+			Arquivo — sem node do Figma ainda. DriftWall (React Bits, portado
+			sem React) com placeholder das capas de case já existentes, ver
+			ArquivoSection.astro — trocar pelas imagens reais quando tiver.
+		-->
+		<ArquivoSection />
+
+		<!-- Contato (Figma 214:461) — conteúdo real, ver ContatoSection.astro. -->
+		<ContatoSection />
+	</main>
+</Layout>

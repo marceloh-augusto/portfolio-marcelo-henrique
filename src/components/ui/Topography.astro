@@ -1,0 +1,114 @@
+---
+/**
+ * Porte do componente "Topography" (React Bits, variante JS+CSS) pro stack
+ * do projeto (Astro + TS, sem React — ver CLAUDE.md). A lógica em si
+ * (WebGL via `ogl`) está em topographyEffect.ts; este componente só monta
+ * o container e passa as props como JSON num data-attribute, mesmo padrão
+ * já usado em BlobBackground.astro — permite múltiplas instâncias na
+ * mesma página, cada uma com sua própria config (ex: cores diferentes por
+ * seção clara/escura), com um único script processado pelo Astro.
+ *
+ * Precisa de um container com altura/largura reais (ver Props.class) — o
+ * canvas preenche 100% do pai via CSS, não define tamanho próprio.
+ */
+export interface Props {
+	lowColor?: string;
+	midColor?: string;
+	highColor?: string;
+	speed?: number;
+	morphAmount?: number;
+	morphSpeed?: number;
+	bands?: number;
+	thickness?: number;
+	scale?: number;
+	pixelSize?: number;
+	glow?: number;
+	colorMode?: "elevation" | "uniform" | "alternating";
+	contrast?: number;
+	brightness?: number;
+	fillBands?: boolean;
+	opacity?: number;
+	grain?: boolean;
+	grainIntensity?: number;
+	mouseInteraction?: boolean;
+	mouseRadius?: number;
+	mouseStrength?: number;
+	class?: string;
+}
+
+const {
+	lowColor = "#5227FF",
+	midColor = "#FF9FFC",
+	highColor = "#FFFFFF",
+	speed = 0.35,
+	morphAmount = 3.0,
+	morphSpeed = 0.05,
+	bands = 2.0,
+	thickness = 0.01,
+	scale = 1.0,
+	pixelSize = 1.0,
+	glow = 0.5,
+	colorMode = "elevation",
+	contrast = 3.0,
+	brightness = 1.0,
+	fillBands = false,
+	opacity = 1.0,
+	grain = true,
+	grainIntensity = 0.05,
+	mouseInteraction = true,
+	mouseRadius = 0.3,
+	mouseStrength = 0.4,
+	class: className = "",
+} = Astro.props;
+
+const options = {
+	lowColor,
+	midColor,
+	highColor,
+	speed,
+	morphAmount,
+	morphSpeed,
+	bands,
+	thickness,
+	scale,
+	pixelSize,
+	glow,
+	colorMode,
+	contrast,
+	brightness,
+	fillBands,
+	opacity,
+	grain,
+	grainIntensity,
+	mouseInteraction,
+	mouseRadius,
+	mouseStrength,
+};
+---
+
+<div
+	class:list={["topography-container", className]}
+	data-topography
+	data-topography-options={JSON.stringify(options)}
+	aria-hidden="true"
+>
+</div>
+
+<style>
+	.topography-container {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+	}
+</style>
+
+<script>
+	import { initTopography } from "../../lib/topographyEffect";
+
+	document.querySelectorAll<HTMLElement>("[data-topography]").forEach((container) => {
+		const raw = container.dataset.topographyOptions;
+		const options = raw ? JSON.parse(raw) : {};
+		initTopography(container, options);
+	});
+</script>

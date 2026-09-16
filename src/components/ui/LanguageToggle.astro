@@ -1,0 +1,141 @@
+---
+/**
+ * Seletor PT/EN — agora com toggle FUNCIONAL (pedido do usuário): clicar
+ * troca o idioma da página inteira (ver i18n.ts), não só o visual do
+ * próprio botão.
+ *
+ * Dimensões batendo com o Figma 441:535/441:537 (desktop) e 224:1051/
+ * 224:1055 (mobile — versão menor): container mobile `h-[44px]
+ * rounded-[12px] px-[4px]`, segmentos `size-[32px] text-[14px]`; desktop
+ * `p-(--spacing-sm)` (8px) `rounded-[16px]`, segmentos `size-[40px]
+ * text-[16px]`. Sem gap entre os dois segmentos em nenhum dos dois
+ * (ficam colados). Ativo = fundo `--color-neutral-900` + texto
+ * `--color-background-light`; inativo = sem fundo, texto
+ * `--color-nav-link-on-light`.
+ *
+ * Correção (pedido do usuário): a troca de idioma trocava o fundo do
+ * botão ativo com um fade (cross-fade de `background-color`) — o
+ * usuário pediu um "pill" que DESLIZA de um lado pro outro, igual a um
+ * segmented control nativo (iOS/Android), em vez de sumir num lugar e
+ * aparecer no outro. Trocado pra um `data-lang-thumb` próprio: um único
+ * elemento absoluto, do tamanho de UM segmento, que fica por trás dos
+ * botões (`z-0`, os botões ficam `z-10` por cima, sempre com texto
+ * visível) e se move via `transform: translate()` entre as posições de
+ * PT/EN — só o fundo se move, o texto de cada botão troca de cor
+ * (continua com fade, mais barato e mais legível que animar a cor do
+ * texto junto com a posição).
+ *
+ * A posição/tamanho do thumb É MEDIDA em runtime a partir do botão
+ * ativo (`offsetLeft/offsetTop/offsetWidth/offsetHeight`) em vez de
+ * cravar valores em px — o segmento muda de tamanho por breakpoint
+ * (32px mobile / 40px desktop, ver classes abaixo) e essa é a mesma
+ * técnica já usada em outros lugares do projeto (Hero.astro) pra não
+ * duplicar número por breakpoint. A primeira posição é aplicada SEM
+ * transição (evita o thumb "deslizar" visivelmente na carga inicial da
+ * página, antes do usuário clicar em qualquer coisa) — só ganha a
+ * transição depois do primeiro layout.
+ */
+interface Props {
+	class?: string;
+	active?: "pt" | "en";
+}
+
+const { class: className = "", active = "pt" } = Astro.props;
+---
+
+<div
+	class:list={[
+		"relative flex h-[44px] items-center rounded-[12px] border border-(--color-border-light) bg-(--color-background-light) px-[4px] py-(--spacing-sm) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)] desktop:h-auto desktop:rounded-[16px] desktop:p-(--spacing-sm)",
+		className,
+	]}
+	data-lang-toggle
+>
+	<div class="absolute top-0 left-0 z-0 rounded-[8px] bg-(--color-neutral-900)" data-lang-thumb></div>
+	<button
+		type="button"
+		data-lang="pt"
+		aria-pressed={active === "pt" ? "true" : "false"}
+		class:list={[
+			"relative z-10 flex size-[32px] items-center justify-center rounded-[8px] font-sans text-[14px] font-semibold transition-colors duration-300 ease-in-out desktop:size-[40px] desktop:text-[16px]",
+			active === "pt" ? "text-(--color-background-light)" : "text-(--color-nav-link-on-light)",
+		]}>PT</button
+	>
+	<button
+		type="button"
+		data-lang="en"
+		aria-pressed={active === "en" ? "true" : "false"}
+		class:list={[
+			"relative z-10 flex size-[32px] items-center justify-center rounded-[8px] font-sans text-[14px] font-semibold transition-colors duration-300 ease-in-out desktop:size-[40px] desktop:text-[16px]",
+			active === "en" ? "text-(--color-background-light)" : "text-(--color-nav-link-on-light)",
+		]}>EN</button
+	>
+</div>
+
+<script>
+	import { applyLanguage, getStoredLanguage, type Lang } from "../../lib/i18n";
+
+	const INACTIVE_CLASS = "text-(--color-nav-link-on-light)";
+	const ACTIVE_CLASS = "text-(--color-background-light)";
+
+	document.querySelectorAll<HTMLElement>("[data-lang-toggle]").forEach((toggle) => {
+		const buttons = Array.from(toggle.querySelectorAll<HTMLButtonElement>("[data-lang]"));
+		const thumb = toggle.querySelector<HTMLElement>("[data-lang-thumb]");
+
+		function setActiveVisual(lang: Lang, opts: { animate: boolean }) {
+			const activeButton = buttons.find((b) => b.dataset.lang === lang) ?? buttons[0];
+
+			buttons.forEach((b) => {
+				const isActive = b === activeButton;
+				b.setAttribute("aria-pressed", String(isActive));
+				b.classList.toggle(INACTIVE_CLASS, !isActive);
+				b.classList.toggle(ACTIVE_CLASS, isActive);
+			});
+
+			if (thumb && activeButton) {
+				if (!opts.animate) thumb.style.transition = "none";
+				// O thumb nasce em `top:0;left:0` (CSS) — a posição real vem
+				// inteira daqui, medindo o botão ativo direto contra o
+				// container (`offsetParent`, o `[data-lang-toggle]`
+				// `position:relative`). Evita ter que replicar padding/borda
+				// do container à mão em CSS pra cada breakpoint (causa de um
+				// desalinho vertical de ~1px na primeira versão).
+				thumb.style.width = `${activeButton.offsetWidth}px`;
+				thumb.style.height = `${activeButton.offsetHeight}px`;
+				thumb.style.transform = `translate(${activeButton.offsetLeft}px, ${activeButton.offsetTop}px)`;
+				if (!opts.animate) {
+					// Força o navegador a aplicar a posição ANTES de reativar a
+					// transição — sem isso o `transition:none` some no mesmo
+					// frame em que a posição muda, e o primeiro clique real
+					// herda um estado intermediário estranho.
+					thumb.getBoundingClientRect();
+					thumb.style.transition = "";
+				}
+			}
+		}
+
+		// Posição inicial sem transição (corrige pro idioma salvo — o HTML
+		// nasce sempre em PT, SSG puro — sem "deslizar" visivelmente na
+		// carga da página).
+		setActiveVisual(getStoredLanguage(), { animate: false });
+		window.addEventListener("resize", () => {
+			const current = buttons.find((b) => b.getAttribute("aria-pressed") === "true")?.dataset.lang as Lang | undefined;
+			setActiveVisual(current ?? "pt", { animate: false });
+		});
+
+		buttons.forEach((btn) => {
+			btn.addEventListener("click", () => {
+				const lang = btn.dataset.lang as Lang;
+				setActiveVisual(lang, { animate: true });
+				applyLanguage(lang);
+			});
+		});
+	});
+</script>
+
+<style>
+	[data-lang-thumb] {
+		transition:
+			transform 300ms ease-in-out,
+			width 300ms ease-in-out;
+	}
+</style>

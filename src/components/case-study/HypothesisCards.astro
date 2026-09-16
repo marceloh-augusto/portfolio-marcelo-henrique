@@ -1,0 +1,53 @@
+---
+/**
+ * Cards de hipótese da seção "Pesquisa" — Figma node 271:245 (desktop) e
+ * 346:307 (mobile). Estrutura idêntica nos dois breakpoints (só o
+ * tamanho de fonte do rótulo/badge muda, 12px→14px — Typography/UI/Caption,
+ * ver @DESIGN.md); no mobile empilha (`flex-col`), no desktop vira uma
+ * linha de 3 colunas iguais (`flex-row`, cada card `flex-1`).
+ *
+ * `status`/`title`/`description` são conteúdo específico de cada
+ * hipótese do case — cada um aceita um par `*En` opcional (mecanismo
+ * `data-i18n-en`, ver i18n.ts). O rótulo "HIPÓTESE N" é gerado pelo
+ * índice do item (não é campo de conteúdo).
+ */
+interface HypothesisItem {
+	status: string;
+	statusEn?: string;
+	title: string;
+	titleEn?: string;
+	description: string;
+	descriptionEn?: string;
+}
+
+interface Props {
+	items: HypothesisItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="flex flex-col gap-(--spacing-lg) tablet:flex-row tablet:items-stretch" data-reveal-group>
+	{
+		items.map((item, i) => (
+			<div class="flex flex-1 flex-col gap-[14px] rounded-card bg-(--color-neutral-100) px-[28px] py-(--spacing-lg)">
+				<div class="flex items-center justify-between">
+					<p class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-muted) tablet:text-[14px]" data-i18n-en={`HYPOTHESIS ${i + 1}`}>
+						{`HIPÓTESE ${i + 1}`}
+					</p>
+					<div class="flex items-start rounded-full bg-(--color-neutral-200) px-(--spacing-sm-plus) py-[5px]">
+						<p class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-neutral-500) tablet:text-[14px]" data-i18n-en={item.statusEn}>
+							{item.status}
+						</p>
+					</div>
+				</div>
+				<p class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]" data-i18n-en={item.titleEn}>
+					{item.title}
+				</p>
+				<p class="font-sans text-[16px] leading-[1.5] text-(--color-neutral-500) tablet:text-[20px]" data-i18n-en={item.descriptionEn}>
+					{item.description}
+				</p>
+			</div>
+		))
+	}
+</div>

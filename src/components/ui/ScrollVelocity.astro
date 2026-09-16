@@ -1,0 +1,91 @@
+---
+/**
+ * Porte do componente "ScrollVelocity" (React Bits, variante JS+CSS) pro
+ * stack do projeto (Astro + TS, sem React nem a lib `motion` — ver
+ * CLAUDE.md e scrollVelocityEffect.ts pra detalhes de por que a
+ * dependência não foi instalada). Renderiza 1 linha por item de `texts`,
+ * cada uma com `numCopies` cópias lado a lado (necessário pro loop
+ * infinito) e direção alternada (linhas em índice ímpar invertem o sinal
+ * de `velocity`, igual ao componente original).
+ */
+export interface Props {
+	texts: string[];
+	velocity?: number;
+	className?: string;
+	damping?: number;
+	stiffness?: number;
+	numCopies?: number;
+	velocityMapping?: { input: [number, number]; output: [number, number] };
+}
+
+const {
+	texts = [],
+	velocity = 100,
+	className = "",
+	damping = 50,
+	stiffness = 400,
+	numCopies = 6,
+	velocityMapping = { input: [0, 1000], output: [0, 5] },
+} = Astro.props;
+
+const config = { damping, stiffness, velocityMapping };
+
+const rows = texts.map((text, index) => ({
+	// nbsp entre cópias, igual ao original ("{children}&nbsp;") — feito
+	// aqui na string em vez de no template, pra não precisar de escape.
+	text: `${text} `,
+	baseVelocity: index % 2 !== 0 ? -velocity : velocity,
+}));
+
+const copies = Array.from({ length: numCopies }, (_, i) => i);
+---
+
+<section class="scroll-velocity">
+	{
+		rows.map((row) => (
+			<div
+				class="scroll-velocity__parallax"
+				data-scroll-velocity-row
+				data-base-velocity={row.baseVelocity}
+				data-config={JSON.stringify(config)}
+			>
+				<div class="scroll-velocity__scroller">
+					{copies.map((i) => (
+						<span class={className} data-copy-index={i}>
+							{row.text}
+						</span>
+					))}
+				</div>
+			</div>
+		))
+	}
+</section>
+
+<style>
+	.scroll-velocity__parallax {
+		position: relative;
+		overflow: hidden;
+	}
+	.scroll-velocity__scroller {
+		display: flex;
+		white-space: nowrap;
+		will-change: transform;
+	}
+	.scroll-velocity__scroller span {
+		flex-shrink: 0;
+	}
+</style>
+
+<script>
+	import { initScrollVelocityRow } from "../../lib/scrollVelocityEffect";
+
+	document.querySelectorAll<HTMLElement>("[data-scroll-velocity-row]").forEach((row) => {
+		const scroller = row.querySelector<HTMLElement>(".scroll-velocity__scroller");
+		const firstCopy = scroller?.querySelector<HTMLElement>("span[data-copy-index='0']");
+		if (!scroller || !firstCopy) return;
+
+		const baseVelocity = Number(row.dataset.baseVelocity ?? 100);
+		const config = row.dataset.config ? JSON.parse(row.dataset.config) : {};
+		initScrollVelocityRow(scroller, firstCopy, { baseVelocity, ...config });
+	});
+</script>

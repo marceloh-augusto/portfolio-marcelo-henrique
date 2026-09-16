@@ -1,0 +1,119 @@
+---
+import '../styles/global.css';
+import NavPill from '../components/ui/NavPill.astro';
+import LanguageToggle from '../components/ui/LanguageToggle.astro';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body>
+		<!--
+			Nav global (correção: antes vivia só dentro da Hero, `position:
+			absolute` relativo ao `.hero-stage` — desaparecia assim que o
+			scroll saía da Hero, sumindo em cima do Cases/Sobre). Movida pra
+			cá como `position:fixed` — sempre visível, sobrepondo qualquer
+			seção, em qualquer ponto do scroll. `z-50` fica acima de tudo no
+			site (Cases usa z-20 pro efeito de scroll-stacking, Hero não
+			passa de z-30 no conteúdo interno).
+
+			O texto solto "Santa Catarina - BR" passa por cima de seções
+			claras E escuras (nav fixo/global). Chegou a ganhar um pill com
+			fundo próprio só pra garantir contraste AA nos dois casos, mas o
+			usuário pediu de volta o texto solto sem preenchimento (bate com
+			o Figma original) — fica com a cor fixa de texto-sobre-claro
+			(`--color-nav-link-on-light`); se aparecer baixo contraste sobre
+			alguma seção escura específica, sinalizar antes de reintroduzir
+			algum tipo de fundo.
+		-->
+		<!--
+			Auto-hide (pedido do usuário): esconde ao rolar pra baixo, mostra
+			ao rolar pra cima — ver autoHideNav.ts. `transition-transform` é
+			CSS puro (o JS só troca o `transform` inline), `motion-reduce:
+			transition-none` deixa a troca instantânea (sem deslizar) pra
+			quem pede menos movimento, em vez de tentar "desacelerar" um
+			slide de esconder/mostrar.
+		-->
+		<!--
+			Pedido do usuário: a nav sempre respeita 80px de margem, mesmo
+			na página de case study (que cresce pra 120px a partir de
+			1440px no CONTEÚDO — ver CaseHero/CaseMetadata/CaseSection).
+			Decisão deliberada de NÃO alinhar a nav ao conteúdo mais largo.
+		-->
+		<div
+			class="pointer-events-none fixed inset-x-(--spacing-md-plus) top-(--spacing-lg) z-50 flex flex-wrap items-start justify-between gap-3 transition-transform duration-300 ease-out motion-reduce:transition-none desktop:inset-x-(--spacing-5xl)"
+			data-site-nav
+		>
+			<NavPill class="pointer-events-auto" />
+			<div class="pointer-events-auto flex items-center gap-4 desktop:gap-6">
+				<!--
+					Correção (pedido do usuário): removido o "pill" (fundo/borda/
+					padding) — só texto solto agora, igual ao Figma original.
+
+					Regra de visibilidade PRÓPRIA (pedido do usuário, diferente do
+					resto da nav): some assim que o scroll sai do topo e NÃO volta
+					ao rolar pra cima de novo — só reaparece se o usuário voltar
+					pro topo da página mesmo. `transition-opacity` anima o
+					sumiço/reaparecimento; `initHideAfterScroll` (autoHideNav.ts)
+					decide quando aplicar `opacity-0`, independente do
+					`initAutoHideNav` que já controla o resto da nav pela DIREÇÃO
+					do scroll.
+
+					Correção (Figma 464:719 — tablet): antes só aparecia a partir
+					do desktop (1440px) — o frame de tablet (768px) confirma que
+					esse texto já deve estar visível ali, só que menor (`14px`,
+					Typography/Desktop/UI/Caption — o desktop mantém `16px`, valor
+					já usado antes de existir um frame de tablet confirmado).
+				-->
+				<span
+					class="hidden font-sans text-[16px] text-(--color-nav-link-on-light) transition-opacity duration-300 ease-out motion-reduce:transition-none tablet:inline-flex tablet:text-[14px] desktop:text-[16px]"
+					data-location-label
+					data-i18n="nav.location"
+					>Santa Catarina - BR</span
+				>
+				<LanguageToggle />
+			</div>
+		</div>
+
+		<slot />
+
+		<script>
+			import { initAutoHideNav, initHideAfterScroll } from "../lib/autoHideNav";
+			import { applyLanguage, getStoredLanguage } from "../lib/i18n";
+			import { initScrollReveals } from "../lib/scrollFadeUp";
+
+			const nav = document.querySelector<HTMLElement>("[data-site-nav]");
+			if (nav) initAutoHideNav(nav);
+
+			const locationLabel = document.querySelector<HTMLElement>("[data-location-label]");
+			if (locationLabel) initHideAfterScroll(locationLabel);
+
+			// Aplica o idioma salvo (localStorage) em toda carga de página —
+			// site é 100% estático (SSG, sempre nasce em PT), então isso
+			// corrige pra EN no cliente se foi a última escolha do usuário.
+			// Roda em toda página (não só a Home) via Layout.astro, pra nav
+			// ficar traduzida mesmo nas páginas de case study.
+			applyLanguage(getStoredLanguage());
+
+			// Fade in + slide up ao entrar na viewport (pedido do usuário) —
+			// roda uma vez por página via Layout.astro, cobrindo qualquer
+			// seção marcada com `data-reveal`/`data-reveal-group` em qualquer
+			// página do site (ver src/lib/scrollFadeUp.ts). PILOTO: por
+			// enquanto só a seção Outcome do case Yogha tem os atributos —
+			// replicar pro resto da página só depois de validado.
+			initScrollReveals();
+		</script>
+	</body>
+</html>

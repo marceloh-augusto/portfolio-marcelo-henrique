@@ -1,0 +1,72 @@
+---
+/**
+ * Metadados do case — Figma node 242:844 (Yogha): 2 linhas de 3 campos
+ * (Cliente/Ano/Papel, Duração/Time/Plataforma) + "Minha contribuição"
+ * full-width. A ordem dos campos é a MESMA no mobile (346:249, grid
+ * 2 colunas) e no desktop (3 colunas) — é reflow puro de CSS grid, sem
+ * precisar de DOM duplicado (mesmo raciocínio de CasesSection.astro).
+ *
+ * Labels (CLIENTE/ANO/PAPEL/...) são rótulos de TEMPLATE fixos — usam o
+ * dicionário global de i18n.ts (`case.metadata.*`). Os VALORES são
+ * conteúdo específico do case — cada um aceita um par `*En` opcional
+ * (mecanismo `data-i18n-en`, ver i18n.ts); campos sem tradução (ex: nome
+ * do cliente, "Product Designer") simplesmente não mudam ao trocar de
+ * idioma.
+ */
+import { translations } from "../../lib/i18n";
+
+interface Props {
+	client?: string;
+	year?: string;
+	yearEn?: string;
+	role?: string;
+	duration?: string;
+	durationEn?: string;
+	team?: string;
+	platform?: string;
+	platformEn?: string;
+	contribution?: string;
+	contributionEn?: string;
+}
+
+const { client, year, yearEn, role, duration, durationEn, team, platform, platformEn, contribution, contributionEn } = Astro.props;
+
+const fields = [
+	{ i18nKey: "case.metadata.cliente", value: client, valueEn: undefined },
+	{ i18nKey: "case.metadata.ano", value: year, valueEn: yearEn },
+	{ i18nKey: "case.metadata.papel", value: role, valueEn: undefined },
+	{ i18nKey: "case.metadata.duracao", value: duration, valueEn: durationEn },
+	{ i18nKey: "case.metadata.time", value: team, valueEn: undefined },
+	{ i18nKey: "case.metadata.plataforma", value: platform, valueEn: platformEn },
+].filter((field) => field.value);
+---
+
+<div class="px-(--spacing-md-plus) tablet:px-(--spacing-5xl) wide:px-[120px]">
+	<div class="grid grid-cols-2 gap-x-(--spacing-lg) gap-y-(--spacing-lg) tablet:grid-cols-3 tablet:gap-y-(--spacing-xl)" data-reveal-group>
+		{
+			fields.map((field) => (
+				<div class="flex flex-col gap-(--spacing-xs)">
+					<p class="font-sans text-[12px] font-bold text-(--color-muted) tablet:text-[14px]" data-i18n={field.i18nKey}>
+						{translations[field.i18nKey]?.pt}
+					</p>
+					<p class="font-sans text-[16px] text-(--color-foreground-on-light) tablet:text-[20px]" data-i18n-en={field.valueEn}>
+						{field.value}
+					</p>
+				</div>
+			))
+		}
+
+		{
+			contribution && (
+				<div class="col-span-2 flex flex-col gap-(--spacing-xs) tablet:col-span-3">
+					<p class="font-sans text-[12px] font-bold text-(--color-muted) tablet:text-[14px]" data-i18n="case.metadata.contribuicao">
+						{translations["case.metadata.contribuicao"]?.pt}
+					</p>
+					<p class="font-sans text-[16px] text-(--color-foreground-on-light) tablet:text-[20px]" data-i18n-en={contributionEn}>
+						{contribution}
+					</p>
+				</div>
+			)
+		}
+	</div>
+</div>
