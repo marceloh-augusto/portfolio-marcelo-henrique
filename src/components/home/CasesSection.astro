@@ -146,7 +146,7 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 		traduzível (`data-i18n`) na página.
 	-->
 	<p
-		class="font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:tracking-[0.4px] desktop:text-(--color-neutral-100)"
+		class="font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:-mx-[80px] desktop:px-[max(80px,calc((100vw-1440px)/2))] desktop:border-b desktop:border-(--color-border-dark) desktop:pb-(--spacing-sm) desktop:text-[20px] desktop:tracking-[0.4px] desktop:text-(--color-neutral-100)"
 		data-i18n="cases.overline"
 		data-cases-overline
 	>
@@ -195,7 +195,7 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 								href={`/cases/${c.id}`}
 								data-cases-slide
 								class:list={[
-									"flex flex-col gap-(--spacing-xl) border-t border-(--color-border-dark) py-(--spacing-xl) desktop:flex-row desktop:items-center desktop:justify-center desktop:gap-(--spacing-xl) desktop:px-(--spacing-5xl) desktop:py-(--spacing-5xl)",
+									"flex flex-col gap-(--spacing-xl) border-t border-(--color-border-dark) py-(--spacing-xl) desktop:flex-row desktop:items-center desktop:justify-center desktop:gap-(--spacing-xl) desktop:border-t-0 desktop:px-[max(80px,calc((100vw-1440px)/2))] desktop:py-(--spacing-5xl)",
 									isLight ? "desktop:bg-(--color-neutral-100)" : "",
 								]}
 							>
@@ -345,6 +345,8 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 			overline.style.removeProperty("top");
 			overline.style.removeProperty("left");
 			overline.style.removeProperty("z-index");
+			overline.style.removeProperty("width");
+			overline.style.removeProperty("margin-inline");
 		}
 		if (!wrapper || !stage || !track) return;
 		wrapper.style.removeProperty("height");
@@ -353,11 +355,20 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 		track.style.removeProperty("display");
 		track.style.removeProperty("flex-direction");
 		track.style.removeProperty("height");
+		track.style.removeProperty("margin-top");
 		track.style.removeProperty("align-items");
 		gsap.set(track, { clearProps: "x" });
 		slides.forEach((slide) => {
 			slide.style.removeProperty("width");
 			slide.style.removeProperty("flex-shrink");
+			const textCol = slide.children[0] as HTMLElement | undefined;
+			const imgBox = slide.children[1] as HTMLElement | undefined;
+			imgBox?.style.removeProperty("flex");
+			imgBox?.style.removeProperty("width");
+			imgBox?.style.removeProperty("height");
+			textCol?.style.removeProperty("flex");
+			textCol?.style.removeProperty("width");
+			textCol?.style.removeProperty("min-width");
 		});
 		if (progress) {
 			progress.hidden = true;
@@ -379,6 +390,59 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 		wrapper.style.height = `${window.innerHeight + scrollDistance()}px`;
 	}
 
+	// Correção (bug relatado — indicador de progresso sobreposto pela
+	// imagem do card em telas baixas): a imagem é `flex-1` (largura vem
+	// do espaço horizontal sobrando, ALTURA é derivada dessa largura via
+	// `aspect-ratio` fixo) — nunca reage à altura da tela. Em viewports
+	// baixos, a altura "natural" da imagem estoura o espaço vertical
+	// disponível e invade a faixa reservada pro indicador (fixo a
+	// `--spacing-lg` do fundo do stage). Fix: mede quanto espaço vertical
+	// REALMENTE sobra (mesma filosofia do `band` do rótulo — nunca
+	// número mágico fixo) e, só quando a imagem não cabe nesse espaço,
+	// inverte a relação: a imagem passa a ser driven pela ALTURA (capada
+	// no espaço disponível, `aspect-ratio` já na classe deriva a largura
+	// sozinho) e a coluna de texto (só `w-[513px] shrink-0` hoje) vira
+	// `flex-1`, absorvendo a largura que a imagem devolveu. O gap entre
+	// as colunas não precisa de tratamento — é `gap` do próprio
+	// container flex-row, não muda com o tamanho dos filhos.
+	function syncSlideImageSize() {
+		if (!track || !progress) return;
+		const trackMarginTop = parseFloat(getComputedStyle(track).marginTop) || 0;
+		const slideVerticalPadding = 160; // py-(--spacing-5xl) do slide, topo+baixo
+		const progressReserved =
+			progress.offsetHeight +
+			parseFloat(getComputedStyle(progress).bottom || "0") +
+			16; // --spacing-md, respiro mínimo pra não encostar
+		const availableHeight = window.innerHeight - trackMarginTop - slideVerticalPadding - progressReserved;
+
+		slides.forEach((slide) => {
+			const textCol = slide.children[0] as HTMLElement | undefined;
+			const imgBox = slide.children[1] as HTMLElement | undefined;
+			if (!textCol || !imgBox) return;
+
+			// Limpa qualquer override anterior antes de medir de novo —
+			// senão a altura "natural" lida a seguir já viria capada pelo
+			// override da rodada anterior, nunca voltando ao normal numa
+			// tela que cresceu de novo.
+			imgBox.style.removeProperty("flex");
+			imgBox.style.removeProperty("width");
+			imgBox.style.removeProperty("height");
+			textCol.style.removeProperty("flex");
+			textCol.style.removeProperty("width");
+			textCol.style.removeProperty("min-width");
+
+			const naturalHeight = imgBox.getBoundingClientRect().height;
+			if (naturalHeight <= availableHeight || availableHeight <= 0) return;
+
+			imgBox.style.flex = "0 0 auto";
+			imgBox.style.width = "auto";
+			imgBox.style.height = `${availableHeight}px`;
+			textCol.style.flex = "1 1 auto";
+			textCol.style.width = "auto";
+			textCol.style.minWidth = "513px";
+		});
+	}
+
 	function setup() {
 		if (!wrapper || !stage || !track || slides.length === 0) return;
 
@@ -387,7 +451,16 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 		track.style.display = "flex";
 		track.style.flexDirection = "row";
 		track.style.height = "100%";
-		track.style.alignItems = "center";
+		// `flex-start` (não mais `center`): com `center`, o card só
+		// encostava na linha do rótulo por coincidência, quando a altura
+		// reservada (`band`, calculada mais abaixo) batia exatamente com
+		// a altura do card — em qualquer folga extra, a centralização
+		// distribuía o sobra pra cima E pra baixo, reabrindo um gap
+		// acima do card mesmo depois de remover o respiro extra do
+		// cálculo do `band`. `flex-start` gruda o card no topo da área
+		// reservada sempre, garantindo gap=0 entre a linha e o card em
+		// qualquer altura de viewport (pedido do usuário).
+		track.style.alignItems = "flex-start";
 		slides.forEach((slide) => {
 			slide.style.width = "100%";
 			slide.style.flexShrink = "0";
@@ -399,14 +472,57 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 		if (overline && stage) {
 			stage.appendChild(overline);
 			overline.style.position = "absolute";
-			// `left: var(--spacing-5xl)` (80px) — agora que o stage é
-			// full-bleed (`width:100vw; left:0`, ver abaixo), 0px o
-			// grudaria na borda real da tela; precisa do recuo explícito
-			// pra bater com o x=80 do Figma 523:1106.
-			overline.style.left = "var(--spacing-5xl)";
+			// `left: 0` + `width: 100%` (do `.cases-stage`, já full-bleed)
+			// + `margin-inline: 0` (neutraliza o `-mx-[80px]` da classe,
+			// que só faz sentido em fluxo normal — aqui, sobrescrito só
+			// neste estado inline) — a CAIXA do elemento (onde o
+			// `border-bottom` desenha, pedido do usuário: linha de ponta
+			// a ponta) passa a ir de x=0 a x=100vw. O `padding-left` da
+			// classe (`desktop:px-[max(80px,...)]`) continua intacto e é
+			// quem empurra o TEXTO pra x=80 — não muda de lugar.
+			// Histórico: antes usávamos `left:80px` sem `width` (o texto
+			// media certo por acidente, já que a caixa fazia
+			// shrink-to-fit ao redor dele) — mas exatamente por isso a
+			// linha não chegava nas bordas. Com `width:100%` adicionado,
+			// manter `left:80px` teria deslocado a caixa 80px pra direita
+			// (80 + 100% do stage = overflow) — testado e corrigido pra
+			// `left:0`, que é o valor certo agora que a caixa tem largura
+			// explícita em vez de shrink-to-fit.
+			overline.style.left = "0";
 			overline.style.top = "var(--spacing-3xl)";
 			overline.style.zIndex = "10";
+			overline.style.width = "100%";
+			overline.style.marginInline = "0";
 		}
+
+		// Correção (bug relatado — rótulo "CASES SELECIONADOS" aparecendo
+		// por cima da imagem do card): a `.cases-track` ocupa `height:
+		// 100%` da `.cases-stage` (100vh) com `align-items:center` — o
+		// card ativo fica centralizado na altura INTEIRA da tela, sem
+		// nenhum espaço reservado pro rótulo (que é só um overlay
+		// absoluto por cima, sem influenciar o layout). Em qualquer
+		// viewport mais baixo (~700px de altura pra baixo — notebook
+		// comum, janela não maximizada), o topo do card centralizado sobe
+		// o suficiente pra invadir a faixa onde o rótulo está — reproduzido
+		// e confirmado via getBoundingClientRect em 1440×620.
+		// Fix: reserva a faixa (top do rótulo + altura real dele, medida
+		// via `offsetHeight` pra não depender de número mágico/quebra de
+		// linha) como `margin-top` da track, encolhendo a `height` na
+		// mesma medida — o card passa a centralizar só no espaço que
+		// SOBRA abaixo do rótulo, nunca por baixo dele. Não toca a
+		// `.cases-stage` (alvo do pin do GSAP).
+		// Sem respiro extra depois do rótulo (pedido do usuário — a capa
+		// do case deve encostar direto na linha do border-bottom): como
+		// `offsetHeight` já inclui o `border-bottom`+`padding-bottom` do
+		// rótulo (ver classe do elemento), a faixa termina exatamente
+		// onde a linha termina — a track começa ali, gap = 0.
+		if (overline && track) {
+			const band = `var(--spacing-3xl) + ${overline.offsetHeight}px`;
+			track.style.marginTop = `calc(${band})`;
+			track.style.height = `calc(100% - (${band}))`;
+		}
+
+		syncSlideImageSize();
 
 		if (progress) {
 			progress.hidden = false;
@@ -472,7 +588,10 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 				// do wrapper desatualizada, e o bloco então saía de sincronia
 				// com o scroll real (era a causa raiz do bug relatado: texto
 				// cortado/elementos "vazando" durante o scroll).
-				onRefreshInit: syncWrapperHeight,
+				onRefreshInit: () => {
+					syncWrapperHeight();
+					syncSlideImageSize();
+				},
 				// Efeito ímã (pedido do usuário): ao parar de rolar, o
 				// GSAP puxa o `progress` pro múltiplo mais próximo de
 				// `1/(n-1)` — exatamente as frações onde cada card fica

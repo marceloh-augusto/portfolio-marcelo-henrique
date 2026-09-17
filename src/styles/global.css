@@ -82,6 +82,17 @@
 	   ContatoSection ("Vamos conversar?") é a ÚNICA exceção — fica de
 	   fora de propósito (pedido do usuário), mantém sempre 80px. */
 	--breakpoint-wide: 1440px;
+
+	/* Pedido do usuário: o site é full-bleed (sem teto de largura), o
+	   que deixa o conteúdo esticando demais em telas ultrawide/4K. Teto
+	   fixo de conteúdo — reaproveita o mesmo valor de `--breakpoint-wide`
+	   (não é coincidência, é o breakpoint mais largo que o Figma já
+	   desenhou) — aplicado como `max-width` + `margin-inline: auto` por
+	   DENTRO do padding lateral que cada seção já tem: o padding controla
+	   a margem em telas menores que 1440px, este teto assume a partir
+	   daí. Elementos full-bleed de propósito (fundos, canvases, o
+	   carrossel de Cases) ficam de fora, não usam esse token. */
+	--content-max-width: 1440px;
 }
 
 body {

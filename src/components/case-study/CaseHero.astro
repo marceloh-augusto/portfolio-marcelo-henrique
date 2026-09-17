@@ -18,7 +18,7 @@ interface Props {
 const { headline, headlineEn, image, imageAlt } = Astro.props;
 ---
 
-<section class="flex flex-col gap-(--spacing-lg) px-(--spacing-md-plus) tablet:gap-(--spacing-xl) tablet:px-(--spacing-5xl) wide:px-[120px]" data-reveal-group>
+<section class="flex flex-col gap-(--spacing-lg) px-(--spacing-md-plus) tablet:gap-(--spacing-xl) tablet:px-(--spacing-5xl) wide:px-[max(120px,calc((100vw-1440px)/2))]" data-reveal-group>
 	<h3
 		class="font-sans text-[28px] leading-[1.3] font-bold text-(--color-foreground-on-light) tablet:text-[40px]"
 		data-i18n-en={headlineEn}

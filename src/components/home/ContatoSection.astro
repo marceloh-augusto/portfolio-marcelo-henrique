@@ -53,38 +53,40 @@ const LINKS = [
 
 <section id="contato" class="flex flex-col bg-(--color-background-dark)">
 	<div
-		class="flex flex-1 flex-col gap-(--spacing-xl) px-(--spacing-md-plus) pt-(--spacing-3xl) desktop:flex-row desktop:items-center desktop:gap-(--spacing-4xl) desktop:px-(--spacing-5xl) desktop:py-(--spacing-5xl)"
+		class="flex flex-1 flex-col px-(--spacing-md-plus) pt-(--spacing-3xl) desktop:px-[max(80px,calc((100vw-1440px)/2))] desktop:py-(--spacing-5xl)"
 	>
-		<h3
-			class="flex-1 font-sans text-[48px] leading-[1.2] font-bold text-(--color-foreground-on-dark) desktop:text-[96px]"
-			data-i18n="contato.heading"
-		>
-			Vamos conversar<span class="text-(--color-accent)">?</span>
-		</h3>
-
-		<div class="flex flex-1 flex-col justify-center gap-(--spacing-lg)">
-			<p
-				class="font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:tracking-[0.4px]"
-				data-i18n="contato.overline"
+		<div class="flex flex-1 flex-col gap-(--spacing-xl) desktop:flex-row desktop:items-center desktop:gap-(--spacing-4xl)">
+			<h3
+				class="flex-1 font-sans text-[48px] leading-[1.2] font-bold text-(--color-foreground-on-dark) desktop:text-[96px]"
+				data-i18n="contato.heading"
 			>
-				CONTATO
-			</p>
-			{
-				LINKS.map((link) => (
-					<a
-						href={link.href}
-						target={link.external ? "_blank" : undefined}
-						rel={link.external ? "noreferrer noopener" : undefined}
-						class="font-sans text-[14px] leading-[1.5] text-(--color-foreground-on-dark) underline decoration-from-font transition-colors hover:text-(--color-accent) desktop:text-[16px] desktop:leading-none"
-					>
-						{link.label}
-					</a>
-				))
-			}
+				Vamos conversar<span class="text-(--color-accent)">?</span>
+			</h3>
+
+			<div class="flex flex-1 flex-col justify-center gap-(--spacing-lg)">
+				<p
+					class="font-sans text-[14px] tracking-[0.28px] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:tracking-[0.4px]"
+					data-i18n="contato.overline"
+				>
+					CONTATO
+				</p>
+				{
+					LINKS.map((link) => (
+						<a
+							href={link.href}
+							target={link.external ? "_blank" : undefined}
+							rel={link.external ? "noreferrer noopener" : undefined}
+							class="font-sans text-[14px] leading-[1.5] text-(--color-foreground-on-dark) underline decoration-from-font transition-colors hover:text-(--color-accent) desktop:text-[16px] desktop:leading-none"
+						>
+							{link.label}
+						</a>
+					))
+				}
+			</div>
 		</div>
 	</div>
 
-	<div class="mt-(--spacing-md) border-t border-(--color-border-dark) px-(--spacing-md-plus) py-(--spacing-xl) desktop:mt-0 desktop:px-(--spacing-5xl)">
+	<div class="mt-(--spacing-md) border-t border-(--color-border-dark) px-(--spacing-md-plus) py-(--spacing-xl) desktop:mt-0 desktop:px-[max(80px,calc((100vw-1440px)/2))]">
 		<p class="font-sans text-[12px] font-bold leading-[1.3] text-(--color-foreground-on-dark) desktop:text-[14px] desktop:leading-normal" data-i18n="footer.copyright">
 			© 2026 Marcelo Henrique · Santa Catarina — Brasil
 		</p>

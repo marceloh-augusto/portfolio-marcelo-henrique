@@ -31,24 +31,6 @@
 		&#x2715;
 	</button>
 
-	<button
-		type="button"
-		aria-label="Anterior"
-		class="absolute left-(--spacing-md) top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-(--color-neutral-50) text-(--color-neutral-900) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)] tablet:left-(--spacing-lg)"
-		data-lightbox-prev
-	>
-		&#x2039;
-	</button>
-
-	<button
-		type="button"
-		aria-label="Próximo"
-		class="absolute right-(--spacing-md) top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-(--color-neutral-50) text-(--color-neutral-900) shadow-[0px_4px_4.75px_rgba(0,0,0,0.10)] tablet:right-(--spacing-lg)"
-		data-lightbox-next
-	>
-		&#x203a;
-	</button>
-
 	<div class="flex h-full w-full touch-none items-center justify-center overflow-hidden p-(--spacing-xl)" data-lightbox-viewport>
 		<img data-lightbox-image class="hidden max-h-[85vh] max-w-[90vw] origin-center select-none" alt="" draggable="false" />
 		<video data-lightbox-video class="hidden max-h-[85vh] max-w-[90vw] origin-center" controls></video>
@@ -79,17 +61,15 @@
 	const image = root?.querySelector<HTMLImageElement>("[data-lightbox-image]");
 	const video = root?.querySelector<HTMLVideoElement>("[data-lightbox-video]");
 	const closeButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-close]");
-	const prevButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-prev]");
-	const nextButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-next]");
 	const zoomInButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-zoom-in]");
 	const zoomOutButton = root?.querySelector<HTMLButtonElement>("[data-lightbox-zoom-out]");
 	const zoomValue = root?.querySelector<HTMLElement>("[data-lightbox-zoom-value]");
 	const zoomControls = root?.querySelector<HTMLElement>("[data-lightbox-zoom-controls]");
 
-	if (root && image && video && closeButton && prevButton && nextButton && zoomInButton && zoomOutButton && zoomValue && zoomControls) {
-		// Cada `group` de triggers vira uma lista navegável independente;
-		// triggers sem `data-lightbox-group` caem num group próprio (sem
-		// setas de navegação, já que não haveria pra onde ir).
+	if (root && image && video && closeButton && zoomInButton && zoomOutButton && zoomValue && zoomControls) {
+		// Cada trigger abre seu próprio item via `group`+`index` (ver
+		// `open()` abaixo) — sem navegação entre itens do mesmo group
+		// (pedido do usuário: removida a função de avançar/voltar).
 		video.addEventListener("loadedmetadata", () => {
 			video.playbackRate = 1.5;
 		});
@@ -198,10 +178,6 @@
 			}
 
 			applyZoom();
-
-			const hasMultiple = activeGroup.length > 1;
-			prevButton!.classList.toggle("hidden", !hasMultiple);
-			nextButton!.classList.toggle("hidden", !hasMultiple);
 		}
 
 		function open(group: string, index: number) {
@@ -222,12 +198,6 @@
 			document.body.style.overflow = "";
 		}
 
-		function step(delta: number) {
-			if (activeGroup.length === 0) return;
-			activeIndex = (activeIndex + delta + activeGroup.length) % activeGroup.length;
-			render();
-		}
-
 		function zoomBy(delta: number) {
 			scale = Math.min(4, Math.max(1, scale + delta));
 			if (scale === 1) {
@@ -242,8 +212,6 @@
 		});
 
 		closeButton.addEventListener("click", close);
-		prevButton.addEventListener("click", () => step(-1));
-		nextButton.addEventListener("click", () => step(1));
 		zoomInButton.addEventListener("click", () => zoomBy(0.5));
 		zoomOutButton.addEventListener("click", () => zoomBy(-0.5));
 
@@ -254,8 +222,6 @@
 		document.addEventListener("keydown", (event) => {
 			if (root.classList.contains("hidden")) return;
 			if (event.key === "Escape") close();
-			if (event.key === "ArrowLeft") step(-1);
-			if (event.key === "ArrowRight") step(1);
 		});
 	}
 </script>

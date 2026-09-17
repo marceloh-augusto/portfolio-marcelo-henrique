@@ -209,7 +209,7 @@ const MARQUEE_PHRASE =
 			esticar pra ocupar a altura toda do `flex-1`, dando espaço pro
 			truque de `margin-top:auto` na foto funcionar (ver abaixo).
 		-->
-		<div class="pointer-events-none relative z-10 flex flex-1 justify-center desktop:items-end">
+		<div class="pointer-events-none relative z-10 flex flex-1 justify-center desktop:-mx-[80px] desktop:px-[max(80px,calc((100vw-1440px)/2))] desktop:items-end">
 			<!--
 				`flex flex-col` (mobile) permite reordenar visualmente via
 				`order-*` SEM mexer na ordem do DOM — importante porque a
