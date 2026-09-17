@@ -1,7 +1,10 @@
 ---
 /**
- * Uma coluna de "O que melhorou"/"O que piorou" — Figma node 253:97.
- * Usado 2x lado a lado dentro da seção Outcome. `titleKey` é rótulo de
+ * Card "O que melhorou"/"O que piorou" — Figma node 518:561 (melhorou) e
+ * 518:568 (piorou). Usado 2x lado a lado dentro da seção Outcome. Mesmo
+ * padrão visual de card dos `HypothesisCards` (bg-neutral-100,
+ * rounded-card, rótulo caption uppercase em --color-muted) — reaproveitado
+ * aqui em vez de criar um componente novo. `titleKey` é rótulo de
  * TEMPLATE fixo (i18n.ts `case.outcome.*`); `itemsEn` (opcional, mesma
  * ordem de `items`) traduz o conteúdo específico do case.
  */
@@ -18,8 +21,8 @@ const i18nKey = `case.outcome.${titleKey}`;
 const title = translations[i18nKey]?.pt ?? titleKey;
 ---
 
-<div class="flex flex-1 flex-col gap-(--spacing-md)">
-	<p class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]" data-i18n={i18nKey}>
+<div class="flex flex-1 flex-col gap-[14px] rounded-card bg-(--color-neutral-100) px-[28px] py-(--spacing-lg)">
+	<p class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-muted) uppercase tablet:text-[14px]" data-i18n={i18nKey}>
 		{title}
 	</p>
 	<ul
