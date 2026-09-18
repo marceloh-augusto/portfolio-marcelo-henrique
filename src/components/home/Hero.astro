@@ -11,7 +11,7 @@ const MARQUEE_PHRASE =
 
 <section class="hero-scroll-wrapper relative h-[300vh]" data-hero-scroll-wrapper>
 	<div
-		class="hero-stage relative flex h-screen w-full flex-col overflow-hidden bg-(--color-background-light) px-(--spacing-md-plus) pt-(--spacing-lg) desktop:px-(--spacing-5xl) desktop:pt-(--spacing-lg)"
+		class="hero-stage relative flex w-full flex-col overflow-hidden bg-(--color-background-light) px-(--spacing-md-plus) pt-(--spacing-lg) desktop:px-(--spacing-5xl) desktop:pt-(--spacing-lg)"
 		data-hero-stage
 	>
 		<!--
@@ -331,6 +331,35 @@ const MARQUEE_PHRASE =
 	</div>
 </section>
 
+<style>
+	/* Correção (bug relatado — Hero maior que a área visível no mobile,
+	   empurrando a foto e "Role para descobrir como ↓" pra fora da tela):
+	   `h-screen` (Tailwind) compila pra `height:100vh` — mede a altura do
+	   viewport com a barra de endereço do navegador RECOLHIDA (o maior
+	   valor possível), não a área realmente visível no momento em que a
+	   página carrega (barra ainda expandida). `100dvh` mede a altura
+	   VISÍVEL de verdade, ajustando sozinha quando a barra
+	   recolhe/expande.
+	   `@supports` em vez de duas declarações de `height` na mesma regra
+	   (tentativa 1, revertida): o minificador de CSS do build colapsa
+	   declarações duplicadas da mesma propriedade e mantém só a última
+	   (`100dvh`), JOGANDO FORA o fallback `100vh` — testado e confirmado
+	   no `dist/` gerado. `@supports` são regras SEPARADAS, o minificador
+	   não as funde, então o fallback sobrevive ao build: browsers sem
+	   suporte a `dvh` (Safari <15.4, Chrome Android <108) nunca satisfazem
+	   a condição do `@supports` e ficam com `100vh`; quem suporta aplica
+	   a regra de dentro por cima. */
+	.hero-stage {
+		height: 100vh;
+	}
+
+	@supports (height: 100dvh) {
+		.hero-stage {
+			height: 100dvh;
+		}
+	}
+</style>
+
 <script>
 	import "../../lib/gsapSetup"; // registra o ScrollTrigger como side-effect
 	import { gsap, ScrollTrigger } from "../../lib/gsapSetup";
@@ -558,16 +587,49 @@ const MARQUEE_PHRASE =
 		// assim que ganha `transform`, colapsando o marquee inteiro pra
 		// 0x0 (foi exatamente esse bug na primeira tentativa).
 		const marqueeInner = marquee!.querySelector<HTMLElement>(".hero-marquee");
+		// Correção (bug relatado — marquee "andando e travando" em Android
+		// mais fraco, ex: Motorola): `syncMarqueeToPhotoCenter` roda a cada
+		// tick do scrub (dentro do `onUpdate` do ScrollTrigger, mais
+		// abaixo) — antes lia `getBoundingClientRect()` do `stage` E da
+		// foto a cada tick, 2 leituras síncronas de layout ("layout
+		// thrashing") por frame, em cima de uma cena já pesada (~40 tweens
+		// + 2 canvas WebGL do Topography rodando ao mesmo tempo, ver
+		// comentário no `scrub:` abaixo). O retângulo do `stage` só muda
+		// de verdade em resize (ele é `position:fixed` uma vez pinado,
+		// nunca se move sozinho durante o scroll) — cacheado em
+		// `stageCenter`, recalculado só em resize/refresh, não mais a
+		// cada tick. Só o retângulo da FOTO precisa ser lido em todo
+		// tick, já que ela genuinamente está em transição (scale+translate)
+		// durante o scroll.
+		let stageCenter = 0;
+		function syncStageCenter() {
+			const stageRect = stage!.getBoundingClientRect();
+			stageCenter = stageRect.top + stageRect.height / 2;
+		}
 		function syncMarqueeToPhotoCenter() {
 			if (!marqueeInner) return;
-			const stageRect = stage!.getBoundingClientRect();
 			const photoRect = photoScale!.getBoundingClientRect();
-			const stageCenter = stageRect.top + stageRect.height / 2;
 			const photoCenter = photoRect.top + photoRect.height / 2;
 			marqueeInner.style.transform = `translateY(${photoCenter - stageCenter}px)`;
 		}
+		syncStageCenter();
 		syncMarqueeToPhotoCenter();
-		window.addEventListener("resize", syncMarqueeToPhotoCenter);
+		// Essa 1ª chamada roda ANTES do ScrollTrigger/pin existir (a
+		// timeline só é criada mais abaixo) — `stage.getBoundingClientRect()`
+		// nesse instante ainda reflete o fluxo normal do documento, não a
+		// posição pinada (`position:fixed`) final. `onRefresh` (mais
+		// abaixo) já corrige isso, mas só dispara em resize — no
+		// carregamento normal da página nada re-sincroniza sozinho. Um
+		// re-sync depois de 1 frame (`requestAnimationFrame`) cobre a
+		// janela entre "script rodou" e "GSAP terminou de pinar".
+		requestAnimationFrame(() => {
+			syncStageCenter();
+			syncMarqueeToPhotoCenter();
+		});
+		window.addEventListener("resize", () => {
+			syncStageCenter();
+			syncMarqueeToPhotoCenter();
+		});
 
 		// Correção (pedido do usuário — o bloco foto+marquee da 2ª dobra
 		// ficava deslocado pro canto inferior em tablet/desktop): este
@@ -803,6 +865,12 @@ const MARQUEE_PHRASE =
 					// escrever, sempre que o ScrollTrigger reavaliar (inclusive
 					// em resize).
 					syncMobileTopSpacing();
+					// `stageCenter` (cache usado por `syncMarqueeToPhotoCenter`,
+					// ver comentário acima de onde é declarado) também precisa
+					// ser recalculado aqui — o retângulo do stage muda de
+					// verdade com o `width`/`left`/padding que este mesmo
+					// `onRefresh` acabou de reaplicar.
+					syncStageCenter();
 				},
 				onUpdate(self) {
 					// Correção (cursor elevation não reagia, causa raiz): o
