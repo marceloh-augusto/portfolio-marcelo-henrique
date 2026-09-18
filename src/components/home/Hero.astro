@@ -365,6 +365,8 @@ const MARQUEE_PHRASE =
 	import { gsap, ScrollTrigger } from "../../lib/gsapSetup";
 	import { prefersReducedMotion } from "../../lib/reducedMotion";
 	import { pauseTopography, resumeTopography } from "../../lib/topographyEffect";
+	import { DESKTOP_MEDIA_QUERY, DESKTOP_BREAKPOINT_PX } from "../../lib/breakpoints";
+	import { applyPinnedStageWidthFix } from "../../lib/pinnedStageWidthFix";
 
 	const wrapper = document.querySelector<HTMLElement>("[data-hero-scroll-wrapper]");
 	const stage = document.querySelector<HTMLElement>("[data-hero-stage]");
@@ -398,9 +400,7 @@ const MARQUEE_PHRASE =
 	// qualquer mudança futura na nav), só corrigida a fonte do bug real.
 	const siteNav = document.querySelector<HTMLElement>("[data-site-nav]");
 	const photoSlot = document.querySelector<HTMLElement>("[data-hero-photo-slot]");
-	// Bate com `--breakpoint-desktop` em global.css (pedido do usuário:
-	// tablet vai até 1279px, "web"/desktop começa em 1280px).
-	const desktopMq = window.matchMedia("(min-width: 1280px)");
+	const desktopMq = window.matchMedia(DESKTOP_MEDIA_QUERY);
 	const tabletMq = window.matchMedia("(min-width: 768px)");
 	function syncMobileTopSpacing() {
 		if (!siteNav || !stage) return;
@@ -755,7 +755,7 @@ const MARQUEE_PHRASE =
 			const naturalWidth = photoScale!.getBoundingClientRect().width;
 			if (!naturalWidth) return DESKTOP_PHOTO_SCALE;
 			const viewportWidth = window.innerWidth;
-			if (viewportWidth >= 1280) return DESKTOP_PHOTO_SCALE;
+			if (viewportWidth >= DESKTOP_BREAKPOINT_PX) return DESKTOP_PHOTO_SCALE;
 			if (viewportWidth >= 768) return TABLET_PHOTO_SCALE;
 			const mobileScale = MOBILE_PHOTO_TARGET_WIDTH / naturalWidth;
 			if (viewportWidth <= 375) return mobileScale;
@@ -843,10 +843,7 @@ const MARQUEE_PHRASE =
 				// corretamente. Bônus: sem `100vw` o stage não causa mais
 				// overflow horizontal do documento no estado não pinado.
 				onRefresh() {
-					const viewportWidth = document.documentElement.clientWidth;
-					stage!.style.width = `${viewportWidth}px`;
-					stage!.style.maxWidth = `${viewportWidth}px`;
-					stage!.style.left = "0px";
+					applyPinnedStageWidthFix(stage!);
 					// Correção (regressão que voltou depois da 1ª tentativa de
 					// corrigir o bug 1 — headline ainda espremida sob a nav ao
 					// redimensionar uma janela larga pra estreita, sem reload):

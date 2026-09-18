@@ -80,11 +80,11 @@ const PHOTO_HEIGHT = 768;
 <script>
 	import { initParallax } from "../../lib/mouseParallax";
 	import { gsap } from "../../lib/gsapSetup";
+	import { DESKTOP_MEDIA_QUERY } from "../../lib/breakpoints";
 
 	document.querySelectorAll<HTMLElement>(".hero-photo-parallax").forEach((parallaxEl) => {
 		const mm = gsap.matchMedia();
-		// Bate com `--breakpoint-desktop` em global.css (1280px).
-		mm.add("(min-width: 1280px)", () => {
+		mm.add(DESKTOP_MEDIA_QUERY, () => {
 			return initParallax(parallaxEl);
 		});
 	});

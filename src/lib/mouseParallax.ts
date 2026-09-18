@@ -28,10 +28,19 @@ export function initParallax(
 
 	const container = wrapper.parentElement ?? wrapper;
 
+	// Cache do rect (correção — cada `pointermove` chamava
+	// `getBoundingClientRect()`, forçando um layout síncrono por evento;
+	// como o container não redimensiona durante um gesto de hover, medir
+	// 1x aqui e recalcular só em `resize` evita esse custo repetido).
+	let containerRect = container.getBoundingClientRect();
+	function syncContainerRect() {
+		containerRect = container.getBoundingClientRect();
+	}
+	window.addEventListener("resize", syncContainerRect);
+
 	function onMove(e: PointerEvent) {
-		const rect = container.getBoundingClientRect();
-		const nx = (e.clientX - rect.left) / rect.width - 0.5;
-		const ny = (e.clientY - rect.top) / rect.height - 0.5;
+		const nx = (e.clientX - containerRect.left) / containerRect.width - 0.5;
+		const ny = (e.clientY - containerRect.top) / containerRect.height - 0.5;
 		xTo(nx * maxOffset);
 		yTo(ny * maxOffset);
 	}
@@ -47,5 +56,14 @@ export function initParallax(
 	return function cleanup() {
 		container.removeEventListener("pointermove", onMove);
 		container.removeEventListener("pointerleave", onLeave);
+		window.removeEventListener("resize", syncContainerRect);
+		// Correção (achada em auditoria — cleanup só removia listeners,
+		// nunca desfazia o `transform` que o `gsap.quickTo` já tinha
+		// escrito no elemento): sem isso, um offset de parallax residual
+		// podia sobreviver à troca de breakpoint (o chamador desmonta
+		// este efeito via `gsap.matchMedia()` ao cruzar pra mobile) caso
+		// o cleanup rode sem um `pointerleave` antes. `gsap.set` zera x/y
+		// de imediato, sem depender da duração do `quickTo`.
+		gsap.set(wrapper, { x: 0, y: 0 });
 	};
 }

@@ -146,8 +146,9 @@ export function initDriftWall(container: HTMLElement, options: DriftWallOptions 
 		}
 		for (let i = 1; i < tiles.length; i++) {
 			if (keyOf(tiles[i]) !== keyOf(tiles[i - 1])) continue;
+			const nextTile = tiles[i + 1];
 			const swapIndex = tiles.findIndex(
-				(t, k) => k > i && keyOf(t) !== keyOf(tiles[i - 1]) && keyOf(t) !== keyOf(tiles[i + 1] ?? t),
+				(t, k) => k > i && keyOf(t) !== keyOf(tiles[i - 1]) && (!nextTile || keyOf(t) !== keyOf(nextTile)),
 			);
 			if (swapIndex !== -1) [tiles[i], tiles[swapIndex]] = [tiles[swapIndex], tiles[i]];
 		}
@@ -212,10 +213,21 @@ export function initDriftWall(container: HTMLElement, options: DriftWallOptions 
 	function runAnimation(tracks: HTMLElement[]) {
 		const unitHeights = tracks.map((track) => fillTrackVertically(track));
 
+		let containerRect = container.getBoundingClientRect();
+		// Cache da lista de tiles (correção — auditoria de performance):
+		// o conjunto de `[data-tile-id]` só muda quando `ensureColumnCoverage`
+		// clona colunas ou o preenchimento vertical acrescenta tiles, ambos
+		// disparados por este mesmo `ResizeObserver` — sem cache,
+		// `hitTestAtLastPointer` (chamada até 1x por frame enquanto o mouse
+		// está sobre a parede) reconsultava `querySelectorAll` a cada tick,
+		// mesmo com o DOM estável entre resizes.
+		let tileEls: HTMLElement[] = Array.from(container.querySelectorAll<HTMLElement>("[data-tile-id]"));
 		ro = new ResizeObserver(() => {
 			tracks.forEach((track, c) => {
 				unitHeights[c] = fillTrackVertically(track);
 			});
+			containerRect = container.getBoundingClientRect();
+			tileEls = Array.from(container.querySelectorAll<HTMLElement>("[data-tile-id]"));
 		});
 		ro.observe(container);
 
@@ -234,8 +246,44 @@ export function initDriftWall(container: HTMLElement, options: DriftWallOptions 
 		const pointer = { x: 0, y: 0 };
 		const pointerDamped = { x: 0, y: 0 };
 		let lastTs: number | null = null;
+		let lastPointerClient: { x: number; y: number } | null = null;
 
 		const reduced = prefersReducedMotion();
+
+		// Correção (achada em auditoria de performance — jank no mouse
+		// hover): antes o hit-test geométrico (medir a bounding box de
+		// TODOS os `[data-tile-id]` via `getBoundingClientRect()`) rodava
+		// dentro do listener de `pointermove`, disparado a cada evento —
+		// em mouses de alta taxa de reporte (120-240Hz) isso força dezenas
+		// de layouts síncronos por segundo, muito acima da taxa de repaint
+		// real da tela. Como os tiles já se movem a cada frame (a própria
+		// animação de drift), as bounding boxes ficam obsoletas entre
+		// frames de qualquer forma — não há ganho em medir mais rápido que
+		// 1x por frame. Corrigido: `onPointerMove` só grava a posição do
+		// cursor (barato); o hit-test em si roda uma vez por frame dentro
+		// do próprio loop de `animate`, throttlado à taxa de repaint.
+		function hitTestAtLastPointer() {
+			if (!lastPointerClient) return;
+			const { x, y } = lastPointerClient;
+			let best: HTMLElement | null = null;
+			let bestDist = Infinity;
+			tileEls.forEach((el) => {
+				const r = el.getBoundingClientRect();
+				if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+				const cx = r.left + r.width / 2;
+				const cy = r.top + r.height / 2;
+				const dist = (x - cx) ** 2 + (y - cy) ** 2;
+				if (dist < bestDist) {
+					bestDist = dist;
+					best = el;
+				}
+			});
+			if (!best) {
+				release();
+				return;
+			}
+			activate(best, Number((best as HTMLElement).dataset.col));
+		}
 
 		function animate(ts: number) {
 			if (lastTs === null) lastTs = ts;
@@ -266,6 +314,8 @@ export function initDriftWall(container: HTMLElement, options: DriftWallOptions 
 					tracks[c].style.transform = `translate3d(0, ${-next}px, 0)`;
 				}
 			}
+
+			if (wallHovered) hitTestAtLastPointer();
 
 			raf = requestAnimationFrame(animate);
 		}
@@ -298,56 +348,39 @@ export function initDriftWall(container: HTMLElement, options: DriftWallOptions 
 			hoveredCol = -1;
 		}
 
+		// Nem `document.elementFromPoint` nem `e.target` (hit-test NATIVO
+		// do navegador) são confiáveis aqui: dentro de uma árvore
+		// `preserve-3d` com muitas colunas se sobrepondo em tela sob
+		// rotação 3D, boa parte dos pontos que visualmente estão DENTRO
+		// de uma imagem resolvem pra um ancestral
+		// (`.drift-wall__track`/`.drift-wall__plane`) em vez do tile —
+		// confirmado testando uma grade de pontos dentro da área visível
+		// de um tile: a maioria não batia em nenhum tile. Por isso a
+		// detecção é 100% geométrica: mede a bounding box projetada
+		// (pós-transform) de cada tile via `getBoundingClientRect()` — a
+		// mesma técnica já usada pra diagnosticar/corrigir os vãos entre
+		// colunas — e escolhe o tile cujo CENTRO está mais perto do
+		// cursor, entre os que realmente contêm o ponto (as bounding
+		// boxes de tiles vizinhos se sobrepõem nas bordas; "centro mais
+		// próximo" desempata a favor do tile certo, não do vizinho). Ver
+		// `hitTestAtLastPointer()` acima — o cálculo em si roda 1x por
+		// frame dentro de `animate`, não aqui.
 		function onPointerMove(e: PointerEvent) {
-			const rect = container.getBoundingClientRect();
 			if (opts.parallax > 0 && !reduced) {
-				pointer.x = (e.clientX - rect.left) / rect.width - 0.5;
-				pointer.y = (e.clientY - rect.top) / rect.height - 0.5;
+				pointer.x = (e.clientX - containerRect.left) / containerRect.width - 0.5;
+				pointer.y = (e.clientY - containerRect.top) / containerRect.height - 0.5;
 			}
-			// Nem `document.elementFromPoint` nem `e.target` (hit-test
-			// NATIVO do navegador) são confiáveis aqui: dentro de uma
-			// árvore `preserve-3d` com muitas colunas se sobrepondo em
-			// tela sob rotação 3D, boa parte dos pontos que visualmente
-			// estão DENTRO de uma imagem resolvem pra um ancestral
-			// (`.drift-wall__track`/`.drift-wall__plane`) em vez do tile —
-			// confirmado testando uma grade de pontos dentro da área
-			// visível de um tile: a maioria não batia em nenhum tile.
-			// Por isso a detecção agora é 100% geométrica: mede a
-			// bounding box projetada (pós-transform) de cada tile via
-			// `getBoundingClientRect()` — a mesma técnica já usada pra
-			// diagnosticar/corrigir os vãos entre colunas — e escolhe o
-			// tile cujo CENTRO está mais perto do cursor, entre os que
-			// realmente contêm o ponto (as bounding boxes de tiles
-			// vizinhos se sobrepõem nas bordas; "centro mais próximo"
-			// desempata a favor do tile certo, não do vizinho).
-			const x = e.clientX;
-			const y = e.clientY;
-			let best: HTMLElement | null = null;
-			let bestDist = Infinity;
-			container.querySelectorAll<HTMLElement>("[data-tile-id]").forEach((el) => {
-				const r = el.getBoundingClientRect();
-				if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
-				const cx = r.left + r.width / 2;
-				const cy = r.top + r.height / 2;
-				const dist = (x - cx) ** 2 + (y - cy) ** 2;
-				if (dist < bestDist) {
-					bestDist = dist;
-					best = el;
-				}
-			});
-			if (!best) {
-				release();
-				return;
-			}
-			activate(best, Number((best as HTMLElement).dataset.col));
+			lastPointerClient = { x: e.clientX, y: e.clientY };
 		}
 		function onPointerEnter() {
 			wallHovered = true;
+			containerRect = container.getBoundingClientRect();
 		}
 		function onPointerLeave() {
 			wallHovered = false;
 			pointer.x = 0;
 			pointer.y = 0;
+			lastPointerClient = null;
 			release();
 		}
 		function onFocusIn(e: FocusEvent) {

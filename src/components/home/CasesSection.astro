@@ -288,6 +288,8 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 <script>
 	import { gsap, ScrollTrigger } from "../../lib/gsapSetup";
 	import { prefersReducedMotion, scaleDuration } from "../../lib/reducedMotion";
+	import { DESKTOP_MEDIA_QUERY } from "../../lib/breakpoints";
+	import { applyPinnedStageWidthFix } from "../../lib/pinnedStageWidthFix";
 
 	const section = document.querySelector<HTMLElement>("#cases");
 	const wrapper = document.querySelector<HTMLElement>("[data-cases-scroll-wrapper]");
@@ -303,7 +305,7 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 	// Hero.astro) — abaixo disso (mobile E tablet) a lista fica sempre
 	// vertical/empilhada, sem pin nem scroll horizontal forçado (pedido
 	// explícito do usuário: scroll-jacking é ruim em touch).
-	const desktopMq = window.matchMedia("(min-width: 1280px)");
+	const desktopMq = window.matchMedia(DESKTOP_MEDIA_QUERY);
 
 	let tween: gsap.core.Tween | null = null;
 	// Um setter + estado numérico por segmento (ver `setup()`, onde são
@@ -352,6 +354,9 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 		wrapper.style.removeProperty("height");
 		stage.style.removeProperty("height");
 		stage.style.removeProperty("overflow");
+		stage.style.removeProperty("width");
+		stage.style.removeProperty("max-width");
+		stage.style.removeProperty("left");
 		track.style.removeProperty("display");
 		track.style.removeProperty("flex-direction");
 		track.style.removeProperty("height");
@@ -522,13 +527,20 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 			track.style.height = `calc(100% - (${band}))`;
 		}
 
-		syncSlideImageSize();
-
+		// Correção (achada em auditoria — imagem podia invadir a barra de
+		// progresso no primeiro carregamento): `syncSlideImageSize()` mede
+		// `progress.offsetHeight` pra reservar espaço pra barra, mas antes
+		// isso rodava ANTES de `progress.hidden = false` — com o elemento
+		// ainda escondido, `offsetHeight` lê 0, então a primeira medição
+		// nunca reservava espaço nenhum (só corrigia depois de um resize).
+		// Torna `progress` visível primeiro, só então mede.
 		if (progress) {
 			progress.hidden = false;
 			progress.style.display = "flex";
 			if (progressCurrent) progressCurrent.textContent = "01";
 		}
+
+		syncSlideImageSize();
 		progressSegments.forEach((segment) => {
 			segment.style.transformOrigin = "left";
 			segment.style.transform = "scaleX(0)";
@@ -592,6 +604,16 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 					syncWrapperHeight();
 					syncSlideImageSize();
 				},
+				// Correção (achada em auditoria — assimetria com Hero.astro):
+				// o pin do Hero já corrigia esse mesmo gutter de scrollbar a
+				// cada refresh (`position:fixed` mede contra o initial
+				// containing block, que exclui o gutter; o GSAP mede a
+				// largura ANTES de pinar, no fluxo normal, que o inclui) —
+				// o `pin: stage` daqui tem exatamente o mesmo mecanismo por
+				// baixo, mas nunca tinha ganhado a correção. Helper
+				// compartilhado (`pinnedStageWidthFix.ts`) por já ser a 2ª
+				// ocorrência do mesmo fix.
+				onRefresh: () => applyPinnedStageWidthFix(stage!),
 				// Efeito ímã (pedido do usuário): ao parar de rolar, o
 				// GSAP puxa o `progress` pro múltiplo mais próximo de
 				// `1/(n-1)` — exatamente as frações onde cada card fica

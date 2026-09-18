@@ -333,9 +333,19 @@ export function initTopography(container: HTMLElement, options: TopographyOption
 		renderer.render({ scene: mesh });
 	};
 
-	const ro = new ResizeObserver(setSize);
+	// Cache do rect do canvas (correção — `onMouseMove` chamava
+	// `getBoundingClientRect()` a cada evento, forçando um layout síncrono
+	// por movimento do mouse; o `ResizeObserver` abaixo já existe pra
+	// redimensionar o WebGL, então reaproveita o mesmo gatilho pra manter
+	// o rect em cache em vez de remedir a cada `mousemove`).
+	let canvasRect = canvas.getBoundingClientRect();
+	const ro = new ResizeObserver(() => {
+		setSize();
+		canvasRect = canvas.getBoundingClientRect();
+	});
 	ro.observe(container);
 	setSize();
+	canvasRect = canvas.getBoundingClientRect();
 
 	const currentMouse = [0.5, 0.5];
 	const targetMouse = [0.5, 0.5];
@@ -343,9 +353,8 @@ export function initTopography(container: HTMLElement, options: TopographyOption
 	let mouseActiveTarget = 0;
 
 	const onMouseMove = (e: MouseEvent) => {
-		const rect = canvas.getBoundingClientRect();
-		targetMouse[0] = (e.clientX - rect.left) / rect.width;
-		targetMouse[1] = 1.0 - (e.clientY - rect.top) / rect.height;
+		targetMouse[0] = (e.clientX - canvasRect.left) / canvasRect.width;
+		targetMouse[1] = 1.0 - (e.clientY - canvasRect.top) / canvasRect.height;
 		mouseActiveTarget = 1;
 	};
 	const onMouseLeave = () => {

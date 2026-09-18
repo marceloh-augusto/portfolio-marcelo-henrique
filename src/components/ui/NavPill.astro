@@ -219,6 +219,7 @@ const CONTACT_LINKS = [
 
 <script>
 	import { initSmoothScrollNav } from "../../lib/smoothScrollNav";
+	import { DESKTOP_MEDIA_QUERY } from "../../lib/breakpoints";
 
 	document.querySelectorAll<HTMLElement>("[data-nav-pill]").forEach((pill) => initSmoothScrollNav(pill));
 
@@ -271,6 +272,19 @@ const CONTACT_LINKS = [
 
 	openButton?.addEventListener("click", openMenu);
 	closeButton?.addEventListener("click", closeMenu);
+
+	// Correção (achada em auditoria — scroll do desktop travava pra
+	// sempre): `openMenu()` trava o scroll da página (`body.overflow =
+	// "hidden"`) e só destrava num clique explícito de fechar/link — mas
+	// o overlay inteiro (com o botão de fechar) some do layout acima de
+	// 1280px via `desktop:hidden`. Se o usuário abre o menu mobile e
+	// depois alarga a janela além desse breakpoint sem clicar em nada, o
+	// scroll ficava preso indefinidamente, sem nenhum controle visível
+	// pra desfazer. Fecha o menu automaticamente ao cruzar pro desktop.
+	const desktopQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+	desktopQuery.addEventListener("change", (e) => {
+		if (e.matches) closeMenu();
+	});
 
 	// Fecha automaticamente ao clicar em qualquer link interno do menu
 	// (âncora ou externo) — evita o overlay ficar aberto por cima da
