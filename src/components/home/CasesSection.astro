@@ -628,7 +628,16 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 					// nunca desativa uma animação, só desacelera — o snap
 					// continua ativo, só mais lento.
 					duration: { min: 0.2, max: scaleDuration(0.5) },
-					delay: 0.1,
+					// Correção (auditoria de scroll — intensidade do snap):
+					// `delay: 0.1` engatava o ímã quase imediatamente após
+					// qualquer pausa breve no gesto de touch (comum durante
+					// o próprio momentum natural do dedo), contribuindo pra
+					// sensação de "prender" reportada. Subido pra 0.2 —
+					// ainda engata rápido o bastante pra não parecer solto,
+					// mas dá mais margem pro momentum natural assentar antes
+					// de puxar. Efeito ímã continua o mesmo, só a janela de
+					// tolerância mudou.
+					delay: 0.2,
 					ease: "power1.inOut",
 				},
 				onUpdate(self) {
