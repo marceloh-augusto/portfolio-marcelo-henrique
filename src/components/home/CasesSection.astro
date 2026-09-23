@@ -62,8 +62,9 @@
  * Atualização (usuário mudou cores no Figma — releu os 3 frames):
  * cada bloco agora pode ter fundo claro OU escuro, por case
  * (`cardTheme` na content collection, default "dark"): Yogha e Cred
- * Aluga continuam com fundo escuro (neutral-950, headline/descrição em
- * neutral-100); Estratégia mudou pra fundo CLARO (neutral-100,
+ * Aluga têm fundo escuro (neutral-900 no bloco do card, Figma 523:1106/
+ * 523:1155; o rótulo "CASES SELECIONADOS" acima segue no neutral-950 da
+ * seção; headline/descrição em neutral-100); Estratégia mudou pra fundo CLARO (neutral-100,
  * headline/descrição em neutral-900 pra manter contraste). A tag
  * (`TagPill`) também inverte por tema — ver prop `theme` nova no
  * componente. Isso só vale no desktop (>=1280px); no mobile/tablet
@@ -196,7 +197,7 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 								data-cases-slide
 								class:list={[
 									"flex flex-col gap-(--spacing-xl) border-t border-(--color-border-dark) py-(--spacing-xl) desktop:flex-row desktop:items-center desktop:justify-center desktop:gap-(--spacing-xl) desktop:border-t-0 desktop:px-[max(80px,calc((100vw-1440px)/2))] desktop:py-(--spacing-5xl)",
-									isLight ? "desktop:bg-(--color-neutral-100)" : "",
+									isLight ? "desktop:bg-(--color-neutral-100)" : "desktop:bg-(--color-neutral-900)",
 								]}
 							>
 								<div class="flex flex-col gap-(--spacing-md) desktop:w-[513px] desktop:shrink-0 desktop:gap-(--spacing-sm-plus)">
