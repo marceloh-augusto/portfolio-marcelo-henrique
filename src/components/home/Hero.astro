@@ -589,39 +589,47 @@ const MARQUEE_PHRASE =
 		const marqueeInner = marquee!.querySelector<HTMLElement>(".hero-marquee");
 		// Correção (bug relatado — marquee "andando e travando" em Android
 		// mais fraco, ex: Motorola): `syncMarqueeToPhotoCenter` roda a cada
-		// tick do scrub (dentro do `onUpdate` do ScrollTrigger, mais
-		// abaixo) — antes lia `getBoundingClientRect()` do `stage` E da
-		// foto a cada tick, 2 leituras síncronas de layout ("layout
+		// tick do scrub — antes lia `getBoundingClientRect()` do `stage` E
+		// da foto a cada tick, 2 leituras síncronas de layout ("layout
 		// thrashing") por frame, em cima de uma cena já pesada (~40 tweens
 		// + 2 canvas WebGL do Topography rodando ao mesmo tempo, ver
-		// comentário no `scrub:` abaixo). O retângulo do `stage` só muda
-		// de verdade em resize (ele é `position:fixed` uma vez pinado,
-		// nunca se move sozinho durante o scroll) — cacheado em
-		// `stageCenter`, recalculado só em resize/refresh, não mais a
-		// cada tick. Só o retângulo da FOTO precisa ser lido em todo
-		// tick, já que ela genuinamente está em transição (scale+translate)
-		// durante o scroll.
-		let stageCenter = 0;
+		// comentário no `scrub:` abaixo). Agora lê só o retângulo da FOTO
+		// (ela genuinamente está em transição durante o scroll); o stage
+		// entra como cache de altura + posição derivada do ScrollTrigger.
+		//
+		// Correção (bug relatado — marquee SUMIA ao voltar de outras
+		// seções, medido: `translateY` 791px / 4154px no preview): o cache
+		// anterior guardava o CENTRO do stage em coordenadas de VIEWPORT
+		// (`rect.top + height/2`), válido só com o stage pinado no topo.
+		// `onRefresh`/`resize` recalculavam isso em QUALQUER posição de
+		// scroll (ex: `ScrollTrigger.refresh()` do gsapSetup ao terminar
+		// de carregar uma imagem lazy com o usuário já fora da Hero) —
+		// o cache virava um valor absurdo e o marquee ia parar fora do
+		// stage (cortado pelo `overflow:hidden`). Agora o deslocamento é
+		// calculado RELATIVO AO STAGE: `stageHalfHeight` (só depende do
+		// layout) e `stageTop` derivado de `end - scroll()` — 0 enquanto
+		// pinado, sobe junto com o scroll depois do fim do pin (medido:
+		// 1550→-14, 1600→-64, 1700→-164 = 1536 - scrollY). Sem leitura de
+		// rect do stage e independente de onde o refresh acontecer.
+		let stageHalfHeight = 0;
 		function syncStageCenter() {
-			const stageRect = stage!.getBoundingClientRect();
-			stageCenter = stageRect.top + stageRect.height / 2;
+			stageHalfHeight = stage!.offsetHeight / 2;
 		}
+		let heroTrigger: ScrollTrigger | null = null; // atribuído logo após criar a timeline
 		function syncMarqueeToPhotoCenter() {
 			if (!marqueeInner) return;
+			const stageTop = heroTrigger ? Math.min(0, heroTrigger.end - heroTrigger.scroll()) : 0;
 			const photoRect = photoScale!.getBoundingClientRect();
-			const photoCenter = photoRect.top + photoRect.height / 2;
-			marqueeInner.style.transform = `translateY(${photoCenter - stageCenter}px)`;
+			const photoCenterInStage = photoRect.top + photoRect.height / 2 - stageTop;
+			marqueeInner.style.transform = `translateY(${photoCenterInStage - stageHalfHeight}px)`;
 		}
 		syncStageCenter();
 		syncMarqueeToPhotoCenter();
 		// Essa 1ª chamada roda ANTES do ScrollTrigger/pin existir (a
-		// timeline só é criada mais abaixo) — `stage.getBoundingClientRect()`
-		// nesse instante ainda reflete o fluxo normal do documento, não a
-		// posição pinada (`position:fixed`) final. `onRefresh` (mais
-		// abaixo) já corrige isso, mas só dispara em resize — no
-		// carregamento normal da página nada re-sincroniza sozinho. Um
-		// re-sync depois de 1 frame (`requestAnimationFrame`) cobre a
-		// janela entre "script rodou" e "GSAP terminou de pinar".
+		// timeline só é criada mais abaixo, `heroTrigger` ainda é null →
+		// `stageTop` 0, correto no topo da página). Um re-sync depois de 1
+		// frame (`requestAnimationFrame`) cobre a janela entre "script
+		// rodou" e "GSAP terminou de pinar".
 		requestAnimationFrame(() => {
 			syncStageCenter();
 			syncMarqueeToPhotoCenter();
@@ -862,12 +870,18 @@ const MARQUEE_PHRASE =
 					// escrever, sempre que o ScrollTrigger reavaliar (inclusive
 					// em resize).
 					syncMobileTopSpacing();
-					// `stageCenter` (cache usado por `syncMarqueeToPhotoCenter`,
-					// ver comentário acima de onde é declarado) também precisa
-					// ser recalculado aqui — o retângulo do stage muda de
-					// verdade com o `width`/`left`/padding que este mesmo
-					// `onRefresh` acabou de reaplicar.
+					// `stageHalfHeight` (cache usado por `syncMarqueeToPhotoCenter`,
+					// ver comentário acima de onde é declarado) depende só do
+					// layout, então é seguro recalcular aqui em qualquer
+					// posição de scroll.
 					syncStageCenter();
+					// O refresh re-renderiza a timeline com eventos suprimidos
+					// (o `onUpdate` dela NÃO dispara) — medido: depois de um
+					// `refresh` (ex: imagem lazy carregando) a foto muda de
+					// lugar e o marquee ficava com o `translateY` de antes até
+					// o próximo scroll. Re-sincroniza aqui, já com a foto no
+					// estado final do refresh.
+					syncMarqueeToPhotoCenter();
 				},
 				onUpdate(self) {
 					// Correção (cursor elevation não reagia, causa raiz): o
@@ -895,28 +909,22 @@ const MARQUEE_PHRASE =
 						else pauseTopography(transitionBlobCanvas);
 					}
 
-					// Persegue a foto quadro a quadro (ver comentário longo em
-					// `syncMarqueeToPhotoCenter` acima).
-					//
-					// Correção (bug real — marquee "travava" desalinhado da
-					// foto): antes só chamava isso enquanto `self.progress <=
-					// MAIN_TRANSITION` — `self.progress` é o progresso CRU do
-					// scroll, sem o atraso do `scrub`; a posição renderizada
-					// da foto (`photoScale`/`photoSlot`) é que fica ~0.3s
-					// atrás (é o próprio `scrub` fazendo o trabalho dele). Se
-					// o scroll avança rápido o bastante, `self.progress`
-					// passa de `MAIN_TRANSITION` ANTES da foto (ainda em
-					// atraso) terminar de chegar na posição final — o rastreio
-					// parava exatamente nesse intervalo, "congelando" o
-					// marquee alguns pixels atrás de onde a foto ainda ia
-					// terminar de se mover. Chamar sempre (sem a condição)
-					// custa 2 `getBoundingClientRect()` a mais por tick só
-					// durante o scroll — preço baixo por eliminar de vez a
-					// possibilidade de desalinho.
-					syncMarqueeToPhotoCenter();
 				},
 			},
+			// Persegue a foto a cada tick de RENDER da timeline (inclusive os
+			// do `scrub` que continuam depois que o scroll parou), não só a
+			// cada evento de scroll. Medido: quando o `progress` do
+			// ScrollTrigger chega a 1 (fim do pin) ou o scroll para com o
+			// `scrub:0.3` ainda assentando a foto, o `onUpdate` do
+			// ScrollTrigger deixa de disparar e o marquee ficava 64px fora do
+			// centro da foto até o próximo scroll (na saída do pin, em toda a
+			// extensão). O `onUpdate` da timeline dispara a cada render da
+			// timeline, então o marquee sempre converge pra posição final.
+			// (Antes: chamado no `onUpdate` do ScrollTrigger — bug real
+			// anterior "marquee travava desalinhado" também vinha disso.)
+			onUpdate: syncMarqueeToPhotoCenter,
 		});
+		heroTrigger = tl.scrollTrigger ?? null;
 
 		// Texto some quase instantâneo, junto com o primeiro pixel de scroll.
 		tl.to([headline, tagline, scrollCue], { autoAlpha: 0, ease: "none", duration: TEXT_FADE }, 0);
