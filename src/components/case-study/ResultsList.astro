@@ -25,10 +25,20 @@ const title = translations[i18nKey]?.pt ?? titleKey;
 	<p class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-muted) uppercase tablet:text-[14px]" data-i18n={i18nKey}>
 		{title}
 	</p>
-	<ul
-		class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg) font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]"
-		data-reveal-group
-	>
-		{items.map((item, i) => <li data-i18n-en={itemsEn?.[i]}>{item}</li>)}
-	</ul>
+	{
+		items.length === 1 ? (
+			<p class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]" data-reveal data-i18n-en={itemsEn?.[0]}>
+				{items[0]}
+			</p>
+		) : (
+			<ul
+				class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg) font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]"
+				data-reveal-group
+			>
+				{items.map((item, i) => (
+					<li data-i18n-en={itemsEn?.[i]}>{item}</li>
+				))}
+			</ul>
+		)
+	}
 </div>

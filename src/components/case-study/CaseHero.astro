@@ -13,9 +13,13 @@ interface Props {
 	headlineEn?: string;
 	image: string;
 	imageAlt: string;
+	/** Proporção do quadro (ex: "1200/675"). Default: 1280/834 (Yogha). */
+	imageAspect?: string;
+	/** `contain` = imagem inteira sobre fundo `#fdfdfd` (Estratégia, Figma 564:560). */
+	imageFit?: "cover" | "contain";
 }
 
-const { headline, headlineEn, image, imageAlt } = Astro.props;
+const { headline, headlineEn, image, imageAlt, imageAspect = "1280/834", imageFit = "cover" } = Astro.props;
 ---
 
 <section class="flex flex-col gap-(--spacing-lg) px-(--spacing-md-plus) tablet:gap-(--spacing-xl) tablet:px-(--spacing-5xl) wide:px-[max(120px,calc((100vw-1440px)/2))]" data-reveal-group>
@@ -28,12 +32,13 @@ const { headline, headlineEn, image, imageAlt } = Astro.props;
 
 	<button
 		type="button"
-		class="block aspect-[1280/834] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
+		class:list={["block w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl", imageFit === "contain" && "bg-[#fdfdfd]"]}
+		style={`aspect-ratio: ${imageAspect}`}
 		data-lightbox-trigger
 		data-lightbox-src={image}
 		data-lightbox-alt={imageAlt}
 		data-lightbox-group="case-media"
 	>
-		<img src={image} alt={imageAlt} class="h-full w-full object-cover" loading="eager" />
+		<img src={image} alt={imageAlt} class:list={["h-full w-full", imageFit === "contain" ? "object-contain" : "object-cover"]} loading="eager" />
 	</button>
 </section>

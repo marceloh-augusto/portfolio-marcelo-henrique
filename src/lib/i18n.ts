@@ -103,6 +103,7 @@ export const translations: Record<string, Translation> = {
 	"case.section.pesquisa": { pt: "Pesquisa", en: "Research" },
 	"case.section.decisao": { pt: "Decisão", en: "Decision" },
 	"case.section.mvp": { pt: "O que foi entregue (MVP)", en: "What shipped (MVP)" },
+	"case.section.entregue": { pt: "O que foi entregue", en: "What shipped" },
 	"case.section.outcome": { pt: "Outcome", en: "Outcome" },
 	"case.section.diferente": { pt: "O que eu faria diferente", en: "What I'd do differently" },
 

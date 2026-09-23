@@ -1,0 +1,62 @@
+---
+/**
+ * Imagem de case clicável (abre no Lightbox) com proporção fixa e recorte
+ * opcional — Figma 564:533 (Estratégia). Várias imagens desse case são
+ * screenshots recortados dentro de um quadro (`img` maior que o quadro,
+ * deslocada em %, sob `overflow-hidden`); `crop` reproduz esse recorte sem
+ * editar o arquivo exportado.
+ *
+ * `overlaySrc`: segunda camada desenhada por cima (a imagem "Mecanismos de
+ * busca" é composta de 2 camadas no Figma, 599:566); o Lightbox abre a
+ * camada de cima, a que o usuário vê.
+ *
+ * `variant`: `large` = quadro de largura total (hero/pesquisa, raio 16→32,
+ * fundo #fdfdfd); `card` = par Antes/Depois e afins (raio 16 fixo, borda
+ * `--color-border-light`).
+ */
+interface Crop {
+	width?: number;
+	height?: number;
+	left?: number;
+	top?: number;
+}
+
+interface Props {
+	src: string;
+	alt: string;
+	aspect: string;
+	variant?: "large" | "card";
+	crop?: Crop;
+	overlaySrc?: string;
+	reveal?: boolean;
+}
+
+const { src, alt, aspect, variant = "large", crop, overlaySrc, reveal = true } = Astro.props;
+
+const cropStyle = crop
+	? `width:${crop.width ?? 100}%;height:${crop.height ?? 100}%;left:${crop.left ?? 0}%;top:${crop.top ?? 0}%`
+	: undefined;
+---
+
+<button
+	type="button"
+	class:list={[
+		"relative block w-full cursor-zoom-in overflow-hidden",
+		variant === "large" ? "rounded-lg bg-[#fdfdfd] tablet:rounded-xl" : "rounded-[16px] border border-(--color-border-light)",
+	]}
+	style={`aspect-ratio: ${aspect}`}
+	data-reveal={reveal ? "" : undefined}
+	data-lightbox-trigger
+	data-lightbox-src={overlaySrc ?? src}
+	data-lightbox-alt={alt}
+	data-lightbox-group="case-media"
+>
+	{
+		crop ? (
+			<img src={src} alt={overlaySrc ? "" : alt} class="absolute max-w-none" style={cropStyle} loading="lazy" />
+		) : (
+			<img src={src} alt={overlaySrc ? "" : alt} class="h-full w-full object-cover" loading="lazy" />
+		)
+	}
+	{overlaySrc && <img src={overlaySrc} alt={alt} class="absolute inset-0 h-full w-full object-cover" loading="lazy" />}
+</button>

@@ -1,0 +1,52 @@
+---
+/**
+ * Grupo "O que foi entregue" do case Estratégia — Figma 660:701 e 705:564:
+ * título em Body Bold + par de imagens lado a lado (Antes / Depois), cada
+ * uma com legenda `**Antes:** …`. No tablet+ ficam em 2 colunas iguais
+ * (gap 64px); no mobile empilham. Sem frame mobile no Figma — empilhamento
+ * derivado do padrão dos outros componentes de case.
+ *
+ * `title`/`label`/`caption` são conteúdo do case — cada um aceita `*En`
+ * (mecanismo `data-i18n-en`, ver i18n.ts). A legenda leva o rótulo em
+ * negrito dentro do mesmo `<p>`, então a versão EN é o HTML completo.
+ */
+import CaseImage from "./CaseImage.astro";
+
+interface Pair {
+	image: string;
+	imageAlt: string;
+	crop?: { width?: number; height?: number; left?: number; top?: number };
+	label: string;
+	labelEn?: string;
+	caption: string;
+	captionEn?: string;
+}
+
+interface Props {
+	title: string;
+	titleEn?: string;
+	pairs: Pair[];
+}
+
+const { title, titleEn, pairs } = Astro.props;
+---
+
+<div class="flex flex-col gap-(--spacing-md)">
+	<p class="font-sans text-[16px] leading-[1.4] font-bold text-(--color-foreground-on-light) tablet:text-[20px]" data-reveal data-i18n-en={titleEn}>
+		{title}
+	</p>
+	<div class="flex flex-col gap-(--spacing-xl) tablet:flex-row tablet:gap-(--spacing-4xl)" data-reveal-group>
+		{
+			pairs.map((pair) => (
+				<div class="flex min-w-0 flex-1 flex-col gap-(--spacing-sm)">
+					<CaseImage src={pair.image} alt={pair.imageAlt} aspect="568/368" variant="card" crop={pair.crop} reveal={false} />
+					<p
+						class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]"
+						data-i18n-en={pair.labelEn && pair.captionEn ? `<strong class="font-bold">${pair.labelEn}</strong>${pair.captionEn}` : undefined}
+						set:html={`<strong class="font-bold">${pair.label}</strong>${pair.caption}`}
+					/>
+				</div>
+			))
+		}
+	</div>
+</div>

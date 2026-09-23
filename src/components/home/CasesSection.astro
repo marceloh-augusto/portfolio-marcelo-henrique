@@ -208,7 +208,7 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 									>
 										{c.data.displayName}
 									</h2>
-									<p class="font-sans text-[12px] text-(--color-muted) desktop:text-[20px] desktop:text-(--color-neutral-500)">
+									<p class="font-sans text-[12px] text-(--color-muted) desktop:text-[20px] desktop:text-(--color-neutral-500)" data-i18n-en={c.data.yearEn}>
 										{c.data.year}
 									</p>
 									<p
@@ -216,6 +216,7 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 											"font-sans text-[16px] font-bold leading-[1.5] text-(--color-foreground-on-dark) desktop:text-[20px] desktop:leading-[1.4]",
 											isLight ? "desktop:text-(--color-foreground-on-light)" : "desktop:text-(--color-neutral-100)",
 										]}
+										data-i18n-en={c.data.descriptionEn}
 									>
 										{c.data.description}
 									</p>

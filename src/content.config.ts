@@ -12,6 +12,8 @@ const caseStudies = defineCollection({
 		// (Figma node 214:176) — texto exato de cada tela, sem paráfrase.
 		category: z.string(),
 		description: z.string(),
+		// Tradução EN da descrição do card na Home (`data-i18n-en`, ver i18n.ts).
+		descriptionEn: z.string().optional(),
 		tags: z.array(z.string()),
 		coverImage: z.string(),
 		// object-fit da capa — o Figma usa "contain" pra Yogha (foto de
@@ -95,6 +97,42 @@ const caseStudies = defineCollection({
 				improved: z.array(z.string()),
 				worsened: z.array(z.string()),
 			})
+			.optional(),
+
+		// Hero com quadro próprio (Estratégia, Figma 564:560: 1200×675, imagem
+		// `contain` sobre #fdfdfd). Sem esses campos, CaseHero mantém o padrão
+		// do Yogha (1280/834, `cover`).
+		heroAspect: z.string().optional(),
+		heroFit: z.enum(["cover", "contain"]).optional(),
+
+		// "O que foi entregue" do Estratégia (Figma 660:686): grupos com título
+		// + par Antes/Depois, renderizados por BeforeAfterGroup.astro. `crop`
+		// (em %) reproduz o recorte do Figma sem editar o arquivo exportado.
+		deliveries: z
+			.array(
+				z.object({
+					title: z.string(),
+					titleEn: z.string().optional(),
+					pairs: z.array(
+						z.object({
+							image: z.string(),
+							imageAlt: z.string(),
+							crop: z
+								.object({
+									width: z.number().optional(),
+									height: z.number().optional(),
+									left: z.number().optional(),
+									top: z.number().optional(),
+								})
+								.optional(),
+							label: z.string(),
+							labelEn: z.string().optional(),
+							caption: z.string(),
+							captionEn: z.string().optional(),
+						}),
+					),
+				}),
+			)
 			.optional(),
 
 		// Seção "O que foi entregue (MVP)" (Figma node 292:310) — imagem do

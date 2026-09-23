@@ -1,11 +1,177 @@
 ---
 displayName: "Estratégia"
+client: "Estratégia"
+year: "Fevereiro de 2025"
+yearEn: "February 2025"
+role: "Product Designer"
 category: "Product Design"
-year: "Fevereiro 2025"
-description: "How I helped reduce search-related CES complaints by 42%"
+description: "Como melhorias no sistema de busca da plataforma de estudo reduziram em 42% avaliações detratoras da plataforma."
+descriptionEn: "How improvements to the study platform's search system reduced detractor ratings of the platform by 42%."
 tags: ["Discovery", "UX Research", "Product Design", "EdTech"]
 coverImage: "/images/cases/case-study-2-cover.png"
 cardTheme: "light"
+
+heroHeadline: "Como melhorias no sistema de busca da plataforma de estudo reduziram em 42% avaliações detratoras da plataforma."
+heroHeadlineEn: "How improvements to the study platform's search system reduced detractor ratings of the platform by 42%."
+heroImage: "/images/cases/case-study-2/hero.png"
+heroAspect: "1200/675"
+heroFit: "contain"
+duration: "4 Semanas"
+durationEn: "4 Weeks"
+team: "PM, Designer, CTO, EM"
+platform: "Website · Plataforma de ensino"
+platformEn: "Website · Learning platform"
+contribution: "Alinhei expectativas entre negócio, produto e desenvolvimento, conduzi pesquisa com métodos mistos: Análise dos comentários e histórico de busca dos alunos na plataforma pelo sistema avaliação do esforço (CES), aplicação de formulário que me deu o critério pra defender a priorização de melhorias no roadmap que sustentaram os resultados."
+contributionEn: "I aligned expectations across business, product and engineering and ran mixed-methods research: analysis of student comments and search history on the platform through the effort-score system (CES), plus a survey that gave me the case to defend prioritizing the roadmap improvements that backed the results."
+
+decisions:
+  - chosen: "Aumentar a precisão e relevância dos resultados corrigindo como o sistema junta os termos buscados (evitando resultados parciais) e ajustar os pesos do algoritmo de score"
+    insteadOf: "Implementar a indexação de conteúdo interno na busca externa permitindo ao aluno pesquisar outras entidades como assuntos ou temas direto na busca"
+    because: "Ampliar a indexação para buscar termos dentro do conteúdo, sem antes corrigir o algoritmo, vai potencializar o problema de falsos positivos e destruir a relevância dos resultados."
+    riskOf: "Comentários de \"não encontro X\" continuariam por mais um ciclo. Apostamos que corrigir a base primeiro valia mais. Mitigação: monitoramos o CES mensalmente nesse período, caso piorasse."
+  - chosen: "Reativar recursos nativos do Elasticsearch (autocomplete, sugestão de resultado por contexto)."
+    insteadOf: "Transformar a busca contextual em busca global: o aluno podia pesquisar independentemente do contexto desobrigando o aluno a selecioná-lo."
+    because: "Busca global significaria refatorar a busca, o que levaria meses de trabalho. O Elasticsearch já tinha recursos prontos, subutilizados, que atacavam parte do direcionamento na busca."
+    riskOf: "O autocomplete só sugeria dentro do contexto escolhido. Se estivesse errado, o aluno via sugestões de outra coisa, sem saber que o que procurava estava em outro lugar."
+decisionsEn:
+  - chosen: "Increase the accuracy and relevance of results by fixing how the system combines the searched terms (avoiding partial results) and adjusting the weights of the scoring algorithm"
+    insteadOf: "Implement indexing of internal content in the external search, letting students search other entities such as subjects or topics directly in the search bar"
+    because: "Expanding indexing to search terms inside the content, without first fixing the algorithm, would amplify the false-positive problem and destroy the relevance of results."
+    riskOf: "\"I can't find X\" comments would continue for one more cycle. We bet that fixing the foundation first was worth more. Mitigation: we monitored the CES monthly during that period in case it got worse."
+  - chosen: "Reactivate native Elasticsearch features (autocomplete, result suggestions by context)."
+    insteadOf: "Turn the contextual search into a global search: students could search regardless of context, without having to select one."
+    because: "A global search would mean refactoring the search, which would take months of work. Elasticsearch already had ready-made, underused features that addressed part of the search direction problem."
+    riskOf: "Autocomplete only suggested within the chosen context. If it was wrong, the student saw suggestions for something else, with no way of knowing that what they were looking for was somewhere else."
+
+deliveries:
+  - title: "Correção na forma como o sistema interpreta termos compostos, evitando resultados parciais e ajuste de pesos no algoritmo de relevância"
+    titleEn: "Fix to how the system interprets compound terms, avoiding partial results, and adjusted weights in the relevance algorithm"
+    pairs:
+      - image: "/images/cases/case-study-2/entrega-1-antes.png"
+        imageAlt: "Tela de resultados da busca antes da correção: o resultado certo não aparece na primeira página"
+        crop:
+          height: 103.86
+          top: -1.93
+        label: "Antes: "
+        labelEn: "Before: "
+        caption: "buscando \"Direito Administrativo TJ-GO\", o resultado certo nem aparecia na primeira página, os primeiros resultados eram de outra área."
+        captionEn: "searching \"Direito Administrativo TJ-GO\", the right result didn't even show up on the first page; the top results were from another area."
+      - image: "/images/cases/case-study-2/entrega-1-depois.png"
+        imageAlt: "Tela de resultados da busca depois da correção: o resultado certo aparece em primeiro lugar"
+        crop:
+          width: 143.57
+          height: 101.63
+          left: -8.65
+          top: -0.15
+        label: "Depois: "
+        labelEn: "After: "
+        caption: "Mesmo padrão de busca por instituição específica (ex: \"Reta Final TJ-PE\") já retorna o resultado certo em primeiro lugar."
+        captionEn: "The same search pattern for a specific institution (e.g. \"Reta Final TJ-PE\") now returns the right result first."
+  - title: "Autocomplete e sugestão de resultado adaptados ao contexto selecionado e seletor de contexto muda automaticamente conforme a aba em que o aluno está navegando"
+    titleEn: "Autocomplete and result suggestions adapted to the selected context, and the context selector changes automatically depending on the tab the student is browsing"
+    pairs:
+      - image: "/images/cases/case-study-2/entrega-2-antes.png"
+        imageAlt: "Barra de busca antes: apenas o seletor de contexto, escolhido manualmente pelo aluno"
+        label: "Antes: "
+        labelEn: "Before: "
+        caption: "Apenas o seletor de contexto. O aluno precisava escolher manualmente"
+        captionEn: "Only the context selector. Students had to choose manually"
+      - image: "/images/cases/case-study-2/entrega-2-depois.png"
+        imageAlt: "Barra de busca depois: autocomplete com sugestões de resultado"
+        label: "Depois: "
+        labelEn: "After: "
+        caption: "Adicionado autocomplete com sugestões de resultado"
+        captionEn: "Added autocomplete with result suggestions"
+
+outcome:
+  improved:
+    - "Redução de 331 para 191 de fevereiro uma redução de 42% das reclamações relacionadas diretamente a busca"
+  worsened:
+    - "Reproduzindo o produto depois, confirmei que os riscos previstos nas decisões aconteciam de fato: buscar no contexto errado não dava nenhuma pista de que o termo existia em outro lugar e o autocomplete só sugeria dentro do contexto já selecionado."
+outcomeEn:
+  improved:
+    - "A drop from 331 to 191 in February, a 42% reduction in complaints directly related to search"
+  worsened:
+    - "Reproducing the product afterwards, I confirmed that the risks anticipated in the decisions did happen: searching in the wrong context gave no hint that the term existed elsewhere, and autocomplete only suggested within the already selected context."
+
+whatIWouldDoDifferently:
+  - "Se eu tivesse mais tempo, teria conversado com professores e o time pedagógico de cada vertical, pra saber se as reclamações sobre busca também caíram nos grupos de WhatsApp dos alunos dos professores com alunos e teria tentado medir, pelos tickets de suporte, se também houve queda nas aberturas sobre problemas na busca."
+whatIWouldDoDifferentlyEn:
+  - "If I had more time, I would have talked to teachers and the pedagogical team of each vertical, to find out whether complaints about search also dropped in the WhatsApp groups teachers have with their students, and I would have tried to measure, through support tickets, whether tickets about search problems dropped as well."
 ---
 
-{/* TODO: conteúdo completo do case (Problema, Restrições, Pesquisa, Decisão, MVP, Outcome) — ver ARCHITECTURE.md */}
+import CaseSection from "../../components/case-study/CaseSection.astro";
+import Accent from "../../components/ui/Accent.astro";
+import HypothesisCards from "../../components/case-study/HypothesisCards.astro";
+import CaseImage from "../../components/case-study/CaseImage.astro";
+
+<CaseSection titleKey="problema">
+  <div data-reveal data-i18n-en={`Estratégia, an EdTech that sells prep courses for national exams, was facing <strong class="font-bold text-(--color-accent)">student complaints about feeling confused when using the platform.</strong> The <strong class="font-bold text-(--color-accent)">Product team</strong> validated solutions well, but <strong class="font-bold text-(--color-accent)">skipped validating the problem</strong>, setting direction too early and <strong class="font-bold text-(--color-accent)">shipping solutions that didn't reduce the complaints</strong>. I believed it was a UX problem, a reasonable hypothesis given the type of complaint. <strong class="font-bold text-(--color-accent)">We had already tried to improve how courses were organized in the student's library, without success.</strong> <strong class="font-bold text-(--color-accent)">The CPTO shifted the focus from quantity to quality</strong>: stop shipping new features, improve what already existed, with <strong class="font-bold text-(--color-accent)">UX responsible for bringing clarity to the problem</strong> before any solution went onto the roadmap. The goal was to <strong class="font-bold text-(--color-accent)">reduce the number of detractor complaints,</strong> measured by the CES.`}>
+    Estratégia, EdTech que vende cursos preparatórios para exames nacionais, enfrentava <Accent>reclamações de alunos sobre se sentir confusos no uso da plataforma.</Accent> O <Accent>time de Produto</Accent> validava bem soluções, mas <Accent>pulava validar o problema</Accent>, definindo direção cedo demais e <Accent>lançando soluções que não reduziam as reclamações</Accent>. Acreditei que fosse um problema de UX, uma hipótese razoável dado o tipo de reclamação. <Accent>Tínhamos tentado melhorar organização dos cursos no acervo do aluno, porém sem sucesso.</Accent> <Accent>O CPTO direcionou o foco de quantidade pra qualidade</Accent>: parar de lançar features novas, melhorar o que já existia, com <Accent>UX responsável por trazer clareza sobre o problema</Accent> antes de qualquer solução ir ao roadmap. O objetivo era <Accent>reduzir o nº de reclamações detratoras,</Accent> medido pelo CES.
+  </div>
+</CaseSection>
+
+<CaseSection titleKey="pesquisa">
+  <div data-reveal data-i18n-en={`A <strong class="font-bold text-(--color-accent)">survey with 680</strong> students pointed to "<strong class="font-bold text-(--color-accent)">finding specific content" as the macro problem</strong>. After that, I <strong class="font-bold text-(--color-accent)">analyzed over 3,000 CES comments</strong>, with the help of an AI agent to identify the frequency and symptoms students perceived, pointing to<strong class="font-bold text-(--color-accent)"> search as the main cause of this difficulty</strong>. That started an in-depth analysis of the search history and the comments students left in the CES, to validate hypotheses about what was causing the search problem.`}>
+    Um <Accent>formulário aplicado com 680</Accent> alunos apontou "<Accent>encontrar conteúdo específico" como macroproblema</Accent>. Após isso, <Accent>analisei mais de 3.000 comentários no CES</Accent>, com auxílio de um agente de IA pra identificar a frequência e os sintomas percebidos pelos alunos apontando a<Accent> busca como a principal causa dessa dificuldade</Accent>. Isso iniciou uma análise aprofundada do histórico de busca, comentários deixados no CES pelos alunos para validação de hipóteses de quais seriam as causas do problema da busca.
+  </div>
+
+  <CaseImage
+    src="/images/cases/case-study-2/pesquisa.png"
+    alt="Análise dos comentários do CES e do histórico de busca dos alunos"
+    aspect="1200/514"
+    crop={{ height: 114.68, top: -14.73 }}
+  />
+
+  <div class="flex flex-col gap-(--spacing-md) pb-(--spacing-4xl) tablet:mt-[calc(120px-var(--spacing-md))]">
+    <CaseImage
+      src="/images/cases/case-study-2/mecanismos-base.png"
+      overlaySrc="/images/cases/case-study-2/mecanismos-overlay.png"
+      alt="Mecanismos de busca no acervo do aluno: seletor de contexto (Concursos, Matérias/Disciplinas, Questões, Casts, Trilhas) e resultados"
+      aspect="1200/574"
+      variant="card"
+      crop={{ height: 119.9, top: -0.85 }}
+    />
+    <p data-reveal data-i18n-en={`<strong class="font-bold">Search mechanisms: </strong>Working inside the student's library as a course filter by context (exam, subject, questions...)`}>
+      <strong class="font-bold">Mecanismos de busca: </strong>Funcionando dentro do acervo do aluno como filtro de cursos por contexto (concurso, matéria, questões...)
+    </p>
+  </div>
+
+  <HypothesisCards
+    items={[
+      {
+        status: "VALIDADA",
+        statusEn: "VALIDATED",
+        title: "Modelo de busca era incompatível com o modelo mental do aluno: A busca exigia escolher um contexto/filtro (Concurso, Matéria/Disciplina, Trilha, Cast) antes de buscar.",
+        titleEn: "The search model was incompatible with the student's mental model: search required choosing a context/filter (Exam, Subject, Track, Cast) before searching.",
+        description: "Histórico de busca mostra que de 821 buscas analisadas, 55% foram feitas no contexto errado.",
+        descriptionEn: "Search history shows that of 821 searches analyzed, 55% were made in the wrong context.",
+      },
+      {
+        status: "VALIDADA",
+        statusEn: "VALIDATED",
+        title: "Raramente os primeiros resultados eram os mais relevantes pro aluno com grande volume de cursos similares, isso aumentava o esforço dele para achar o resultado certo.",
+        titleEn: "The first results were rarely the most relevant for students with a large volume of similar courses, which increased their effort to find the right result.",
+        description: "Relatos de alunos no CES de que a busca tratava termos compostos como palavras separadas, retornando resultados parciais e irrelevantes.",
+        descriptionEn: "Student reports in the CES that search treated compound terms as separate words, returning partial and irrelevant results.",
+      },
+      {
+        status: "VALIDADA",
+        statusEn: "VALIDATED",
+        title: "A busca só filtrava o nome do curso ou o concurso. Os alunos usam a busca indiscriminadamente procurando parâmetros específicos os quais a busca não indexava.",
+        titleEn: "Search only filtered by course name or exam. Students use search indiscriminately, looking for specific parameters that search didn't index.",
+        description: "Relatos no CES confirmam alunos buscando temas específicos dentro do conteúdo (leis, tópicos de matéria) sem sucesso. A busca não indexava esse nível de detalhe.",
+        descriptionEn: "CES reports confirm students searching for specific topics inside the content (laws, subject topics) without success. Search didn't index that level of detail.",
+      },
+    ]}
+  />
+</CaseSection>
+
+<CaseSection titleKey="restricoes">
+  <ul class="gap-[1.4em]!" data-reveal-group data-i18n-en={`<li><strong>Legacy:</strong> part of the course catalog had not yet been migrated from the legacy platform to the new one; even after improving search or the library, there was content it couldn't find, because it simply didn't exist in the new environment yet.</li><li><strong>Technical:</strong> the system used a tag-based classification scheme, similar to what e-commerce sites use to organize products. Each search context consumed specific classifications and only saw courses tagged with those classifications.</li><li><strong>Scope:</strong> search was a horizontal module shared by the 6 business verticals (Public Exams, Legal Careers, Bar Exam, College Entrance Exams, Military, Medicine). Any change had to work the same way in all of them simultaneously.</li><li><strong>Operational:</strong> registering the materials that fed the search was manual, the responsibility of the pedagogical team. Indexing materials in search depended on that registration always being up to date, outside product's direct control.</li>`}>
+    <li><strong>Legado:</strong> parte do catálogo de cursos ainda não tinha sido migrada da plataforma legado para a nova, mesmo melhorando a busca ou o acervo, havia conteúdo que ela não conseguia encontrar, porque simplesmente não existia no ambiente novo ainda.</li>
+    <li><strong>Técnico:</strong> o sistema usava um esquema de classificação por tags, parecido com o que e-commerces usam pra organizar produtos. Cada contexto de busca consumia classificações específicas e enxergava cursos marcados apenas com essas classificações.</li>
+    <li><strong>Escopo:</strong> A busca era um módulo horizontal, compartilhado pelas 6 verticais de negócio (Concursos, Carreiras Jurídicas, OAB, Vestibulares, Militares, Medicina). Qualquer mudança precisava funcionar igual em todas simultaneamente.</li>
+    <li><strong>Operacional:</strong> O cadastro dos materiais que alimentavam a busca era manual, de responsabilidade da equipe pedagógica. A indexação dos materiais na busca dependia desse cadastro estar sempre atualizado, fora do controle direto de produto.</li>
+  </ul>
+</CaseSection>

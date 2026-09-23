@@ -57,7 +57,8 @@ Para cada página, documente:
 ### Exemplo — Estudo de caso (`/cases/case-study-[n]`)
 - Seções (ordem confirmada no Figma): Hero (headline + imagem de capa) → Metadados (cliente, ano, papel, duração, time, plataforma, contribuição) → Problema → Restrições → Pesquisa (com hipóteses testadas) → Decisão (tabela "Escolhemos / Invés de / Porque / Assumindo o risco de") → O que foi entregue (MVP) → Outcome (o que melhorou / o que piorou) → O que eu faria diferente
 - Dados: `src/content/case-studies/case-study-[n].mdx` — o nome real do case (ex: "Yogha") vive no frontmatter (`displayName`), não no path do arquivo nem na URL
-- Componentes: `CaseHero`, `CaseMetadata`, `CaseSection`, `TradeoffTable`, `ResultsList`
+- Componentes: `CaseHero`, `CaseMetadata`, `CaseSection`, `TradeoffTable`, `ResultsList`, `HypothesisCards`, `CaseImage` (imagem clicável com recorte opcional), `BeforeAfterGroup` (pares Antes/Depois da seção "O que foi entregue" do case Estratégia)
+- Variação do case 2 (Estratégia, confirmada no Figma 564:533): "Pesquisa" vem antes de "Restrições"; "O que foi entregue" usa `deliveries` (grupos com pares Antes/Depois) em vez de imagem+bullets; Outcome e "O que eu faria diferente" com 1 item viram parágrafo
 - Interação: mínima — foco em leitura, sem distração
 
 > Repita esse formato pra cada página real do seu site.

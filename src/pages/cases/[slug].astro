@@ -6,6 +6,7 @@ import CaseMetadata from '../../components/case-study/CaseMetadata.astro';
 import CaseSection from '../../components/case-study/CaseSection.astro';
 import TradeoffTable from '../../components/case-study/TradeoffTable.astro';
 import ResultsList from '../../components/case-study/ResultsList.astro';
+import BeforeAfterGroup from '../../components/case-study/BeforeAfterGroup.astro';
 import ContatoSection from '../../components/home/ContatoSection.astro';
 import Lightbox from '../../components/ui/Lightbox.astro';
 
@@ -42,8 +43,15 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 				da própria página, este site usa nav flutuante compartilhada por
 				todas as páginas.
 			*/}
-			<main class="flex flex-col gap-(--spacing-6xl) pt-[132px] pb-(--spacing-6xl) tablet:pt-[146px]">
-				<CaseHero headline={data.heroHeadline!} headlineEn={data.heroHeadlineEn} image={data.heroImage!} imageAlt={`Capa do case ${data.displayName}`} />
+			<main class="flex flex-col gap-(--spacing-6xl) tablet:gap-[120px] pt-[132px] pb-(--spacing-6xl) tablet:pt-[146px]">
+				<CaseHero
+					headline={data.heroHeadline!}
+					headlineEn={data.heroHeadlineEn}
+					image={data.heroImage!}
+					imageAlt={`Capa do case ${data.displayName}`}
+					imageAspect={data.heroAspect}
+					imageFit={data.heroFit}
+				/>
 
 				<CaseMetadata
 					client={data.client}
@@ -126,6 +134,16 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 					</CaseSection>
 				)}
 
+				{data.deliveries && data.deliveries.length > 0 && (
+					<CaseSection titleKey="entregue">
+						<div class="flex flex-col gap-(--spacing-4xl)">
+							{data.deliveries.map((group) => (
+								<BeforeAfterGroup title={group.title} titleEn={group.titleEn} pairs={group.pairs} />
+							))}
+						</div>
+					</CaseSection>
+				)}
+
 				{data.outcome && (
 					<CaseSection titleKey="outcome">
 						<div class="flex flex-col gap-(--spacing-xl) tablet:gap-(--spacing-4xl)">
@@ -158,9 +176,17 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 
 				{data.whatIWouldDoDifferently && data.whatIWouldDoDifferently.length > 0 && (
 					<CaseSection titleKey="diferente">
-						<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg)" data-reveal-group>
-							{data.whatIWouldDoDifferently.map((item, i) => <li data-i18n-en={data.whatIWouldDoDifferentlyEn?.[i]}>{item}</li>)}
-						</ul>
+						{data.whatIWouldDoDifferently.length === 1 ? (
+							<p data-reveal data-i18n-en={data.whatIWouldDoDifferentlyEn?.[0]}>
+								{data.whatIWouldDoDifferently[0]}
+							</p>
+						) : (
+							<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg)" data-reveal-group>
+								{data.whatIWouldDoDifferently.map((item, i) => (
+									<li data-i18n-en={data.whatIWouldDoDifferentlyEn?.[i]}>{item}</li>
+								))}
+							</ul>
+						)}
 					</CaseSection>
 				)}
 			</main>
