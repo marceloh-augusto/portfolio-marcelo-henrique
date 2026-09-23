@@ -26,6 +26,8 @@ export interface ScrollVelocityOptions {
 	velocityMapping?: { input: [number, number]; output: [number, number] };
 }
 
+const SPRING_STEP = 1 / 120;
+
 function wrap(min: number, max: number, v: number): number {
 	const range = max - min;
 	const mod = (((v - min) % range) + range) % range;
@@ -107,10 +109,18 @@ export function initScrollVelocityRow(
 		// Integração semi-implícita (Euler) de uma mola massa=1 puxando
 		// `smoothVelocity` em direção a `rawVelocity` — mesmo comportamento
 		// físico de `useSpring(scrollVelocity, {damping, stiffness})`.
-		const springForce = stiffness * (rawVelocity - smoothVelocity);
-		const dampingForce = -damping * springVel;
-		springVel += (springForce + dampingForce) * dt;
-		smoothVelocity += springVel * dt;
+		// Sub-passos fixos: com 1 passo por frame e `dt` ≈ 1/30 (fps baixo,
+		// cena pesada) o integrador fica com autovalor negativo e
+		// `smoothVelocity` passa a alternar de sinal a cada frame ao decair —
+		// `direction` (abaixo) inverte todo frame e o marquee para de andar.
+		const steps = Math.max(1, Math.ceil(dt / SPRING_STEP));
+		const h = dt / steps;
+		for (let i = 0; i < steps; i++) {
+			const springForce = stiffness * (rawVelocity - smoothVelocity);
+			const dampingForce = -damping * springVel;
+			springVel += (springForce + dampingForce) * h;
+			smoothVelocity += springVel * h;
+		}
 
 		const velocityFactor = clamp(
 			mapRange(smoothVelocity, velocityMapping.input, velocityMapping.output),
