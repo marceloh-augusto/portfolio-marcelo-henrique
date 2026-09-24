@@ -191,9 +191,12 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 				{
 					cases.map((c) => {
 						const isLight = c.data.cardTheme === "light";
+						// Case sem página publicada ("Em breve"): o slide vira `div`
+						// sem `href` — sem clique nem foco por teclado.
+						const Slide = c.data.comingSoon ? "div" : "a";
 						return (
-							<a
-								href={`/cases/${c.id}`}
+							<Slide
+								href={c.data.comingSoon ? undefined : `/cases/${c.id}`}
 								data-cases-slide
 								class:list={[
 									"flex flex-col gap-(--spacing-xl) border-t border-(--color-border-dark) py-(--spacing-xl) desktop:flex-row desktop:items-center desktop:justify-center desktop:gap-(--spacing-xl) desktop:border-t-0 desktop:px-[max(80px,calc((100vw-1440px)/2))] desktop:py-(--spacing-5xl)",
@@ -228,7 +231,7 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 									</div>
 								</div>
 
-							<div class="aspect-[1392/840] w-full overflow-hidden rounded-lg desktop:aspect-[735/488] desktop:h-auto desktop:w-auto desktop:flex-1 desktop:rounded-xl">
+							<div class="relative aspect-[1392/840] w-full overflow-hidden rounded-lg desktop:aspect-[735/488] desktop:h-auto desktop:w-auto desktop:flex-1 desktop:rounded-xl">
 								<img
 									src={c.data.coverImage}
 									alt={`Capa do case ${c.data.displayName}`}
@@ -238,8 +241,13 @@ const cases = (await getCollection("case-studies")).sort((a, b) =>
 									]}
 									loading="lazy"
 								/>
+								{c.data.comingSoon && (
+									<TagPill class="absolute top-(--spacing-md) left-(--spacing-md) bg-(--color-neutral-200)! text-(--color-neutral-800)! desktop:top-(--spacing-lg) desktop:left-(--spacing-lg)">
+										<span data-i18n="cases.comingSoon">Em breve</span>
+									</TagPill>
+								)}
 							</div>
-						</a>
+						</Slide>
 						);
 					})
 				}

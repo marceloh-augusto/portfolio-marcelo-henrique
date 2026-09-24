@@ -26,6 +26,9 @@ const caseStudies = defineCollection({
 		// (neutral-100), cada um com o texto/tag invertido pra manter
 		// contraste. Default "dark" (a maioria dos cases).
 		cardTheme: z.enum(["dark", "light"]).default("dark"),
+		// Case ainda sem página publicada: o card da Home mostra a tag "Em
+		// breve" sobre a imagem e deixa de ser link (CasesSection.astro).
+		comingSoon: z.boolean().default(false),
 
 		// Campos usados só dentro da página do case (src/pages/cases/[slug].astro),
 		// não no preview da Home. `heroHeadline` é DIFERENTE de `description`

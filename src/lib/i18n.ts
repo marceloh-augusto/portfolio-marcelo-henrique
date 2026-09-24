@@ -50,6 +50,7 @@ export const translations: Record<string, Translation> = {
 	},
 
 	"cases.overline": { pt: "CASES SELECIONADOS", en: "SELECTED CASES" },
+	"cases.comingSoon": { pt: "Em breve", en: "Coming soon" },
 
 	"sobre.overline": { pt: "SOBRE", en: "ABOUT" },
 	"sobre.lead": {
