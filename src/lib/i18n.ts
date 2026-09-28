@@ -120,6 +120,9 @@ export const translations: Record<string, Translation> = {
 
 	"case.outcome.melhorou": { pt: "O que melhorou", en: "What improved" },
 	"case.outcome.piorou": { pt: "O que piorou", en: "What got worse" },
+	// Rótulo alternativo pro mesmo card — Figma do case Estratégia (717:625)
+	// usa "O QUE FICOU EM ABERTO" em vez de "O QUE PIOROU".
+	"case.outcome.aberto": { pt: "O que ficou em aberto", en: "What's still open" },
 };
 
 const STORAGE_KEY = "lang";

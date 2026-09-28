@@ -92,6 +92,9 @@ const caseStudies = defineCollection({
 		// também foi removido (pedido do usuário — deixava a imagem com
 		// aparência de "máscara"/hover permanente); a imagem fica limpa.
 		outcomeImage: z.string().optional(),
+		// Rótulo do card "worsened" ("piorou" ou "aberto", ver case.outcome.*
+		// em i18n.ts) — default "piorou" (Yogha).
+		worsenedLabelKey: z.enum(["piorou", "aberto"]).default("piorou"),
 		outcome: z
 			.object({
 				improved: z.array(z.string()),

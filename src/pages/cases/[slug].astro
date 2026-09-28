@@ -169,7 +169,7 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 
 							<div class="flex flex-col gap-(--spacing-xl) tablet:flex-row tablet:gap-(--spacing-4xl)" data-reveal-group>
 								<ResultsList titleKey="melhorou" items={data.outcome.improved} itemsEn={data.outcomeEn?.improved} />
-								<ResultsList titleKey="piorou" items={data.outcome.worsened} itemsEn={data.outcomeEn?.worsened} />
+								<ResultsList titleKey={data.worsenedLabelKey} items={data.outcome.worsened} itemsEn={data.outcomeEn?.worsened} />
 							</div>
 						</div>
 					</CaseSection>
