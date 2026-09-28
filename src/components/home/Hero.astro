@@ -5,8 +5,11 @@ import ScrollVelocity from "../ui/ScrollVelocity.astro";
 
 // Texto exato pedido pelo usuário (inclui o corte "Desig quem vê" de
 // propósito — veio assim na instrução, não é erro de digitação nosso).
+// Termina com "• " (correção — bug relatado: a faixa é um loop, cada cópia
+// emenda direto no início da próxima; sem o separador no final, a volta do
+// loop grudava "vive" com "Design" formando "viveDesign").
 const MARQUEE_PHRASE =
-	"Design para quem vê • Design para quem sente • Desig quem vê • Design para quem sente • Design para quem vive";
+	"Design para quem vê • Design para quem sente • Desig quem vê • Design para quem sente • Design para quem vive • ";
 ---
 
 <section class="hero-scroll-wrapper relative h-[300vh]" data-hero-scroll-wrapper>

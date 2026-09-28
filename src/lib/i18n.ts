@@ -43,10 +43,12 @@ export const translations: Record<string, Translation> = {
 	// proposital do texto original em PT ("Desig quem vê", sem "para" e
 	// com erro de digitação — pedido explícito do usuário em outra
 	// tarefa, não é engano nosso) espelhado em inglês, pra preservar a
-	// mesma sensação de repetição-com-variação.
+	// mesma sensação de repetição-com-variação. Termina com "• " (mesma
+	// correção do MARQUEE_PHRASE em Hero.astro — sem isso, a volta do
+	// loop emendava a última e a primeira palavra sem separador).
 	"hero.marquee": {
-		pt: "Design para quem vê • Design para quem sente • Desig quem vê • Design para quem sente • Design para quem vive",
-		en: "Design for those who see • Design for those who feel • Desig who see • Design for those who feel • Design for those who live",
+		pt: "Design para quem vê • Design para quem sente • Desig quem vê • Design para quem sente • Design para quem vive • ",
+		en: "Design for those who see • Design for those who feel • Desig who see • Design for those who feel • Design for those who live • ",
 	},
 
 	"cases.overline": { pt: "CASES SELECIONADOS", en: "SELECTED CASES" },
