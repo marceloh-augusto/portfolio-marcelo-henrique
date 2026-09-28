@@ -55,6 +55,7 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 
 				<CaseMetadata
 					client={data.client}
+					clientLabelKey={`case.metadata.${data.clientLabelKey}`}
 					year={data.year}
 					yearEn={data.yearEn}
 					role={data.role}

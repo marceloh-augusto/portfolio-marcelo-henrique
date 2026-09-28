@@ -6,6 +6,9 @@ const caseStudies = defineCollection({
 	schema: z.object({
 		displayName: z.string(),
 		client: z.string().optional(),
+		// Rótulo do campo acima na página do case ("cliente" ou "empresa",
+		// ver case.metadata.* em i18n.ts) — default "cliente" (Yogha).
+		clientLabelKey: z.enum(["cliente", "empresa"]).default("cliente"),
 		year: z.string().optional(),
 		role: z.string().optional(),
 		// Campos usados pelo preview na seção "Cases Selecionados" da Home

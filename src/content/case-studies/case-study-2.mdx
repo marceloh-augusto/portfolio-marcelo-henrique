@@ -1,8 +1,9 @@
 ---
 displayName: "Estratégia"
 client: "Estratégia"
-year: "Fevereiro de 2026"
-yearEn: "February 2026"
+clientLabelKey: "empresa"
+year: "2026"
+yearEn: "2026"
 role: "Product Designer"
 category: "Product Design"
 description: "Como melhorias no sistema de busca da plataforma de estudo reduziram em 42% avaliações detratoras da plataforma."
@@ -11,36 +12,36 @@ tags: ["Discovery", "UX Research", "Product Design", "EdTech"]
 coverImage: "/images/cases/case-study-2-cover.png"
 cardTheme: "light"
 
-heroHeadline: "Como melhorias no sistema de busca da plataforma de estudo reduziram em 42% avaliações detratoras da plataforma."
-heroHeadlineEn: "How improvements to the study platform's search system reduced detractor ratings of the platform by 42%."
+heroHeadline: "Como reduzimos em 42% as reclamações detratoras sobre a busca de uma plataforma de estudo."
+heroHeadlineEn: "How we reduced detractor complaints about search on a study platform by 42%."
 heroImage: "/images/cases/case-study-2/hero.png"
 heroAspect: "1200/675"
 heroFit: "contain"
 duration: "4 Semanas"
 durationEn: "4 Weeks"
-team: "PM, Designer, CTO, EM"
+team: "PM, Designer, CPTO, EM"
 platform: "Website · Plataforma de ensino"
 platformEn: "Website · Learning platform"
-contribution: "Alinhei expectativas entre negócio, produto e desenvolvimento, conduzi pesquisa com métodos mistos: Análise dos comentários e histórico de busca dos alunos na plataforma pelo sistema avaliação do esforço (CES), aplicação de formulário que me deu o critério pra defender a priorização de melhorias no roadmap que sustentaram os resultados."
-contributionEn: "I aligned expectations across business, product and engineering and ran mixed-methods research: analysis of student comments and search history on the platform through the effort-score system (CES), plus a survey that gave me the case to defend prioritizing the roadmap improvements that backed the results."
+contribution: "Conduzi a pesquisa com métodos mistos (formulário, comentários do CES e histórico de busca) e usei os achados para defender a priorização no roadmap, alinhando negócio, produto e desenvolvimento."
+contributionEn: "I conducted mixed-methods research (survey, CES comments, and search history) and used the findings to defend prioritization on the roadmap, aligning business, product, and engineering."
 
 decisions:
   - chosen: "Aumentar a precisão e relevância dos resultados corrigindo como o sistema junta os termos buscados (evitando resultados parciais) e ajustar os pesos do algoritmo de score"
-    insteadOf: "Implementar a indexação de conteúdo interno na busca externa permitindo ao aluno pesquisar outras entidades como assuntos ou temas direto na busca"
-    because: "Ampliar a indexação para buscar termos dentro do conteúdo, sem antes corrigir o algoritmo, vai potencializar o problema de falsos positivos e destruir a relevância dos resultados."
+    insteadOf: "Implementar a indexação de conteúdo interno do conteúdo na busca externa permitindo ao aluno pesquisar outras entidades como assuntos ou temas direto na busca"
+    because: "Indexar o conteúdo interno sem antes corrigir o algoritmo ampliaria os resultados e destruiria ainda mais a relevância. Além disso, seria criar uma funcionalidade que não existia."
     riskOf: "Comentários de \"não encontro X\" continuariam por mais um ciclo. Apostamos que corrigir a base primeiro valia mais. Mitigação: monitoramos o CES mensalmente nesse período, caso piorasse."
   - chosen: "Reativar recursos nativos do Elasticsearch (autocomplete, sugestão de resultado por contexto)."
     insteadOf: "Transformar a busca contextual em busca global: o aluno podia pesquisar independentemente do contexto desobrigando o aluno a selecioná-lo."
-    because: "Busca global significaria refatorar a busca, o que levaria meses de trabalho. O Elasticsearch já tinha recursos prontos, subutilizados, que atacavam parte do direcionamento na busca."
+    because: "A busca global exigiria refazer a classificação por tags de cada contexto, levando meses, e a diretriz era melhorar o que já existia. O Elasticsearch já tinha recursos prontos que resolviam parte do problema."
     riskOf: "O autocomplete só sugeria dentro do contexto escolhido. Se estivesse errado, o aluno via sugestões de outra coisa, sem saber que o que procurava estava em outro lugar."
 decisionsEn:
   - chosen: "Increase the accuracy and relevance of results by fixing how the system combines the searched terms (avoiding partial results) and adjusting the weights of the scoring algorithm"
-    insteadOf: "Implement indexing of internal content in the external search, letting students search other entities such as subjects or topics directly in the search bar"
-    because: "Expanding indexing to search terms inside the content, without first fixing the algorithm, would amplify the false-positive problem and destroy the relevance of results."
+    insteadOf: "Implement indexing of internal content of the content in the external search, letting students search other entities such as subjects or topics directly in the search bar"
+    because: "Indexing internal content without first fixing the algorithm would broaden the results and destroy relevance even further. It would also mean building a feature that didn't exist."
     riskOf: "\"I can't find X\" comments would continue for one more cycle. We bet that fixing the foundation first was worth more. Mitigation: we monitored the CES monthly during that period in case it got worse."
   - chosen: "Reactivate native Elasticsearch features (autocomplete, result suggestions by context)."
     insteadOf: "Turn the contextual search into a global search: students could search regardless of context, without having to select one."
-    because: "A global search would mean refactoring the search, which would take months of work. Elasticsearch already had ready-made, underused features that addressed part of the search direction problem."
+    because: "A global search would require rebuilding the tag classification for every context, taking months, and the guideline was to improve what already existed. Elasticsearch already had ready-made features that solved part of the problem."
     riskOf: "Autocomplete only suggested within the chosen context. If it was wrong, the student saw suggestions for something else, with no way of knowing that what they were looking for was somewhere else."
 
 deliveries:
@@ -85,19 +86,19 @@ deliveries:
 
 outcome:
   improved:
-    - "Redução de 331 para 191 (42%) nas reclamações detratoras relacionadas à busca após implementação das mudanças em fevereiro de 2026"
+    - "Redução de 331 para 191 (42%) nas reclamações detratoras relacionadas à busca após implementação das mudanças em fevereiro de 2026."
   worsened:
     - "Riscos previstos nas decisões aconteciam de fato: buscar no contexto errado não dava nenhuma pista de que o termo existia em outro lugar e o autocomplete só sugeria dentro do contexto já selecionado ao reproduzindo no produto"
 outcomeEn:
   improved:
-    - "A drop from 331 to 191 in detractor complaints related to search, a 42% reduction after the changes were implemented in February 2026"
+    - "A drop from 331 to 191 (42%) in detractor complaints related to search after the changes were implemented in February 2026."
   worsened:
     - "The risks anticipated in the decisions did happen: searching in the wrong context gave no hint that the term existed elsewhere, and autocomplete only suggested within the already selected context when reproducing it in the product"
 
 whatIWouldDoDifferently:
-  - "Se eu tivesse mais tempo, teria conversado com professores e o time pedagógico de cada vertical, pra saber se as reclamações sobre busca também caíram nos grupos de WhatsApp dos alunos dos professores com alunos e teria tentado medir, pelos tickets de suporte, se também houve queda nas aberturas sobre problemas na busca."
+  - "Se eu tivesse mais tempo, teria conversado com professores e com o time pedagógico de cada vertical, pra saber se as reclamações sobre busca também caíram nos grupos de WhatsApp que eles mantêm com os alunos. Também teria medido, pelos tickets de suporte, se os chamados sobre problemas na busca diminuíram."
 whatIWouldDoDifferentlyEn:
-  - "If I had more time, I would have talked to teachers and the pedagogical team of each vertical, to find out whether complaints about search also dropped in the WhatsApp groups teachers have with their students, and I would have tried to measure, through support tickets, whether tickets about search problems dropped as well."
+  - "If I had more time, I would have talked to teachers and the pedagogical team of each vertical, to find out whether complaints about search also dropped in the WhatsApp groups they keep with students. I would have also measured, through support tickets, whether tickets about search problems went down."
 ---
 
 import CaseSection from "../../components/case-study/CaseSection.astro";
@@ -105,14 +106,14 @@ import HypothesisCards from "../../components/case-study/HypothesisCards.astro";
 import CaseImage from "../../components/case-study/CaseImage.astro";
 
 <CaseSection titleKey="problema">
-  <div data-reveal data-i18n-en="Estratégia is an EdTech company selling prep courses. Its platform was designed for the self-directed student prepping alone, with their own study method. It worked as a large content library, with no guided study journey. Students complained about a confusing, unintuitive experience. I believed it was an interface problem, given the type of complaint. The team had already tried to solve the problem by reorganizing the content in the library, with no effect. That's because the Product team validated solutions well, but skipped validating the problem. The CPTO shifted our focus from quantity to quality: stop shipping features, improve what already existed, and handed UX the responsibility of clarifying the problem before any solution went onto the roadmap. The goal was to reduce detractor complaints.">
-    Estratégia é uma EdTech de cursos preparatórios. Sua plataforma foi pensada para o concurseiro autônomo, que tem método próprio de estudo. Ela funcionava como um grande acervo de conteúdo, sem uma jornada guiada de estudo. Os alunos reclamavam de uma experiência confusa e pouco intuitiva. Acreditei que fosse um problema de interface, dado o tipo de reclamação. O time já tinha tentado resolver o problema reorganizando os conteúdos no acervo, sem efeito. Isso porque o time de Produto validava bem soluções, mas pulava a validação do problema. O CPTO direcionou nosso foco de quantidade pra qualidade: parar de lançar features, melhorar o que existia e passou para UX a responsabilidade de clarear o problema antes de qualquer solução ir ao roadmap. O objetivo era reduzir as reclamações detratoras.
+  <div data-reveal data-i18n-en="Estratégia is an EdTech company selling prep courses. Its platform was designed for the self-directed student prepping alone, with their own study method. It worked as a large content library, with no guided study journey. Students complained about a confusing, unintuitive experience. I believed the problem was in the navigation, given the type of complaint. The team had already tried to solve the problem by reorganizing the content in the library, with no effect. That's because the Product team validated solutions well, but skipped validating the problem. The CPTO shifted our focus from quantity to quality, stopping feature shipping to improve what already existed, and handed UX the responsibility of clarifying the problem before any solution went onto the roadmap. The goal was to reduce detractor complaints.">
+    Estratégia é uma EdTech de cursos preparatórios. Sua plataforma foi pensada para o concurseiro autônomo, que tem método próprio de estudo. Ela funcionava como um grande acervo de conteúdo, sem uma jornada guiada de estudo. Os alunos reclamavam de uma experiência confusa e pouco intuitiva. Acreditei que o problema estivesse na navegação, dado o tipo de reclamação. O time já tinha tentado resolver o problema reorganizando os conteúdos no acervo, sem efeito. Isso porque o time de Produto validava bem soluções, mas pulava a validação do problema. O CPTO direcionou nosso foco de quantidade pra qualidade, parando de lançar features para melhorar o que existia, e passou para UX a responsabilidade de clarear o problema antes de qualquer solução ir ao roadmap. O objetivo era reduzir as reclamações detratoras.
   </div>
 </CaseSection>
 
 <CaseSection titleKey="pesquisa">
-  <div data-reveal data-i18n-en={`To understand this "confusion," I applied a survey with 680 students. The main difficulty was finding specific content, and it affected veterans more, precisely the profile the platform was designed for. That contradicted the product's premise: being self-directed in studying didn't make the student self-directed on the platform. To understand where this difficulty showed up, I analyzed over 3,000 student comments in the CES, and search was the most cited topic. The problem wasn't in the interface, as I thought, but in how search worked behind it. I then cross-referenced the search history with the comments to test hypotheses about what was failing in it.`}>
-    Para entender essa "confusão", apliquei um formulário com 680 alunos. A principal dificuldade era encontrar um conteúdo específico, e afetava mais os veteranos, justamente o perfil para quem a plataforma foi pensada. Isso contrariava a premissa do produto: ser autônomo no estudo não tornava o aluno autônomo na plataforma. Para entender onde essa dificuldade aparecia, analisei mais de 3.000 comentários dos alunos no CES, e a busca foi o tema mais citado. O problema não estava na interface, como eu achava, e sim em como a busca funcionava por trás dela. Cruzei então o histórico de busca com os comentários para testar hipóteses sobre o que falhava nela.
+  <div data-reveal data-i18n-en={`To understand this "confusion," I applied a survey with 680 students. The main difficulty was finding specific content, and it affected veterans more, precisely the profile the platform was designed for. That contradicted the product's premise: being self-directed in studying didn't make the student self-directed on the platform. To understand where this difficulty showed up, I analyzed over 3,000 student comments in the CES, and search was the most cited topic. The problem wasn't in the navigation, as I thought, but in search. I then cross-referenced the search history with the comments to test hypotheses about what was failing in it.`}>
+    Para entender essa "confusão", apliquei um formulário com 680 alunos. A principal dificuldade era encontrar um conteúdo específico, e afetava mais os veteranos, justamente o perfil para quem a plataforma foi pensada. Isso contrariava a premissa do produto: ser autônomo no estudo não tornava o aluno autônomo na plataforma. Para entender onde essa dificuldade aparecia, analisei mais de 3.000 comentários dos alunos no CES, e a busca foi o tema mais citado. O problema não estava na navegação, como eu achava, e sim na busca. Cruzei então o histórico de busca com os comentários para testar hipóteses sobre o que falhava nela.
   </div>
 
   <CaseImage
@@ -157,8 +158,8 @@ import CaseImage from "../../components/case-study/CaseImage.astro";
       {
         status: "VALIDADA",
         statusEn: "VALIDATED",
-        title: "A busca só filtrava o nome do curso ou o concurso. Os alunos usam a busca indiscriminadamente procurando parâmetros específicos os quais a busca não indexava.",
-        titleEn: "Search only filtered by course name or exam. Students use search indiscriminately, looking for specific parameters that search didn't index.",
+        title: "A busca indexava o nome do curso, o concurso e os capítulos, mas não o conteúdo que havia dentro deles. Os alunos procuravam temas específicos que a busca não alcançava.",
+        titleEn: "Search indexed the course name, the exam, and the chapters, but not the content inside them. Students looked for specific topics that search couldn't reach.",
         description: "Relatos no CES confirmam alunos buscando temas específicos dentro do conteúdo (leis, tópicos de matéria) sem sucesso. A busca não indexava esse nível de detalhe.",
         descriptionEn: "CES reports confirm students searching for specific topics inside the content (laws, subject topics) without success. Search didn't index that level of detail.",
       },
@@ -167,10 +168,9 @@ import CaseImage from "../../components/case-study/CaseImage.astro";
 </CaseSection>
 
 <CaseSection titleKey="restricoes">
-  <ul class="gap-[1.4em]!" data-reveal-group data-i18n-en={`<li><strong>Legacy:</strong> part of the course catalog had not yet been migrated from the legacy platform to the new one; even after improving search or the library, there was content it couldn't find, because it simply didn't exist in the new environment yet.</li><li><strong>Technical:</strong> the system used a tag-based classification scheme, similar to what e-commerce sites use to organize products. Each search context consumed specific classifications and only saw courses tagged with those classifications.</li><li><strong>Scope:</strong> search was a horizontal module shared by the 6 business verticals (Public Exams, Legal Careers, Bar Exam, College Entrance Exams, Military, Medicine). Any change had to work the same way in all of them simultaneously.</li><li><strong>Operational:</strong> registering the materials that fed the search was manual, the responsibility of the pedagogical team. Indexing materials in search depended on that registration always being up to date, outside product's direct control.</li>`}>
-    <li><strong>Legado:</strong> parte do catálogo de cursos ainda não tinha sido migrada da plataforma legado para a nova, mesmo melhorando a busca ou o acervo, havia conteúdo que ela não conseguia encontrar, porque simplesmente não existia no ambiente novo ainda.</li>
+  <ul class="gap-[1.4em]!" data-reveal-group data-i18n-en={`<li><strong>Strategic:</strong> the guideline was to improve what already existed, not build from scratch. That favored adjustments to the current search over rebuilding it.</li><li><strong>Technical:</strong> the system used a tag-based classification scheme, similar to what e-commerce sites use to organize products. Each search context consumed specific classifications and only saw courses tagged with those classifications.</li><li><strong>Legacy:</strong> part of the catalog had not yet been migrated to the new platform. No search improvement would make that content show up.</li>`}>
+    <li><strong>Estratégico:</strong> a diretriz era melhorar o que já existia, não construir do zero. Isso favorecia ajustes na busca atual em vez de refazê-la.</li>
     <li><strong>Técnico:</strong> o sistema usava um esquema de classificação por tags, parecido com o que e-commerces usam pra organizar produtos. Cada contexto de busca consumia classificações específicas e enxergava cursos marcados apenas com essas classificações.</li>
-    <li><strong>Escopo:</strong> A busca era um módulo horizontal, compartilhado pelas 6 verticais de negócio (Concursos, Carreiras Jurídicas, OAB, Vestibulares, Militares, Medicina). Qualquer mudança precisava funcionar igual em todas simultaneamente.</li>
-    <li><strong>Operacional:</strong> O cadastro dos materiais que alimentavam a busca era manual, de responsabilidade da equipe pedagógica. A indexação dos materiais na busca dependia desse cadastro estar sempre atualizado, fora do controle direto de produto.</li>
+    <li><strong>Legado:</strong> parte do catálogo ainda não tinha sido migrada para a plataforma nova. Nenhuma melhoria na busca faria esse conteúdo aparecer.</li>
   </ul>
 </CaseSection>

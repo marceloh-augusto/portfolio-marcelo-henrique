@@ -94,6 +94,9 @@ export const translations: Record<string, Translation> = {
 	// case e viaja com o próprio MDX via `data-i18n-en` (ver mais abaixo
 	// nesse arquivo).
 	"case.metadata.cliente": { pt: "CLIENTE", en: "CLIENT" },
+	// Rótulo alternativo pro mesmo campo — Figma do case Estratégia
+	// (564:563) usa "EMPRESA" em vez de "CLIENTE" (Yogha, 242:847).
+	"case.metadata.empresa": { pt: "EMPRESA", en: "COMPANY" },
 	"case.metadata.ano": { pt: "ANO", en: "YEAR" },
 	"case.metadata.papel": { pt: "PAPEL", en: "ROLE" },
 	"case.metadata.duracao": { pt: "DURAÇÃO", en: "DURATION" },

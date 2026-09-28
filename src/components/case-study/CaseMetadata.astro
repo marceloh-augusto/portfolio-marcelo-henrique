@@ -17,6 +17,8 @@ import { translations } from "../../lib/i18n";
 
 interface Props {
 	client?: string;
+	/** Rótulo do campo "client" — default "case.metadata.cliente" (CLIENTE). */
+	clientLabelKey?: string;
 	year?: string;
 	yearEn?: string;
 	role?: string;
@@ -29,10 +31,23 @@ interface Props {
 	contributionEn?: string;
 }
 
-const { client, year, yearEn, role, duration, durationEn, team, platform, platformEn, contribution, contributionEn } = Astro.props;
+const {
+	client,
+	clientLabelKey = "case.metadata.cliente",
+	year,
+	yearEn,
+	role,
+	duration,
+	durationEn,
+	team,
+	platform,
+	platformEn,
+	contribution,
+	contributionEn,
+} = Astro.props;
 
 const fields = [
-	{ i18nKey: "case.metadata.cliente", value: client, valueEn: undefined },
+	{ i18nKey: clientLabelKey, value: client, valueEn: undefined },
 	{ i18nKey: "case.metadata.ano", value: year, valueEn: yearEn },
 	{ i18nKey: "case.metadata.papel", value: role, valueEn: undefined },
 	{ i18nKey: "case.metadata.duracao", value: duration, valueEn: durationEn },
