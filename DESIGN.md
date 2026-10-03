@@ -10,6 +10,7 @@ colors:
   neutral-900: "#1F1E1D"
   neutral-950: "#0F0E0D"
   brand-500: "#B67C3A"
+  success: "#54975E"
   background-light: "{colors.neutral-50}"
   background-dark: "{colors.neutral-950}"
   foreground-on-light: "{colors.neutral-900}"
@@ -250,6 +251,11 @@ components:
     textColor: "{colors.neutral-500}"
     rounded: "{rounded.full}"
     padding: "5px 12px"
+  badge-status-success:
+    backgroundColor: "{colors.success}"
+    textColor: "#FFFFFF"
+    rounded: "{rounded.full}"
+    padding: "5px 12px"
 ---
 
 # Design System — Portfólio Marcelo Henrique
@@ -295,7 +301,7 @@ Só existe um nível de elevação no sistema (`{elevation.sm}`), usado nos elem
 - **case-cover-image**: imagem de capa do case, `rounded.xl` no desktop e `rounded.lg` no mobile
 - **language-toggle**: PT/EN — segmento ativo com fundo escuro sólido, inativo sem fundo
 - **hypothesis-card**: card da seção "Pesquisa" de um case (uma por hipótese testada) — fundo `neutral-100`, `rounded.card` (20px), rótulo "HIPÓTESE N" + `badge-status` no topo
-- **badge-status**: pill de status dentro do `hypothesis-card` (ex: "VALIDADA"/"REFUTADA") — fundo `neutral-200`, texto `neutral-500`, tipografia `caption`
+- **badge-status**: pill de status dentro do `hypothesis-card` (ex: "VALIDADA"/"REFUTADA") — fundo `neutral-200`, texto `neutral-500`, tipografia `caption`. Status "VALIDADA" usa a variante `badge-status-success` (fundo `success`, texto branco; Figma 869:722); os demais status continuam neutros
 
 *(novos componentes entram aqui conforme forem extraídos de novas telas do Figma — sempre com estado idle + hover + disabled quando existir)*
 

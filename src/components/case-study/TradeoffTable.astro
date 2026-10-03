@@ -55,7 +55,7 @@ const COLUMNS: { key: keyof DecisionRow; i18nKey: string }[] = [
 			<>
 				<div class="flex gap-(--spacing-xl) py-(--spacing-md)">
 					{COLUMNS.map((column) => (
-						<p class="flex-1 font-sans text-[20px] leading-[1.5] text-(--color-foreground-on-light)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
+						<p class="flex-1 font-sans text-[20px] leading-[1.5] text-(--case-text)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
 							{row[column.key]}
 						</p>
 					))}
@@ -75,7 +75,7 @@ const COLUMNS: { key: keyof DecisionRow; i18nKey: string }[] = [
 						<p class="font-sans text-[12px] font-bold text-(--color-muted)" data-i18n={column.i18nKey}>
 							{translations[column.i18nKey]?.pt}
 						</p>
-						<p class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
+						<p class="font-sans text-[16px] leading-[1.5] text-(--case-text)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
 							{row[column.key]}
 						</p>
 					</div>

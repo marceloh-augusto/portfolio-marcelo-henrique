@@ -71,31 +71,45 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 				<Content />
 
 				{data.decisions && data.decisions.length > 0 && (
-					<CaseSection titleKey="decisao">
-						<TradeoffTable rows={data.decisions} rowsEn={data.decisionsEn} />
+					<CaseSection titleKey="decisao" tone={data.bodyTone} class={data.decisionIntro ? "gap-(--spacing-sm)!" : undefined}>
+						{data.decisionIntro ? (
+							// Figma 252:31 (Yogha): título → intro 8px, intro → tabela 40px.
+							<div class="flex flex-col gap-(--spacing-2xl)">
+								<p data-reveal data-i18n-en={data.decisionIntroEn}>
+									{data.decisionIntro}
+								</p>
+								<TradeoffTable rows={data.decisions} rowsEn={data.decisionsEn} />
+							</div>
+						) : (
+							<TradeoffTable rows={data.decisions} rowsEn={data.decisionsEn} />
+						)}
 					</CaseSection>
 				)}
 
-				{(data.mvpImage || (data.mvpBullets && data.mvpBullets.length > 0)) && (
-					<CaseSection titleKey="mvp">
-						{data.mvpImage && (
-							<button
-								type="button"
-								class="block aspect-[1280/338] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
-								data-reveal
-								data-lightbox-trigger
-								data-lightbox-src={data.mvpImage}
-								data-lightbox-alt={`Fluxo do MVP — ${data.displayName}`}
-								data-lightbox-group="case-media"
-							>
-								<img src={data.mvpImage} alt={`Fluxo do MVP — ${data.displayName}`} class="h-full w-full object-cover" loading="lazy" />
-							</button>
-						)}
+				{(data.mvpIntro || data.mvpOutro || (data.mvpBullets && data.mvpBullets.length > 0) || (data.mvpVideos && data.mvpVideos.length > 0)) && (
+					<CaseSection titleKey="mvp" tone={data.bodyTone}>
+						{(data.mvpIntro || data.mvpOutro || (data.mvpBullets && data.mvpBullets.length > 0)) && (
+							<div class="flex flex-col">
+								{data.mvpIntro && (
+									<p data-reveal data-i18n-en={data.mvpIntroEn}>
+										{data.mvpIntro}
+									</p>
+								)}
 
-						{data.mvpBullets && (
-							<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg)" data-reveal-group>
-								{data.mvpBullets.map((bullet, i) => <li data-i18n-en={data.mvpBulletsEn?.[i]}>{bullet}</li>)}
-							</ul>
+								{data.mvpBullets && data.mvpBullets.length > 0 && (
+									<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg)" data-reveal-group>
+										{data.mvpBullets.map((bullet, i) => (
+											<li data-i18n-en={data.mvpBulletsEn?.[i]}>{bullet}</li>
+										))}
+									</ul>
+								)}
+
+								{data.mvpOutro && (
+									<p class="mt-[1.4em]" data-reveal data-i18n-en={data.mvpOutroEn}>
+										{data.mvpOutro}
+									</p>
+								)}
+							</div>
 						)}
 
 						{data.mvpVideos && data.mvpVideos.length > 0 && (
@@ -146,12 +160,12 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 				)}
 
 				{data.outcome && (
-					<CaseSection titleKey="outcome">
-						<div class="flex flex-col gap-(--spacing-xl) tablet:gap-(--spacing-4xl)">
+					<CaseSection titleKey="outcome" tone={data.bodyTone}>
+						<div class="flex flex-col gap-(--spacing-xl) tablet:gap-(--spacing-lg)">
 							{data.outcomeImage && (
 								<button
 									type="button"
-									class="relative block aspect-[1280/506] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
+									class="relative block aspect-[1200/469] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
 									data-lightbox-trigger
 									data-lightbox-src={data.outcomeImage}
 									data-lightbox-alt={`Dashboard de métricas — ${data.displayName}`}
@@ -167,7 +181,7 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 								</button>
 							)}
 
-							<div class="flex flex-col gap-(--spacing-xl) tablet:flex-row tablet:gap-(--spacing-4xl)" data-reveal-group>
+							<div class="flex flex-col gap-(--spacing-xl) tablet:flex-row tablet:gap-(--spacing-lg)" data-reveal-group>
 								<ResultsList titleKey="melhorou" items={data.outcome.improved} itemsEn={data.outcomeEn?.improved} />
 								<ResultsList titleKey={data.worsenedLabelKey} items={data.outcome.worsened} itemsEn={data.outcomeEn?.worsened} />
 							</div>
@@ -176,13 +190,13 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 				)}
 
 				{data.whatIWouldDoDifferently && data.whatIWouldDoDifferently.length > 0 && (
-					<CaseSection titleKey="diferente">
+					<CaseSection titleKey="diferente" tone={data.bodyTone}>
 						{data.whatIWouldDoDifferently.length === 1 ? (
 							<p data-reveal data-i18n-en={data.whatIWouldDoDifferentlyEn?.[0]}>
 								{data.whatIWouldDoDifferently[0]}
 							</p>
 						) : (
-							<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg)" data-reveal-group>
+							<ul class="flex list-disc flex-col gap-[1.4em]! pl-(--spacing-lg)" data-reveal-group>
 								{data.whatIWouldDoDifferently.map((item, i) => (
 									<li data-i18n-en={data.whatIWouldDoDifferentlyEn?.[i]}>{item}</li>
 								))}

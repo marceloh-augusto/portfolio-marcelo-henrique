@@ -4,12 +4,20 @@
  * 346:307 (mobile). Estrutura idêntica nos dois breakpoints (só o
  * tamanho de fonte do rótulo/badge muda, 12px→14px — Typography/UI/Caption,
  * ver @DESIGN.md); no mobile empilha (`flex-col`), no desktop vira uma
- * linha de 3 colunas iguais (`flex-row`, cada card `flex-1`).
+ * linha de colunas iguais (`flex-row`, cada card `flex-1`).
  *
  * `status`/`title`/`description` são conteúdo específico de cada
  * hipótese do case — cada um aceita um par `*En` opcional (mecanismo
  * `data-i18n-en`, ver i18n.ts). O rótulo "HIPÓTESE N" é gerado pelo
  * índice do item (não é campo de conteúdo).
+ *
+ * Badge: status "VALIDADA" usa o token `success` (verde, texto branco —
+ * Figma 869:722, `badge-status-success` em DESIGN.md) em todos os cases;
+ * qualquer outro status (ex: "REFUTADA") mantém a badge neutra.
+ *
+ * `variant="strong"` (Yogha, Figma 869:719): título em negrito e descrição
+ * em neutral-800. O padrão é o estilo do Estratégia (título regular,
+ * descrição em neutral-500).
  */
 interface HypothesisItem {
 	status: string;
@@ -22,9 +30,13 @@ interface HypothesisItem {
 
 interface Props {
 	items: HypothesisItem[];
+	variant?: "default" | "strong";
 }
 
-const { items } = Astro.props;
+const { items, variant = "default" } = Astro.props;
+const strong = variant === "strong";
+
+const isValidated = (status: string) => status.trim().toUpperCase() === "VALIDADA";
 ---
 
 <div class="flex flex-col gap-(--spacing-lg) tablet:flex-row tablet:items-stretch" data-reveal-group>
@@ -35,16 +47,39 @@ const { items } = Astro.props;
 					<p class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-muted) tablet:text-[14px]" data-i18n-en={`HYPOTHESIS ${i + 1}`}>
 						{`HIPÓTESE ${i + 1}`}
 					</p>
-					<div class="flex items-start rounded-full bg-(--color-neutral-200) px-(--spacing-sm-plus) py-[5px]">
-						<p class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-neutral-500) tablet:text-[14px]" data-i18n-en={item.statusEn}>
+					<div
+						class:list={[
+							"flex items-start rounded-full px-(--spacing-sm-plus) py-[5px]",
+							isValidated(item.status) ? "bg-(--color-success)" : "bg-(--color-neutral-200)",
+						]}
+					>
+						<p
+							class:list={[
+								"font-sans text-[12px] font-bold whitespace-nowrap tablet:text-[14px]",
+								isValidated(item.status) ? "text-white" : "text-(--color-neutral-500)",
+							]}
+							data-i18n-en={item.statusEn}
+						>
 							{item.status}
 						</p>
 					</div>
 				</div>
-				<p class="font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]" data-i18n-en={item.titleEn}>
+				<p
+					class:list={[
+						"font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]",
+						strong && "font-bold tablet:leading-[1.4]",
+					]}
+					data-i18n-en={item.titleEn}
+				>
 					{item.title}
 				</p>
-				<p class="font-sans text-[16px] leading-[1.5] text-(--color-neutral-500) tablet:text-[20px]" data-i18n-en={item.descriptionEn}>
+				<p
+					class:list={[
+						"font-sans text-[16px] leading-[1.5] tablet:text-[20px]",
+						strong ? "text-(--color-neutral-800)" : "text-(--color-neutral-500)",
+					]}
+					data-i18n-en={item.descriptionEn}
+				>
 					{item.description}
 				</p>
 			</div>

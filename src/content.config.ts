@@ -61,6 +61,15 @@ const caseStudies = defineCollection({
 		platformEn: z.string().optional(),
 		contributionEn: z.string().optional(),
 
+		// Tom do texto corrido da Decisão em diante: "soft" = neutral-800
+		// (Yogha, Figma 242:813), "default" = neutral-900 (Estratégia).
+		bodyTone: z.enum(["default", "soft"]).default("default"),
+
+		// Parágrafo introdutório da seção "Decisão", acima da tabela (Figma
+		// 822:527, Yogha).
+		decisionIntro: z.string().optional(),
+		decisionIntroEn: z.string().optional(),
+
 		// Tabela "Decisão" (Figma node 252:33) — estrutura fixa demais pra
 		// virar prosa MDX, consumida direto pelo TradeoffTable.astro.
 		decisions: z
@@ -144,13 +153,16 @@ const caseStudies = defineCollection({
 			)
 			.optional(),
 
-		// Seção "O que foi entregue (MVP)" (Figma node 292:310) — imagem do
-		// fluxo + bullets ficam em frontmatter (não em prosa MDX) porque
-		// dividem espaço com os vídeos abaixo, que também são dados
-		// estruturados.
-		mvpImage: z.string().optional(),
+		// Seção "O que foi entregue (MVP)" (Figma node 292:310) — parágrafo de
+		// abertura + bullets + parágrafo final ficam em frontmatter (não em
+		// prosa MDX) porque dividem espaço com os vídeos abaixo, que também
+		// são dados estruturados.
+		mvpIntro: z.string().optional(),
+		mvpIntroEn: z.string().optional(),
 		mvpBullets: z.array(z.string()).optional(),
 		mvpBulletsEn: z.array(z.string()).optional(),
+		mvpOutro: z.string().optional(),
+		mvpOutroEn: z.string().optional(),
 		// Vídeos do MVP (Figma nodes 275:249/293:5 — placeholders vazios no
 		// arquivo original, o usuário envia os arquivos reais depois).
 		mvpVideos: z

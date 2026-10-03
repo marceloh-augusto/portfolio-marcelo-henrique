@@ -9,65 +9,62 @@ descriptionEn: "How an extra fraud-prevention step in the booking site's checkou
 tags: ["Chargeback", "Web", "Product Design", "PropTech"]
 coverImage: "/images/cases/case-study-1-cover.png"
 coverFit: "contain"
+bodyTone: "soft"
 
-heroHeadline: "Como uma etapa extra de prevenção de fraudes no checkout do site de reservas reduziu em 92% os custos de estorno em compras contestadas usando cartão de crédito."
-heroHeadlineEn: "How an extra fraud-prevention step in the booking site's checkout reduced chargeback costs on disputed credit card purchases by 92%."
+heroHeadline: "Como uma etapa extra de prevenção de fraudes no checkout do site reduziu em 92% perdas com chargeback em reservas realizadas com cartão de crédito."
+heroHeadlineEn: "How an extra fraud-prevention step in the site's checkout reduced chargeback losses by 92% on credit card bookings."
 heroImage: "/images/cases/case-study-1/hero.png"
+heroAspect: "1200/747"
 duration: "2 Semanas"
 durationEn: "2 Weeks"
 team: "CEO, 2 Devs, PM, Designer"
 platform: "Website · plataforma de venda"
 platformEn: "Website · booking platform"
 yearEn: "October 2023"
-contribution: "Identifiquei o conflito Negócio vs. Produto/UX, conduzi pesquisa que me deu o critério pra defender priorizar segurança mesmo com mais fricção de experiência (decisão final do time). Estruturei as alternativas, liderei a validação (GA4, Hotjar) que sustenta os resultados. O Trabalho envolveu: Entrevistas, mapeamento da jornada do fraudador, brainstorming e prototipação e análise de dados."
-contributionEn: "I identified the Business vs. Product/UX conflict, led research that gave me the case to defend prioritizing security even with more experience friction (the team's final decision). I structured the alternatives and led the validation (GA4, Hotjar) that backs the results. The work involved: interviews, mapping the fraudster's journey, brainstorming and prototyping, and data analysis."
+contribution: "Conduzi o discovery, entrevistei o time, estruturei as alternativas e prototipei a solução, articulei as decisões junto com engenharia e produto e por fim liderei a validação pós-lançamento."
+contributionEn: "I led the discovery, interviewed the team, structured the alternatives and prototyped the solution, aligned the decisions with engineering and product, and finally led the post-launch validation."
 
+decisionIntro: "Com as evidências em mãos, alinhei com o time de engenharia e produto onde, na jornada de reserva, iríamos intervir com uma solução e como viabilizá-la."
+decisionIntroEn: "With the evidence in hand, I aligned with the engineering and product teams on where in the booking journey we would intervene with a solution, and how to make it viable."
 decisions:
-  - chosen: "Construir uma solução própria, mais simples e de menor custo de verificação"
-    insteadOf: "Contratar uma ferramenta antifraude terceirizada"
-    because: "Eu defendia inicialmente um sistema antifraude, pra ganhar segurança sem fricção. Dev levantou risco técnico e tempo de implementação, impasse de prazo e escopo. Fraude era só 2,48% da receita, abaixo da média (3%): não justificava o investimento. Sem nenhuma barreira hoje, qualquer solução já traria ganho."
-    riskOf: "Resolveria só esse padrão específico (cartão clonado) e deixando outros tipos como auto fraude ou fraude amigável sem tratamento."
-  - chosen: "Manter controle total sobre o mecanismo de verificação, sem depender da funcionalidade nativa do gateway"
-    insteadOf: "Contar apenas com o sistema antifraude do Asaas"
-    because: "O time não tinha confiança suficiente numa funcionalidade nativa, temendo falsos positivos e negativos, já que o gateway ainda estava sendo migrado e testado"
-    riskOf: "Gastar tempo de engenharia construindo e mantendo um mecanismo próprio, em vez de aproveitar uma função que o gateway já oferecia de graça"
-  - chosen: "Adicionar uma etapa de verificação de legitimidade do cartão de crédito no fluxo de checkout"
-    insteadOf: "Verificar rigorosa de documentos de quem chega no imóvel obrigando a entrada com autorização assinada pelo titular da reserva."
-    because: "Pessoas estavam acessando os apartamento com documentos falsos ou a locação era para terceiros, solicitar autorização seria mais burocracia"
-    riskOf: "Mais fricção de experiencia, Maior tempo de conclusão de checkout, queda de conversão e abandono de carrinho."
+  - chosen: "Atuar preventivamente durante a reserva, adicionando uma validação no checkout."
+    insteadOf: "Reforçar a validação presencial no acesso ao prédio, com conferência de identidade."
+    because: "A validação presencial adicionaria fricção ao check-in e poderia impedir o acesso do hóspede, além de acontecer depois da reserva já ter sido concluída."
+    riskOf: "Adicionar fricção no checkout e impactar a conversão."
+  - chosen: "Adicionar uma etapa extra no cadastro do cartão, usando o recurso de cobrança temporária do Asaas e solicitando que o usuário confirmasse o valor exibido no extrato"
+    insteadOf: "Adotar uma solução antifraude dedicada pra avaliar o risco da transação antes da aprovação da reserva."
+    because: "O investimento não se justificava frente ao volume de reservas e às perdas com fraude; além disso, engenharia apontou maior risco técnico e prazo, e já havíamos enfrentado falsos positivos no antifraude da Stripe."
+    riskOf: "A solução atacava especificamente o padrão de fraude identificado na análise, mas não impediria autofraude ou fraude amigável."
   - chosen: "Tolerar débitos técnicos e fricção de jornada na validação do MVP, direcionando casos específicos para o atendimento"
     insteadOf: "Criar regra própria no fluxo pra cada cenário (ex: usuário não tem acesso a internet banking)"
     because: "Criar regras específicas pra cada cenário exigiria complexidade técnica adicional"
-    riskOf: "Custo operacional do atendimento, comissão do vendedor, finalização da compro em outro canal ex: Airbnb/Booking, que cobram comissão e reduziam margem"
+    riskOf: "Custo operacional do atendimento, comissão do vendedor, finalização da compra em outro canal (ex: Airbnb/Booking), que cobram comissão e reduzem a margem"
 decisionsEn:
-  - chosen: "Build our own solution, simpler and with a lower verification cost"
-    insteadOf: "Hire a third-party antifraud tool"
-    because: "I initially advocated for an antifraud system to gain security without friction. Dev raised technical risk and implementation time, a deadlock over timeline and scope. Fraud was only 2.48% of revenue, below the market average (3%): it didn't justify the investment. With no barrier at all today, any solution would already bring gains."
-    riskOf: "It would only solve this specific pattern (cloned cards), leaving other types like self-fraud or friendly fraud untreated."
-  - chosen: "Keep full control over the verification mechanism, without relying on the gateway's native functionality"
-    insteadOf: "Rely only on Asaas' antifraud system"
-    because: "The team didn't have enough confidence in a native feature, fearing false positives and negatives, since the gateway was still being migrated and tested"
-    riskOf: "Spending engineering time building and maintaining our own mechanism instead of leveraging a feature the gateway already offered for free"
-  - chosen: "Add a credit card legitimacy verification step to the checkout flow"
-    insteadOf: "Rigorously verify the documents of whoever arrives at the property, requiring entry with authorization signed by the booking holder"
-    because: "People were accessing the apartments with fake documents or the booking was for third parties; requiring authorization would add more bureaucracy"
-    riskOf: "More friction in the experience, longer checkout completion time, drop in conversion and cart abandonment."
+  - chosen: "Act preventively during the booking, adding a validation at checkout."
+    insteadOf: "Reinforce in-person validation at the building entrance, with identity checks."
+    because: "In-person validation would add friction to check-in and could block the guest's access, besides happening after the booking was already completed."
+    riskOf: "Adding friction at checkout and impacting conversion."
+  - chosen: "Add an extra step to card registration, using Asaas' temporary charge feature and asking the user to confirm the amount shown on the statement"
+    insteadOf: "Adopt a dedicated antifraud solution to assess the transaction risk before approving the booking."
+    because: "The investment wasn't justified given the booking volume and the fraud losses; besides, engineering pointed to higher technical risk and timeline, and we had already faced false positives with Stripe's antifraud."
+    riskOf: "The solution specifically targeted the fraud pattern identified in the analysis, but wouldn't prevent self-fraud or friendly fraud."
   - chosen: "Tolerate technical debt and journey friction in the MVP validation, routing specific cases to support"
     insteadOf: "Create a custom rule in the flow for each scenario (e.g. user without access to online banking)"
     because: "Creating specific rules for each scenario would require additional technical complexity"
-    riskOf: "Support operating costs, salesperson commission, completing the purchase through another channel e.g. Airbnb/Booking, which charge a commission and reduced margin"
+    riskOf: "Support operating costs, salesperson commission, completing the purchase through another channel (e.g. Airbnb/Booking), which charge a commission and reduce margin"
 
-mvpImage: "/images/cases/case-study-1/mvp-fluxo.png"
+mvpIntro: "A etapa vinha no final do fluxo, logo após o cadastro dos dados do cartão e do endereço de cobrança:"
+mvpIntroEn: "The step came at the end of the flow, right after entering the card details and billing address:"
 mvpBullets:
-  - "Etapa de verificação de legitimidade adicionada ao fluxo de cadastro do cartão"
-  - "Cobrança temporária entre R$5 e R$10, reembolsada em seguida"
-  - "Usuário confirma a legitimidade informando o valor exato debitado"
-  - "Mantive os usuário informado explicando o motivo, sobre estorno do valor, mantendo ele sempre engajado evitando o abandono"
+  - "Realizamos uma cobrança temporária entre R$5 e R$10, reembolsada em seguida."
+  - "Usuário confirma a legitimidade informando o valor exato debitado no extrato."
+  - "Após confirmação, o usuário pode prosseguir com o método de pagamento."
 mvpBulletsEn:
-  - "Legitimacy verification step added to the card registration flow"
-  - "Temporary charge between R$5 and R$10, refunded shortly after"
-  - "User confirms legitimacy by informing the exact amount charged"
-  - "Kept the user informed by explaining the reason, the refund, and keeping them engaged to avoid abandonment"
+  - "We made a temporary charge between R$5 and R$10, refunded right after."
+  - "The user confirms legitimacy by entering the exact amount debited on the statement."
+  - "After confirmation, the user can proceed with the payment method."
+mvpOutro: "Mantive o usuário informado, explicando o motivo e o estorno do valor, para mantê-lo sempre engajado e evitar o abandono."
+mvpOutroEn: "I kept the user informed, explaining the reason and the refund, to keep them engaged and avoid abandonment."
 mvpVideos:
   - src: "/videos/cases/case-study-1/hotjar-1.mp4"
   - src: "/videos/cases/case-study-1/hotjar-2.mp4"
@@ -77,92 +74,80 @@ outcome:
   improved:
     - "Redução de 92% em disputas e prejuízo por fraude, comparando os 10 meses anteriores e os 10 meses posteriores à implementação"
     - "Taxa de conversão manteve-se em 1,2%, sem impacto"
-    - "A última disputa ocorreu em dezembro de 2023 (Atualizado em, agosto 2024)"
-    - "3 casos registrado de disputas remanescentes (somente por auto fraude)"
+    - "A última disputa ocorreu em dezembro de 2023 (atualizado em agosto de 2024)"
+    - "3 casos registrados de disputas remanescentes (somente por autofraude)"
   worsened:
     - "Tempo de finalização do checkout aumentou 38%"
-    - "Algumas falhas recorrente na validação gerou chamados e dependência do atendimento humano para solucionar"
+    - "Algumas falhas recorrentes na validação geraram chamados e dependência do atendimento humano para solucioná-las"
 outcomeEn:
   improved:
     - "92% reduction in fraud disputes and losses, comparing the 10 months before and the 10 months after implementation"
     - "Conversion rate held steady at 1.2%, no impact"
-    - "The last dispute happened in December 2023 (updated August 2024)"
+    - "The last dispute happened in December 2023 (updated in August 2024)"
     - "3 remaining disputes recorded (self-fraud only)"
   worsened:
     - "Checkout completion time increased by 38%"
-    - "Some recurring validation failures generated support tickets and reliance on human support to resolve"
+    - "Some recurring validation failures generated support tickets and reliance on human support to resolve them"
 
 whatIWouldDoDifferently:
   - "Faltou pensar na experiência de quem não tinha acesso a internet banking: essas pessoas precisavam obrigatoriamente pagar via Pix ou acionar o suporte, e não tratamos na experiência do próprio fluxo de cartão."
   - "Também criaria um status pendente para quem abandonasse a validação no meio, com lembrete por e-mail ou WhatsApp para retomar usando dados que a pessoa já tinha fornecido no cadastro."
-  - "Dado o prazo, a pesquisa foi majoritariamente interna, hoje eu buscaria pelo menos um contato rápido com proprietários afetados, mesmo que informal."
+  - "Dado o prazo, a pesquisa foi majoritariamente interna; hoje eu buscaria pelo menos um contato rápido com proprietários afetados, mesmo que informal."
 whatIWouldDoDifferentlyEn:
   - "I failed to consider the experience of people without access to online banking: they had to pay via Pix or contact support, and we didn't address that within the card flow itself."
   - "I would also create a pending status for anyone who abandoned validation midway, with an email or WhatsApp reminder to resume using the data they'd already provided at signup."
-  - "Given the timeline, the research was mostly internal — today I'd seek at least a quick, even informal, contact with affected property owners."
+  - "Given the timeline, the research was mostly internal; today I'd seek at least a quick, even informal, contact with affected property owners."
 ---
 
 import CaseSection from "../../components/case-study/CaseSection.astro";
 import Accent from "../../components/ui/Accent.astro";
 import HypothesisCards from "../../components/case-study/HypothesisCards.astro";
+import CaseImage from "../../components/case-study/CaseImage.astro";
 
 <CaseSection titleKey="problema">
   <div data-reveal data-i18n-en={`Yogha, a company specialized in short-term rental property management, was facing <strong class="font-bold text-(--color-accent)">losses from fraudulent chargebacks on credit card bookings.</strong> The business team wanted <strong class="font-bold text-(--color-accent)">stricter security on purchases made on the site</strong>, while product and UX wanted to do that <strong class="font-bold text-(--color-accent)">while preserving conversion without adding friction to the booking experience</strong>. 100% of disputes were lost, totaling 58 chargebacks in 2022 and 2023 and R$33,306.91 in total losses, <strong class="font-bold text-(--color-accent)">passed on in full to the property owners</strong>. The goal was to <strong class="font-bold text-(--color-accent)">reduce the loss</strong>, measuring the number of disputes and the amount lost in them.`}>
-    Yogha, empresa especializada em gestão de imóveis para aluguel por temporada, enfrentava <Accent>prejuizo em contestações fraudulentas em reservas feitas por cartão de crédito.</Accent> O time de negócio queria <Accent>maior rigor de segurança nas compras feitas no site</Accent>, enquanto produto e UX queriam fazer isso <Accent>preservando a conversão sem adicionar fricção na experiência</Accent> de reserva. 100% das disputas eram perdidas, somando 58 em 2022 e 2023 contestações e R$ 33.306,91 em prejuízo total, <Accent>repassado integralmente aos proprietários</Accent> das acomodações. O objetivo era <Accent>reduzir a perda</Accent>, medindo o número de disputas e o valor perdido nessas disputas.
+    Yogha, empresa especializada em gestão de imóveis para aluguel por temporada, enfrentava <Accent>prejuízo em contestações fraudulentas em reservas feitas por cartão de crédito.</Accent> O time de negócio queria <Accent>maior rigor de segurança nas compras feitas no site</Accent>, enquanto produto e UX queriam fazer isso <Accent>preservando a conversão sem adicionar fricção na experiência</Accent> de reserva. 100% das disputas eram perdidas, somando 58 contestações em 2022 e 2023 e R$ 33.306,91 em prejuízo total, <Accent>repassado integralmente aos proprietários</Accent> das acomodações. O objetivo era <Accent>reduzir a perda</Accent>, medindo o número de disputas e o valor perdido nessas disputas.
   </div>
+
+  <CaseImage
+    src="/images/cases/case-study-1/problema.png"
+    alt="Tabela de disputas de chargeback perdidas em 2022 e 2023, com valor, motivo e probabilidade de vencer"
+    aspect="1200/736"
+  />
 </CaseSection>
 
 <CaseSection titleKey="restricoes">
-  <ul data-reveal-group data-i18n-en={`<li>Timeline: a single 15-day sprint for discovery and delivery. The demand entered mid-roadmap, reprioritized under pressure and the CEO's need to present results and deliverables to the investor committee.</li><li>Technical/legacy: the payment gateway was being switched during this period (from Stripe to Asaas), and the final choice could force us to adapt to the new platform's behavior.</li><li>Financial: limited budget to hire paid antifraud tools.</li>`}>
-    <li>Prazo: 1 sprint de 15 dias pra fazer discovery e delivery. A demanda entrou no meio do roadmap, repriorizada por pressão e pela necessidade do CEO de apresentar resultados e entregas para o comitê de investidores.</li>
-    <li>Técnico/legado: o gateway de pagamento tava sendo trocado nesse período (saímos da Stripe, fomos pra Asaas), e a escolha final poderia obrigar a nos adaptar ao funcionamento da nova plataforma.</li>
-    <li>Financeiro: Orçamento limitado para contratar ferramentas antifraude pagas.</li>
+  <ul class="gap-[1.4em]!" data-reveal-group data-i18n-en={`<li><strong>Timeline:</strong> a single 15-day sprint for discovery and delivery. The demand entered mid-roadmap and was reprioritized under business pressure and the CEO's need to present results to the investor committee.</li><li><strong>Scope:</strong> the solution had to reduce fraud without blocking legitimate bookings, including bookings made for third parties.</li><li><strong>Technical:</strong> the migration from Stripe to Asaas required the solution to adapt to the features and limitations of the new payment gateway.</li>`}>
+    <li><strong>Prazo:</strong> 1 sprint de 15 dias para discovery e delivery. A demanda entrou no meio do roadmap e foi repriorizada por pressão de negócio e pela necessidade do CEO de apresentar resultados ao comitê de investidores.</li>
+    <li><strong>Escopo:</strong> a solução precisava reduzir fraude sem bloquear reservas legítimas, inclusive reservas feitas para terceiros.</li>
+    <li><strong>Técnico:</strong> a migração da Stripe para o Asaas exigia que a solução se adaptasse aos recursos e limitações do novo gateway de pagamento.</li>
   </ul>
 </CaseSection>
 
 <CaseSection titleKey="pesquisa">
-  <div data-reveal data-i18n-en="I ran a study with interviews with the finance, customer support and engineering teams, a full mapping of the fraudster's journey, and defining and validating the business metrics to track the new experience.">
-    Realizei estudo com entrevistas com os times financeiro, suporte ao cliente e desenvolvimento, mapeamento completo da jornada do fraudador e a definição e validação por métricas de negócio para acompanhar a nova experiência.
+  <div data-reveal data-i18n-en="I interviewed finance and the support team to understand the impact and map the fraudster's journey, which validated some hypotheses.">
+    Entrevistei o financeiro e o time de suporte para entender o impacto e mapear a jornada do fraudador, o que validou algumas hipóteses.
   </div>
 
   <HypothesisCards
+    variant="strong"
     items={[
       {
         status: "VALIDADA",
         statusEn: "VALIDATED",
-        title: "O problema estava mais relacionado à prevenção do que à contestação posterior em si, havendo falhas no processo.",
-        titleEn: "The problem was more about prevention than the dispute itself, with gaps in the process.",
-        description: "Não havia mecanismo para tratar ou prevenir fraudes.",
-        descriptionEn: "There was no mechanism to handle or prevent fraud.",
+        title: "O principal problema era validar se o cartão estava sendo usado com autorização do titular.",
+        titleEn: "The main problem was validating whether the card was being used with the cardholder's authorization.",
+        description: "97% das contestações envolviam cartões clonados; apenas 3% eram contestações do próprio titular por má-fé. Além disso, hóspede e comprador frequentemente eram pessoas diferentes.",
+        descriptionEn: "97% of chargebacks involved cloned cards; only 3% were disputes from the cardholder themselves in bad faith. In addition, the guest and the buyer were often different people.",
       },
       {
         status: "VALIDADA",
         statusEn: "VALIDATED",
-        title: "Fraudadores testavam cartões roubados em reservas de valor baixo/médio, com mais chance de aprovação.",
-        titleEn: "Fraudsters tested stolen cards on low/medium-value bookings, with a higher chance of approval.",
-        description: "58 contestações em 2022-2023, R$33.306,91 em prejuízo, ticket médio de R$574,15. 2,48% da receita total ao ano",
-        descriptionEn: "58 chargebacks in 2022-2023, R$33,306.91 in losses, average ticket of R$574.15. 2.48% of total annual revenue",
-      },
-      {
-        status: "REFUTADA",
-        statusEn: "REFUTED",
-        title: "Faltava evidência suficiente anexada na reserva.",
-        titleEn: "There wasn't enough evidence attached to the booking.",
-        description: `Documentação era coletada normalmente; bandeiras de cartão dão menos crédito a provas de "estadia" que outros tipos de serviço a disputa é mais difícil de vencer nesse setor mesmo com tudo certo.`,
-        descriptionEn: `Documentation was collected normally; card networks give less weight to "stay" evidence than to other types of services, making disputes harder to win in this industry even when everything is done right.`,
+        title: "As fraudes estavam concentradas em poucas transações de baixo/médio valor.",
+        titleEn: "The fraud was concentrated in a few transactions of low/medium value.",
+        description: "58 contestações em 2022–2023 somaram R$33.306,91 em prejuízo, com ticket médio de R$574,15 e impacto equivalente a 2,48% da receita anual do site.",
+        descriptionEn: "58 chargebacks in 2022–2023 added up to R$33,306.91 in losses, with an average ticket of R$574.15 and an impact equivalent to 2.48% of the site's annual revenue.",
       },
     ]}
   />
-
-  <button
-    type="button"
-    class="block aspect-[1280/736] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
-    data-reveal
-    data-lightbox-trigger
-    data-lightbox-src="/images/cases/case-study-1/pesquisa.png"
-    data-lightbox-alt="Mapeamento da jornada do fraudador"
-    data-lightbox-group="case-media"
-  >
-    <img src="/images/cases/case-study-1/pesquisa.png" alt="Mapeamento da jornada do fraudador" class="h-full w-full object-cover" loading="lazy" />
-  </button>
 </CaseSection>
