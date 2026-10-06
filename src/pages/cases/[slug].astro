@@ -71,7 +71,7 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 				<Content />
 
 				{data.decisions && data.decisions.length > 0 && (
-					<CaseSection titleKey="decisao" tone={data.bodyTone} class={data.decisionIntro ? "gap-(--spacing-sm)!" : undefined}>
+					<CaseSection titleKey="decisao" tone={data.bodyTone} class={data.decisionIntro ? "gap-(--spacing-sm)!" : "gap-(--spacing-2xl)!"}>
 						{data.decisionIntro ? (
 							// Figma 252:31 (Yogha): título → intro 8px, intro → tabela 40px.
 							<div class="flex flex-col gap-(--spacing-2xl)">
@@ -153,7 +153,7 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 					<CaseSection titleKey="entregue">
 						<div class="flex flex-col gap-(--spacing-4xl)">
 							{data.deliveries.map((group) => (
-								<BeforeAfterGroup title={group.title} titleEn={group.titleEn} pairs={group.pairs} />
+								<BeforeAfterGroup title={group.title} titleEn={group.titleEn} bullets={group.bullets} bulletsEn={group.bulletsEn} pairs={group.pairs} />
 							))}
 						</div>
 					</CaseSection>
@@ -165,7 +165,8 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 							{data.outcomeImage && (
 								<button
 									type="button"
-									class="relative block aspect-[1200/469] w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
+									class="relative block w-full cursor-zoom-in overflow-hidden rounded-lg tablet:rounded-xl"
+									style={`aspect-ratio: ${data.outcomeAspect ?? "1200/469"}`}
 									data-lightbox-trigger
 									data-lightbox-src={data.outcomeImage}
 									data-lightbox-alt={`Dashboard de métricas — ${data.displayName}`}
@@ -191,10 +192,12 @@ const isFullyBuilt = Boolean(data.heroHeadline && data.heroImage);
 
 				{data.whatIWouldDoDifferently && data.whatIWouldDoDifferently.length > 0 && (
 					<CaseSection titleKey="diferente" tone={data.bodyTone}>
-						{data.whatIWouldDoDifferently.length === 1 ? (
-							<p data-reveal data-i18n-en={data.whatIWouldDoDifferentlyEn?.[0]}>
-								{data.whatIWouldDoDifferently[0]}
-							</p>
+						{data.whatIWouldDoDifferentlyLayout === "paragraphs" || data.whatIWouldDoDifferently.length === 1 ? (
+							<div class="flex flex-col" data-reveal-group>
+								{data.whatIWouldDoDifferently.map((item, i) => (
+									<p data-i18n-en={data.whatIWouldDoDifferentlyEn?.[i]}>{item}</p>
+								))}
+							</div>
 						) : (
 							<ul class="flex list-disc flex-col gap-[1.4em]! pl-(--spacing-lg)" data-reveal-group>
 								{data.whatIWouldDoDifferently.map((item, i) => (

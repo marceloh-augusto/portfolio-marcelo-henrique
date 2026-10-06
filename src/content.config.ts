@@ -101,6 +101,9 @@ const caseStudies = defineCollection({
 		// também foi removido (pedido do usuário — deixava a imagem com
 		// aparência de "máscara"/hover permanente); a imagem fica limpa.
 		outcomeImage: z.string().optional(),
+		// Proporção do quadro da imagem acima (varia por case: Yogha 1200/469,
+		// Estratégia 1175/591).
+		outcomeAspect: z.string().optional(),
 		// Rótulo do card "worsened" ("piorou" ou "aberto", ver case.outcome.*
 		// em i18n.ts) — default "piorou" (Yogha).
 		worsenedLabelKey: z.enum(["piorou", "aberto"]).default("piorou"),
@@ -129,8 +132,10 @@ const caseStudies = defineCollection({
 		deliveries: z
 			.array(
 				z.object({
-					title: z.string(),
+					title: z.string().optional(),
 					titleEn: z.string().optional(),
+					bullets: z.array(z.string()).optional(),
+					bulletsEn: z.array(z.string()).optional(),
 					pairs: z.array(
 						z.object({
 							image: z.string(),
@@ -180,6 +185,9 @@ const caseStudies = defineCollection({
 		// própria página, fora do <Content />) — mantê-la dentro do MDX
 		// prenderia sua posição a antes dessas 3 seções.
 		whatIWouldDoDifferently: z.array(z.string()).optional(),
+		// "list" = bullets (Yogha); "paragraphs" = texto corrido, parágrafos
+		// colados (Estratégia, Figma 654:616).
+		whatIWouldDoDifferentlyLayout: z.enum(["list", "paragraphs"]).default("list"),
 		whatIWouldDoDifferentlyEn: z.array(z.string()).optional(),
 	}),
 });

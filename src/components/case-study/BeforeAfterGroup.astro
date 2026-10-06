@@ -1,13 +1,14 @@
 ---
 /**
  * Grupo "O que foi entregue" do case Estratégia — Figma 660:701 e 705:564:
- * título em Body Bold + par de imagens lado a lado (Antes / Depois), cada
- * uma com legenda `**Antes:** …`. No tablet+ ficam em 2 colunas iguais
- * (gap 64px); no mobile empilham. Sem frame mobile no Figma — empilhamento
- * derivado do padrão dos outros componentes de case.
+ * título em Body Bold OU bullets (Figma 717:634, versão atual) + par de
+ * imagens lado a lado (Antes / Depois), cada uma com legenda
+ * `**Antes:** …`. No tablet+ ficam em 2 colunas iguais (gap 64px); no
+ * mobile empilham. Sem frame mobile no Figma — empilhamento derivado do
+ * padrão dos outros componentes de case.
  *
- * `title`/`label`/`caption` são conteúdo do case — cada um aceita `*En`
- * (mecanismo `data-i18n-en`, ver i18n.ts). A legenda leva o rótulo em
+ * `title`/`bullets`/`label`/`caption` são conteúdo do case — cada um aceita
+ * `*En` (mecanismo `data-i18n-en`, ver i18n.ts). A legenda leva o rótulo em
  * negrito dentro do mesmo `<p>`, então a versão EN é o HTML completo.
  */
 import CaseImage from "./CaseImage.astro";
@@ -23,18 +24,33 @@ interface Pair {
 }
 
 interface Props {
-	title: string;
+	title?: string;
 	titleEn?: string;
+	bullets?: string[];
+	bulletsEn?: string[];
 	pairs: Pair[];
 }
 
-const { title, titleEn, pairs } = Astro.props;
+const { title, titleEn, bullets, bulletsEn, pairs } = Astro.props;
 ---
 
 <div class="flex flex-col gap-(--spacing-md)">
-	<p class="font-sans text-[16px] leading-[1.4] font-bold text-(--color-foreground-on-light) tablet:text-[20px]" data-reveal data-i18n-en={titleEn}>
-		{title}
-	</p>
+	{
+		title && (
+			<p class="font-sans text-[16px] leading-[1.4] font-bold text-(--color-foreground-on-light) tablet:text-[20px]" data-reveal data-i18n-en={titleEn}>
+				{title}
+			</p>
+		)
+	}
+	{
+		bullets && bullets.length > 0 && (
+			<ul class="flex list-disc flex-col gap-(--spacing-sm) pl-(--spacing-lg) font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]" data-reveal-group>
+				{bullets.map((bullet, i) => (
+					<li data-i18n-en={bulletsEn?.[i]}>{bullet}</li>
+				))}
+			</ul>
+		)
+	}
 	<div class="flex flex-col gap-(--spacing-xl) tablet:flex-row tablet:gap-(--spacing-4xl)" data-reveal-group>
 		{
 			pairs.map((pair) => (

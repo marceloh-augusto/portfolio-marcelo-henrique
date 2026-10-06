@@ -16,18 +16,43 @@
  * Não esconde nos primeiros `HIDE_THRESHOLD` px de scroll (perto do
  * topo) — evita a nav "piscar" escondendo/aparecendo com qualquer
  * pequeno movimento logo no início da página.
+ *
+ * Só troca de estado depois de `DIRECTION_DELTA` px acumulados na mesma
+ * direção — no mobile, inércia, rubber-band (`scrollY` negativo no iOS) e
+ * a barra de URL recolhendo geram reversões de 1–2px que faziam a nav
+ * piscar. Ao esconder, desloca altura da nav + `top` + folga da sombra,
+ * pra sair inteira da tela (`-150%` deixava ~2px visíveis no mobile).
  */
 const HIDE_THRESHOLD = 80;
+const DIRECTION_DELTA = 10;
+const HIDDEN_TRANSFORM = "translateY(calc(-100% - var(--spacing-lg) - 16px))";
 
 export function initAutoHideNav(nav: HTMLElement): () => void {
-	let lastY = window.scrollY;
+	let anchorY = Math.max(window.scrollY, 0);
+	let hidden = false;
+
+	function setHidden(next: boolean) {
+		if (next === hidden) return;
+		hidden = next;
+		nav.style.transform = hidden ? HIDDEN_TRANSFORM : "translateY(0)";
+	}
 
 	function onScroll() {
-		const y = window.scrollY;
-		const scrollingDown = y > lastY;
-		const pastThreshold = y > HIDE_THRESHOLD;
-		nav.style.transform = scrollingDown && pastThreshold ? "translateY(-150%)" : "translateY(0)";
-		lastY = y;
+		const y = Math.max(window.scrollY, 0);
+		if (y <= HIDE_THRESHOLD) {
+			setHidden(false);
+			anchorY = y;
+			return;
+		}
+		if (y > anchorY) {
+			if (y - anchorY >= DIRECTION_DELTA) setHidden(true);
+			else return;
+		} else if (anchorY - y >= DIRECTION_DELTA) {
+			setHidden(false);
+		} else {
+			return;
+		}
+		anchorY = y;
 	}
 
 	window.addEventListener("scroll", onScroll, { passive: true });

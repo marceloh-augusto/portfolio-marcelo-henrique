@@ -6,48 +6,43 @@ year: "2026"
 yearEn: "2026"
 role: "Product Designer"
 category: "Product Design"
-description: "Como reduzimos em 42% as reclamações detratoras sobre a busca de uma plataforma de estudo."
-descriptionEn: "How we reduced detractor complaints about search on a study platform by 42%."
+description: "Como melhorias na busca reduziram em 42% as reclamações detratoras sobre dificuldade para encontrar conteúdo."
+descriptionEn: "How improvements to search reduced detractor complaints about difficulty finding content by 42%."
 tags: ["Discovery", "UX Research", "Product Design", "EdTech"]
 coverImage: "/images/cases/case-study-2-cover.png"
 cardTheme: "light"
 
-heroHeadline: "Como reduzimos em 42% as reclamações detratoras sobre a busca de uma plataforma de estudo."
-heroHeadlineEn: "How we reduced detractor complaints about search on a study platform by 42%."
+heroHeadline: "Como melhorias na busca reduziram em 42% as reclamações detratoras sobre dificuldade para encontrar conteúdo."
+heroHeadlineEn: "How improvements to search reduced detractor complaints about difficulty finding content by 42%."
 heroImage: "/images/cases/case-study-2/hero.png"
-heroAspect: "1200/675"
-heroFit: "contain"
+heroAspect: "1175/652"
 duration: "8 Semanas"
 durationEn: "8 Weeks"
 team: "PM, Designer, CPTO, EM"
 platform: "Website · Plataforma de ensino"
 platformEn: "Website · Learning platform"
-contribution: "Conduzi a pesquisa com métodos mistos (formulário, comentários do CES e histórico de busca) e usei os achados para defender a priorização no roadmap, alinhando negócio, produto e desenvolvimento."
-contributionEn: "I conducted mixed-methods research (survey, CES comments, and search history) and used the findings to defend prioritization on the roadmap, aligning business, product, and engineering."
+contribution: "Conduzi a investigação com métodos mistos, identifiquei as causas do problema, articulei soluções com Produto e Engenharia e influenciei sua priorização no roadmap."
+contributionEn: "I led the investigation with mixed methods, identified the causes of the problem, shaped solutions with Product and Engineering, and influenced their prioritization on the roadmap."
 worsenedLabelKey: "aberto"
 
 decisions:
-  - chosen: "Aumentar a precisão e relevância dos resultados corrigindo como o sistema junta os termos buscados (evitando resultados parciais) e ajustar os pesos do algoritmo de score"
-    insteadOf: "Ampliar a indexação para o conteúdo interno, permitindo ao aluno pesquisar assuntos ou temas direto na busca."
-    because: "Pra mim indexar conteúdos internos e melhorar relevância deveriam ser prioridades complementares. Pro CPTO indexar sem corrigir o algoritmo antes só ampliaria resultados ruins, então relevância vinha primeiro."
-    riskOf: "Os alunos continuariam sem encontrar temas e assuntos dentro do conteúdo até ampliarmos a indexação. Para acompanhar, monitoramos o CES mensalmente."
-  - chosen: "Reativar recursos nativos do Elasticsearch (autocomplete, sugestão de resultado por contexto)."
-    insteadOf: "Transformar a busca contextual em busca global: o aluno podia pesquisar independentemente do contexto desobrigando o aluno a selecioná-lo."
-    because: "A busca global exigiria refazer a classificação por tags de cada contexto, levando meses, e a diretriz era melhorar o que já existia. O Elasticsearch já tinha recursos prontos que resolviam parte do problema."
-    riskOf: "O autocomplete só sugeria dentro do contexto escolhido. Se estivesse errado, o aluno via sugestões de outra coisa, sem saber que o que procurava estava em outro lugar."
+  - chosen: "Aumentar a precisão dos resultados, corrigindo como o sistema interpretava os termos buscados para evitar resultados parciais e ajustando os pesos do algoritmo de score."
+    insteadOf: "Ampliar a cobertura, indexando o conteúdo interno das aulas, incluindo atributos como professor e lei ou tornando a busca global."
+    because: "Defendi que indexação e precisão eram complementares, e o CPTO concordou. A questão era a ordem: indexar com o algoritmo quebrado só ampliaria resultados ruins (H2). Fizemos precisão primeiro e indexação depois. A busca global ainda exigia reclassificar todo o catálogo."
+    riskOf: "Quem buscasse no contexto errado (H1), por temas internos (H3) ou por termos sem tag, como professor e lei (H4), ainda poderia não encontrar resultados.\nMonitoramos o CES mensalmente até a etapa de indexação."
 decisionsEn:
-  - chosen: "Increase the accuracy and relevance of results by fixing how the system combines the searched terms (avoiding partial results) and adjusting the weights of the scoring algorithm"
-    insteadOf: "Expand indexing to internal content, letting students search subjects or topics directly in the search bar."
-    because: "To me, indexing internal content and improving relevance should have been complementary priorities. To the CPTO, indexing without fixing the algorithm first would just amplify bad results, so relevance came first."
-    riskOf: "Students would keep failing to find subjects and topics inside the content until we expanded indexing. To keep track, we monitored the CES monthly."
-  - chosen: "Reactivate native Elasticsearch features (autocomplete, result suggestions by context)."
-    insteadOf: "Turn the contextual search into a global search: students could search regardless of context, without having to select one."
-    because: "A global search would require rebuilding the tag classification for every context, taking months, and the guideline was to improve what already existed. Elasticsearch already had ready-made features that solved part of the problem."
-    riskOf: "Autocomplete only suggested within the chosen context. If it was wrong, the student saw suggestions for something else, with no way of knowing that what they were looking for was somewhere else."
+  - chosen: "Increase the accuracy of results, fixing how the system interpreted the searched terms to avoid partial results and adjusting the weights of the scoring algorithm."
+    insteadOf: "Broaden coverage, indexing the internal content of lessons, including attributes such as teacher and law, or making the search global."
+    because: "I argued that indexing and accuracy were complementary, and the CPTO agreed. The question was the order: indexing with a broken algorithm would only broaden bad results (H2). We did accuracy first and indexing after. Global search still required reclassifying the entire catalog."
+    riskOf: "Anyone searching in the wrong context (H1), for internal topics (H3) or for terms without tags, such as teacher and law (H4), might still not find results.\nWe monitored the CES monthly until the indexing stage."
 
 deliveries:
-  - title: "Correção na forma como o sistema interpreta termos compostos, evitando resultados parciais e ajuste de pesos no algoritmo de relevância"
-    titleEn: "Fix to how the system interprets compound terms, avoiding partial results, and adjusted weights in the relevance algorithm"
+  - bullets:
+      - "Correção na forma como o sistema interpretava termos compostos, evitando resultados parciais, além do ajuste dos pesos no algoritmo de relevância."
+      - "Validei a solução em ambiente sandbox, testando se os ajustes resolviam os cenários identificados antes da ida para produção."
+    bulletsEn:
+      - "Fix to how the system interpreted compound terms, avoiding partial results, plus adjusted weights in the relevance algorithm."
+      - "I validated the solution in a sandbox environment, testing whether the adjustments solved the identified scenarios before going to production."
     pairs:
       - image: "/images/cases/case-study-2/entrega-1-antes.png"
         imageAlt: "Tela de resultados da busca antes da correção: o resultado certo não aparece na primeira página"
@@ -69,109 +64,123 @@ deliveries:
         labelEn: "After: "
         caption: "Mesmo padrão de busca por instituição específica (ex: \"Reta Final TJ-PE\") já retorna o resultado certo em primeiro lugar."
         captionEn: "The same search pattern for a specific institution (e.g. \"Reta Final TJ-PE\") now returns the right result first."
-  - title: "Autocomplete e sugestão de resultado adaptados ao contexto selecionado"
-    titleEn: "Autocomplete and result suggestions adapted to the selected context"
-    pairs:
-      - image: "/images/cases/case-study-2/entrega-2-antes.png"
-        imageAlt: "Barra de busca antes: apenas o seletor de contexto, escolhido manualmente pelo aluno"
-        label: "Antes: "
-        labelEn: "Before: "
-        caption: "Apenas o seletor de contexto. O aluno precisava escolher manualmente"
-        captionEn: "Only the context selector. Students had to choose manually"
-      - image: "/images/cases/case-study-2/entrega-2-depois.png"
-        imageAlt: "Barra de busca depois: autocomplete com sugestões de resultado"
-        label: "Depois: "
-        labelEn: "After: "
-        caption: "Adicionado autocomplete com sugestões de resultado"
-        captionEn: "Added autocomplete with result suggestions"
 
+outcomeImage: "/images/cases/case-study-2/outcome.png"
+outcomeAspect: "1175/591"
 outcome:
   improved:
-    - "Redução de 331 para 191 (42%) nas reclamações detratoras relacionadas à busca após implementação das mudanças em fevereiro de 2026."
+    - "Após a implementação, o volume mensal de reclamações detratoras relacionadas à busca caiu de 331 em fevereiro para 191 em maio, uma redução de 42%."
   worsened:
-    - "Buscar no contexto errado continuou sem indicar que o termo existia em outro lugar, e parte das reclamações restantes era de conteúdo ainda não migrado. O próximo passo passou a ser ampliar a indexação, a opção que tínhamos adiado."
+    - "Buscar no contexto errado continuava sem indicar que o termo existia em outro lugar, e parte das reclamações restantes estava relacionada a conteúdos ainda não migrados."
 outcomeEn:
   improved:
-    - "A drop from 331 to 191 (42%) in detractor complaints related to search after the changes were implemented in February 2026."
+    - "After the implementation, the monthly volume of detractor complaints related to search dropped from 331 in February to 191 in May, a 42% reduction."
   worsened:
-    - "Searching in the wrong context still gave no indication that the term existed elsewhere, and part of the remaining complaints came from content that hadn't been migrated yet. The next step became expanding indexing, the option we had postponed."
+    - "Searching in the wrong context still gave no indication that the term existed elsewhere, and part of the remaining complaints was related to content not yet migrated."
 
+whatIWouldDoDifferentlyLayout: "paragraphs"
 whatIWouldDoDifferently:
-  - "Se eu tivesse mais tempo, teria conversado com professores e com o time pedagógico de cada vertical, pra saber se as reclamações sobre busca também caíram nos grupos de WhatsApp que eles mantêm com os alunos. Também teria medido, pelos tickets de suporte, se os chamados sobre problemas na busca diminuíram."
+  - "Minha hipótese inicial era que a maior parte da fricção estava na navegação, mas a investigação mostrou que encontrar conteúdo era um problema mais relevante do que eu esperava. Isso reforçou para mim a importância de decompor reclamações genéricas antes de partir para soluções."
+  - "Também teria complementado o acompanhamento do CES com sinais de outros canais, como tickets de suporte e grupos mantidos pelo time pedagógico, para entender se a redução das reclamações também aparecia fora da plataforma."
 whatIWouldDoDifferentlyEn:
-  - "If I had more time, I would have talked to teachers and the pedagogical team of each vertical, to find out whether complaints about search also dropped in the WhatsApp groups they keep with students. I would have also measured, through support tickets, whether tickets about search problems went down."
+  - "My initial hypothesis was that most of the friction was in navigation, but the investigation showed that finding content was a more relevant problem than I expected. That reinforced for me the importance of breaking down generic complaints before jumping to solutions."
+  - "I would also have complemented the CES tracking with signals from other channels, such as support tickets and groups kept by the pedagogical team, to understand whether the drop in complaints also showed up outside the platform."
 ---
 
 import CaseSection from "../../components/case-study/CaseSection.astro";
+import Accent from "../../components/ui/Accent.astro";
 import HypothesisCards from "../../components/case-study/HypothesisCards.astro";
 import CaseImage from "../../components/case-study/CaseImage.astro";
 
 <CaseSection titleKey="problema">
-  <div data-reveal data-i18n-en="Estratégia is an EdTech company selling prep courses. Students complained about a confusing, unintuitive experience using the platform. I believed the problem was in the navigation, given the type of complaint. The team had already tried to solve the problem by reorganizing the content in the library, with no effect. That's because the Product team validated solutions well, but skipped validating the problem. The CPTO shifted our focus from quantity to quality, stopping feature shipping to improve what already existed, and handed UX the responsibility of clarifying and validating the problem before any solution went onto the roadmap. The goal was to reduce the number of detractor complaints.">
-    Estratégia é uma EdTech de cursos preparatórios. Os alunos reclamavam de uma experiência confusa e pouco intuitiva no uso da plataforma. Acreditei que o problema estivesse na navegação, dado o tipo de reclamação. O time já tinha tentado resolver o problema reorganizando os conteúdos no acervo, sem efeito. Isso porque o time de Produto validava bem soluções, mas pulava a validação do problema. O CPTO direcionou nosso foco de quantidade pra qualidade, parando de lançar features para melhorar o que existia, e passou para UX a responsabilidade de clarear e validar o problema antes de qualquer solução ir ao roadmap. O objetivo era reduzir o nº de reclamações detratoras.
+  <div data-reveal data-i18n-en={`<p>Students described <strong class="font-bold text-(--color-accent)">Estratégia's learning platform</strong> as <strong class="font-bold text-(--color-accent)">confusing and unintuitive</strong>. To fix that, <strong class="font-bold text-(--color-accent)">the team had already reorganized the course library</strong>, adjusted filters and categories and reduced the amount of information on screens, <strong class="font-bold text-(--color-accent)">without success.</strong></p><p>Until then, <strong class="font-bold text-(--color-accent)">Product used its own output as a discovery tool</strong>: it built solutions and tested them directly with users, <strong class="font-bold text-(--color-accent)">without necessarily understanding the cause of the problem first.</strong> That process changed when the <strong class="font-bold text-(--color-accent)">CPTO began demanding greater clarity about the problem</strong> before any solution went into production. <strong class="font-bold text-(--color-accent)">UX gained the role of validating the problem</strong> and influencing what would be prioritized on the roadmap. The goal was to identify the causes of the complaints and reduce their recurrence.</p>`}>
+    <p>Os <Accent>alunos descreviam a plataforma</Accent> de ensino do Estratégia como <Accent>confusa e pouco intuitiva</Accent>. Para resolver isso, <Accent>o time já havia reorganizado o acervo de cursos</Accent>, ajustado filtros e categorias e reduzido a quantidade de informação nas telas, <Accent>sem sucesso.</Accent></p>
+    <p>Até então, <Accent>Produto usava a própria produção como ferramenta de descoberta</Accent>: construía soluções e testava diretamente com usuários, <Accent>sem necessariamente entender a causa do problema antes.</Accent> Esse processo mudou quando o <Accent>CPTO passou a exigir maior clareza sobre o problema</Accent> antes de qualquer solução entrar em produção. <Accent>UX ganhou o papel de validar o problema</Accent> e influenciar o que seria priorizado no roadmap. O objetivo era identificar as causas das reclamações e reduzir sua recorrência.</p>
   </div>
 </CaseSection>
 
 <CaseSection titleKey="pesquisa">
-  <div data-reveal data-i18n-en={`To understand this "confusion," I applied a survey with 680 students. The main difficulty was finding specific content, and it affected veterans more. To understand where this difficulty showed up, I analyzed student comments in the CES, and search was the most cited topic. The problem wasn't in the navigation, as I thought, but in search. I then cross-referenced the search history with the comments to test hypotheses about what was failing in it.`}>
-    Para entender essa "confusão", apliquei um formulário com 680 alunos. A principal dificuldade era encontrar um conteúdo específico, e afetava mais os veteranos. Para entender onde essa dificuldade aparecia, analisei os comentários dos alunos no CES, e a busca foi o tema mais citado. O problema não estava na navegação, como eu achava, e sim na busca. Cruzei então o histórico de busca com os comentários para testar hipóteses sobre o que falhava nela.
-  </div>
+  <HypothesisCards
+    variant="strong"
+    items={[
+      {
+        label: "HIPÓTESE PRINCIPAL",
+        labelEn: "MAIN HYPOTHESIS",
+        title: `Eu acreditava que a maior parte da fricção do aluno estava na navegação da plataforma, dado o tipo de reclamação recebida: "estou confuso", "estou perdido", "pouco intuitivo".`,
+        titleEn: `I believed most of the student's friction was in the platform's navigation, given the type of complaint received: "I'm confused", "I'm lost", "not very intuitive".`,
+        description: "Apliquei um formulário com 680 alunos para decompor “confusão” em causas específicas. Entre os temas relacionados à minha frente, “encontrar um conteúdo específico” teve a 2ª pior nota e navegação, a 4ª. As notas baixas apareciam frequentemente nos mesmos alunos. Cruzei esses dados com 3.000 comentários, nos quais busca foi o tema mais recorrente. A partir daí, mapeei o mecanismo de busca e passei a testar hipóteses específicas.",
+        descriptionEn: "I ran a survey with 680 students to break “confusion” down into specific causes. Among the topics related to what I had in front of me, “finding specific content” scored 2nd worst and navigation 4th. The low scores often appeared in the same students. I cross-referenced this data with 3,000 comments, in which search was the most recurrent topic. From there, I mapped the search mechanism and started testing specific hypotheses.",
+        bodyColor: "dark",
+      },
+    ]}
+  />
 
   <CaseImage
     src="/images/cases/case-study-2/pesquisa.png"
     alt="Análise dos comentários do CES e do histórico de busca dos alunos"
-    aspect="1200/514"
-    crop={{ height: 114.68, top: -14.73 }}
+    aspect="1200/589"
   />
+</CaseSection>
 
-  <div class="flex flex-col gap-(--spacing-md) pb-(--spacing-4xl) tablet:mt-[calc(120px-var(--spacing-lg))]">
-    <CaseImage
-      src="/images/cases/case-study-2/mecanismos-base.png"
-      overlaySrc="/images/cases/case-study-2/mecanismos-overlay.png"
-      alt="Mecanismos de busca no acervo do aluno: seletor de contexto (Concursos, Matérias/Disciplinas, Questões, Casts, Trilhas) e resultados"
-      aspect="1200/574"
-      variant="card"
-      crop={{ height: 119.9, top: -0.85 }}
-    />
-    <p data-reveal data-i18n-en={`<strong class="font-bold">Search mechanisms: </strong>Working inside the student's library as a course filter by context (exam, subject, questions...)`}>
-      <strong class="font-bold">Mecanismos de busca: </strong>Funcionando dentro do acervo do aluno como filtro de cursos por contexto (concurso, matéria, questões...)
-    </p>
+<CaseSection titleKey="mecanismo" class="gap-(--spacing-md)!">
+  <div data-reveal data-i18n-en="Search worked inside the student's library as a context filter: before searching, the student chose to search by Exam, Subject, Track or Cast, and each option returned a different type of result.">
+    A busca funcionava dentro do acervo do aluno como um filtro por contexto: antes de pesquisar, o aluno escolhia buscar por Concurso, Disciplina, Trilha ou Cast, e cada opção entregava um tipo de resultado diferente.
   </div>
 
+  <CaseImage
+    src="/images/cases/case-study-2/mecanismos-base.png"
+    overlaySrc="/images/cases/case-study-2/mecanismos-overlay.png"
+    alt="Mecanismo de busca no acervo do aluno: seletor de contexto (Concursos, Matérias/Disciplinas, Questões, Casts, Trilhas) e resultados"
+    aspect="1200/574"
+    variant="card"
+    crop={{ height: 119.9, top: -0.85 }}
+  />
+</CaseSection>
+
+<CaseSection>
   <HypothesisCards
+    variant="strong"
     items={[
       {
         status: "VALIDADA",
         statusEn: "VALIDATED",
-        title: "Modelo de busca era incompatível com o modelo mental do aluno: A busca exigia escolher um contexto/filtro (Concurso, Matéria/Disciplina, Trilha, Cast) antes de buscar.",
-        titleEn: "The search model was incompatible with the student's mental model: search required choosing a context/filter (Exam, Subject, Track, Cast) before searching.",
-        description: "Histórico de busca mostra que de 821 buscas analisadas, 55% foram feitas no contexto errado.",
-        descriptionEn: "Search history shows that of 821 searches analyzed, 55% were made in the wrong context.",
+        title: "Modelo de busca incompatível com o modelo mental do aluno. A busca contextual seguia a organização de conteúdo da plataforma, e não necessariamente a forma como o aluno pensava sobre aquilo que procurava.\nNa prática, ele precisava saber onde procurar antes de pesquisar.",
+        titleEn: "Search model incompatible with the student's mental model. Contextual search followed the platform's content organization, not necessarily the way the student thought about what they were looking for.\nIn practice, they needed to know where to look before searching.",
+        description: "O histórico mostrou que, entre 821 buscas analisadas, 55% foram realizadas no contexto errado.\nOs heatmaps também indicaram baixo uso do seletor de contexto da busca.",
+        descriptionEn: "The history showed that, among 821 searches analyzed, 55% were made in the wrong context.\nHeatmaps also indicated low use of the search context selector.",
       },
       {
         status: "VALIDADA",
         statusEn: "VALIDATED",
-        title: "Raramente os primeiros resultados eram os mais relevantes pro aluno com grande volume de cursos similares, isso aumentava o esforço dele para achar o resultado certo.",
-        titleEn: "The first results were rarely the most relevant for students with a large volume of similar courses, which increased their effort to find the right result.",
-        description: "Relatos de alunos no CES de que a busca tratava termos compostos como palavras separadas, retornando resultados parciais e irrelevantes.",
-        descriptionEn: "Student reports in the CES that search treated compound terms as separate words, returning partial and irrelevant results.",
+        title: "Os primeiros resultados raramente eram os mais relevantes. Alunos com grande volume de cursos semelhantes precisavam percorrer mais resultados até encontrar o conteúdo desejado.",
+        titleEn: "The first results were rarely the most relevant. Students with a large volume of similar courses had to go through more results before finding the content they wanted.",
+        description: "Nos comentários, alunos relatavam que a busca tratava termos compostos como palavras separadas, retornando resultados parciais e irrelevantes, muitas vezes fora da primeira página.\nOs heatmaps reforçaram esse comportamento, mostrando alto volume de cliques em “ver mais resultados de busca”.",
+        descriptionEn: "In the comments, students reported that search treated compound terms as separate words, returning partial and irrelevant results, often beyond the first page.\nHeatmaps reinforced this behavior, showing a high volume of clicks on “see more search results”.",
       },
       {
         status: "VALIDADA",
         statusEn: "VALIDATED",
-        title: "A busca indexava o nome do curso, o concurso e os capítulos, mas não o conteúdo que havia dentro deles. Os alunos procuravam temas específicos que a busca não alcançava.",
-        titleEn: "Search indexed the course name, the exam, and the chapters, but not the content inside them. Students looked for specific topics that search couldn't reach.",
-        description: "Relatos no CES confirmam alunos buscando temas específicos dentro do conteúdo (leis, tópicos de matéria) sem sucesso. A busca não indexava esse nível de detalhe.",
-        descriptionEn: "CES reports confirm students searching for specific topics inside the content (laws, subject topics) without success. Search didn't index that level of detail.",
+        title: "A busca não alcançava o nível de detalhe procurado pelos alunos. O sistema indexava nome do curso, concurso e capítulos, mas não o conteúdo existente dentro deles.",
+        titleEn: "Search didn't reach the level of detail students were looking for. The system indexed course name, exam and chapters, but not the content inside them.",
+        description: "Comentários no CES mostravam alunos procurando temas específicos dentro dos conteúdos, como leis e tópicos de matéria, sem sucesso.",
+        descriptionEn: "CES comments showed students looking for specific topics inside the content, such as laws and subject topics, without success.",
+      },
+      {
+        status: "VALIDADA",
+        statusEn: "VALIDATED",
+        title: "O uso da busca era indiscriminado. A expectativa dos alunos sobre o que a busca deveria encontrar era maior do que sua cobertura real.",
+        titleEn: "Search usage was indiscriminate. Students' expectations of what search should find were greater than its actual coverage.",
+        description: "O histórico mostrou buscas por atributos não cobertos pelo sistema, como professor, região, instituição, lei, cargo e assunto.",
+        descriptionEn: "The history showed searches for attributes not covered by the system, such as teacher, region, institution, law, position and subject.",
       },
     ]}
   />
 </CaseSection>
 
 <CaseSection titleKey="restricoes">
-  <ul class="gap-[1.4em]!" data-reveal-group data-i18n-en={`<li><strong>Strategic:</strong> the guideline was to improve what already existed, not build from scratch. That favored adjustments to the current search over rebuilding it.</li><li><strong>Technical:</strong> the system used a tag-based classification scheme, similar to what e-commerce sites use to organize products. Each search context consumed specific classifications and only saw courses tagged with those classifications.</li><li><strong>Legacy:</strong> part of the catalog had not yet been migrated to the new platform. No search improvement would make that content show up.</li>`}>
-    <li><strong>Estratégico:</strong> a diretriz era melhorar o que já existia, não construir do zero. Isso favorecia ajustes na busca atual em vez de refazê-la.</li>
-    <li><strong>Técnico:</strong> o sistema usava um esquema de classificação por tags, parecido com o que e-commerces usam pra organizar produtos. Cada contexto de busca consumia classificações específicas e enxergava cursos marcados apenas com essas classificações.</li>
-    <li><strong>Legado:</strong> parte do catálogo ainda não tinha sido migrada para a plataforma nova. Nenhuma melhoria na busca faria esse conteúdo aparecer.</li>
+  <ul class="gap-[1.4em]!" data-reveal-group data-i18n-en={`<li><strong>Strategic:</strong> the guideline was to improve what already existed, without launching new features.</li><li><strong>Technical:</strong> the system used a tag-based classification, similar to the one used in e-commerce. Each search context consumed specific classifications and only found courses tagged with those tags.</li><li><strong>Legacy:</strong> part of the catalog had not yet been migrated to the new platform. No search improvement would make that content show up.</li>`}>
+    <li><strong>Estratégica:</strong> a diretriz era melhorar o que já existia, sem lançar novas funcionalidades.</li>
+    <li><strong>Técnica:</strong> o sistema utilizava uma classificação por tags, semelhante à usada em e-commerces. Cada contexto de busca consumia classificações específicas e só encontrava cursos marcados com essas tags.</li>
+    <li><strong>Legado:</strong> parte do catálogo ainda não havia sido migrada para a nova plataforma. Nenhuma melhoria na busca faria esse conteúdo aparecer.</li>
   </ul>
 </CaseSection>

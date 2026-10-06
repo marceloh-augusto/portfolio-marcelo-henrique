@@ -30,6 +30,9 @@ interface Props {
 
 const { rows, rowsEn } = Astro.props;
 
+// `\n` dentro de uma célula vira quebra de linha (parágrafos colados, como no Figma).
+const lines = (text?: string) => text?.split("\n").join("<br>");
+
 const COLUMNS: { key: keyof DecisionRow; i18nKey: string }[] = [
 	{ key: "chosen", i18nKey: "case.decision.escolhemos" },
 	{ key: "insteadOf", i18nKey: "case.decision.emvezde" },
@@ -55,9 +58,11 @@ const COLUMNS: { key: keyof DecisionRow; i18nKey: string }[] = [
 			<>
 				<div class="flex gap-(--spacing-xl) py-(--spacing-md)">
 					{COLUMNS.map((column) => (
-						<p class="flex-1 font-sans text-[20px] leading-[1.5] text-(--case-text)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
-							{row[column.key]}
-						</p>
+						<p
+							class="flex-1 font-sans text-[20px] leading-[1.5] text-(--case-text)"
+							data-i18n-en={lines(rowsEn?.[i]?.[column.key])}
+							set:html={lines(row[column.key])}
+						/>
 					))}
 				</div>
 				<div class="h-px w-full bg-(--color-border-light)" />
@@ -75,9 +80,11 @@ const COLUMNS: { key: keyof DecisionRow; i18nKey: string }[] = [
 						<p class="font-sans text-[12px] font-bold text-(--color-muted)" data-i18n={column.i18nKey}>
 							{translations[column.i18nKey]?.pt}
 						</p>
-						<p class="font-sans text-[16px] leading-[1.5] text-(--case-text)" data-i18n-en={rowsEn?.[i]?.[column.key]}>
-							{row[column.key]}
-						</p>
+						<p
+							class="font-sans text-[16px] leading-[1.5] text-(--case-text)"
+							data-i18n-en={lines(rowsEn?.[i]?.[column.key])}
+							set:html={lines(row[column.key])}
+						/>
 					</div>
 				))}
 			</div>

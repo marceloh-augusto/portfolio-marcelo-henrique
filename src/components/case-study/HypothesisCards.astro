@@ -3,29 +3,39 @@
  * Cards de hipótese da seção "Pesquisa" — Figma node 271:245 (desktop) e
  * 346:307 (mobile). Estrutura idêntica nos dois breakpoints (só o
  * tamanho de fonte do rótulo/badge muda, 12px→14px — Typography/UI/Caption,
- * ver @DESIGN.md); no mobile empilha (`flex-col`), no desktop vira uma
- * linha de colunas iguais (`flex-row`, cada card `flex-1`).
+ * ver @DESIGN.md); no mobile empilha, no desktop vira grade de 2 colunas
+ * (Yogha: 2 cards lado a lado; Estratégia: 4 cards em 2×2) — um card
+ * sozinho (ex: "HIPÓTESE PRINCIPAL") ocupa a largura toda.
  *
  * `status`/`title`/`description` são conteúdo específico de cada
  * hipótese do case — cada um aceita um par `*En` opcional (mecanismo
- * `data-i18n-en`, ver i18n.ts). O rótulo "HIPÓTESE N" é gerado pelo
- * índice do item (não é campo de conteúdo).
+ * `data-i18n-en`, ver i18n.ts). O rótulo padrão "HIPÓTESE N" é gerado pelo
+ * índice do item; `label`/`labelEn` substituem (ex: "HIPÓTESE PRINCIPAL",
+ * Figma 798:646). Sem `status`, o card não mostra a badge.
+ *
+ * Quebra de linha: `\n` em `title`/`description` vira `<br>` (os
+ * parágrafos do Figma ficam colados, sem espaço extra) — vale também nas
+ * versões `*En`.
  *
  * Badge: status "VALIDADA" usa o token `success` (verde, texto branco —
  * Figma 869:722, `badge-status-success` em DESIGN.md) em todos os cases;
  * qualquer outro status (ex: "REFUTADA") mantém a badge neutra.
  *
- * `variant="strong"` (Yogha, Figma 869:719): título em negrito e descrição
- * em neutral-800. O padrão é o estilo do Estratégia (título regular,
- * descrição em neutral-500).
+ * `variant="strong"` (Yogha e Estratégia, Figma 869:719/899:538): título em
+ * negrito e descrição em neutral-800 (`bodyColor: "dark"` no item usa
+ * neutral-900, como o card "HIPÓTESE PRINCIPAL"). O padrão antigo é título
+ * regular e descrição em neutral-500.
  */
 interface HypothesisItem {
-	status: string;
+	label?: string;
+	labelEn?: string;
+	status?: string;
 	statusEn?: string;
 	title: string;
 	titleEn?: string;
 	description: string;
 	descriptionEn?: string;
+	bodyColor?: "dark";
 }
 
 interface Props {
@@ -37,51 +47,67 @@ const { items, variant = "default" } = Astro.props;
 const strong = variant === "strong";
 
 const isValidated = (status: string) => status.trim().toUpperCase() === "VALIDADA";
+const lines = (text?: string) => text?.split("\n").join("<br>");
 ---
 
-<div class="flex flex-col gap-(--spacing-lg) tablet:flex-row tablet:items-stretch" data-reveal-group>
+<div
+	class:list={["grid grid-cols-1 gap-(--spacing-lg) tablet:items-stretch", items.length > 1 && "tablet:grid-cols-2"]}
+	data-reveal-group
+>
 	{
 		items.map((item, i) => (
-			<div class="flex flex-1 flex-col gap-[14px] rounded-card bg-(--color-neutral-100) px-[28px] py-(--spacing-lg)">
+			<div
+				class:list={[
+					"flex flex-col gap-[14px] rounded-card bg-(--color-neutral-100) px-[28px] pt-(--spacing-lg)",
+					item.status ? "pb-(--spacing-lg)" : "pb-(--spacing-xl)",
+				]}
+			>
 				<div class="flex items-center justify-between">
-					<p class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-muted) tablet:text-[14px]" data-i18n-en={`HYPOTHESIS ${i + 1}`}>
-						{`HIPÓTESE ${i + 1}`}
-					</p>
-					<div
-						class:list={[
-							"flex items-start rounded-full px-(--spacing-sm-plus) py-[5px]",
-							isValidated(item.status) ? "bg-(--color-success)" : "bg-(--color-neutral-200)",
-						]}
+					<p
+						class="font-sans text-[12px] font-bold whitespace-nowrap text-(--color-muted) tablet:text-[14px]"
+						data-i18n-en={item.label ? item.labelEn : `HYPOTHESIS ${i + 1}`}
 					>
-						<p
+						{item.label ?? `HIPÓTESE ${i + 1}`}
+					</p>
+					{item.status && (
+						<div
 							class:list={[
-								"font-sans text-[12px] font-bold whitespace-nowrap tablet:text-[14px]",
-								isValidated(item.status) ? "text-white" : "text-(--color-neutral-500)",
+								"flex items-start rounded-full px-(--spacing-sm-plus) py-[5px]",
+								isValidated(item.status) ? "bg-(--color-success)" : "bg-(--color-neutral-200)",
 							]}
-							data-i18n-en={item.statusEn}
 						>
-							{item.status}
-						</p>
-					</div>
+							<p
+								class:list={[
+									"font-sans text-[12px] font-bold whitespace-nowrap tablet:text-[14px]",
+									isValidated(item.status) ? "text-white" : "text-(--color-neutral-500)",
+								]}
+								data-i18n-en={item.statusEn}
+							>
+								{item.status}
+							</p>
+						</div>
+					)}
 				</div>
 				<p
 					class:list={[
 						"font-sans text-[16px] leading-[1.5] text-(--color-foreground-on-light) tablet:text-[20px]",
 						strong && "font-bold tablet:leading-[1.4]",
 					]}
-					data-i18n-en={item.titleEn}
-				>
-					{item.title}
-				</p>
+					data-i18n-en={lines(item.titleEn)}
+					set:html={lines(item.title)}
+				/>
 				<p
 					class:list={[
 						"font-sans text-[16px] leading-[1.5] tablet:text-[20px]",
-						strong ? "text-(--color-neutral-800)" : "text-(--color-neutral-500)",
+						strong
+							? item.bodyColor === "dark"
+								? "text-(--color-foreground-on-light)"
+								: "text-(--color-neutral-800)"
+							: "text-(--color-neutral-500)",
 					]}
-					data-i18n-en={item.descriptionEn}
-				>
-					{item.description}
-				</p>
+					data-i18n-en={lines(item.descriptionEn)}
+					set:html={lines(item.description)}
+				/>
 			</div>
 		))
 	}
